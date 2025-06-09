@@ -51,10 +51,11 @@ const Header = () => {
               <ul className="grid w-[200px] gap-2 md:grid-cols-2">
                 {levels.map((item, index) => (
                   <li key={index}>
-                    <NavigationMenuLink>
-                      <Link href={`/word/${item.link}`} className="text-center">
-                        {item.name}
-                      </Link>
+                    <NavigationMenuLink
+                      href={`/word/${item.link}`}
+                      className="text-center"
+                    >
+                      {item.name}
                     </NavigationMenuLink>
                   </li>
                 ))}
@@ -71,10 +72,11 @@ const Header = () => {
               <ul className="grid w-[200px] gap-2 md:grid-cols-2">
                 {levels.map((item, index) => (
                   <li key={index}>
-                    <NavigationMenuLink>
-                      <Link href={`/quiz/${item.link}`} className="text-center">
-                        {item.name}
-                      </Link>
+                    <NavigationMenuLink
+                      href={`/quiz/${item.link}`}
+                      className="text-center"
+                    >
+                      {item.name}
                     </NavigationMenuLink>
                   </li>
                 ))}

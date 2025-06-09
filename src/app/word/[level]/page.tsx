@@ -1,4 +1,14 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import Link from 'next/link';
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
 type Props = {
   params: {
@@ -7,7 +17,6 @@ type Props = {
 };
 
 const WordPage = async ({ params }: Props) => {
-  // Error: Route "/word/[level]" used `params.level`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
   const level = Number(params.level);
   const supabase = createServerSupabaseClient();
 
@@ -23,10 +32,20 @@ const WordPage = async ({ params }: Props) => {
 
   return (
     <div>
-      <h1>{level}급 단어</h1>
-      {data?.map((word) => (
-        <div key={word.id}>{word.word}</div>
-      ))}
+      <h1 className="mb-10 text-2xl font-semibold">{level}급 단어</h1>
+      <div className="grid grid-cols-5 gap-5">
+        {data?.map((word) => (
+          <Link key={word.id} href={`/word/${level}/${word.id}`}>
+            <Card>
+              <CardHeader className="text-center">
+                <CardTitle className="text-3xl">{word.word}</CardTitle>
+                <CardDescription>{word.pinyin}</CardDescription>
+              </CardHeader>
+              <CardContent className="text-center">{word.meaning}</CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 };
