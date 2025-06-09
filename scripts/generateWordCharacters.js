@@ -19,7 +19,7 @@ const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const getWords = () => {
   return new Promise((resolve, reject) => {
     const words = [];
-    const filePath = path.join(__dirname, 'words_rows.csv');
+    const filePath = path.join(__dirname, 'HSK_3.csv');
 
     fs.createReadStream(filePath)
       .pipe(csvParser())
