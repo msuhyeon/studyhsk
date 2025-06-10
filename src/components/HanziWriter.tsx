@@ -3,7 +3,6 @@ import { useEffect } from 'react';
 import HanziWriterLib from 'hanzi-writer';
 
 const HanziWriter = ({ characters }: { characters: string[] }) => {
-  console.log('히얼');
   useEffect(() => {
     const run = async () => {
       // 모든 한자 writer를 생성하는데
