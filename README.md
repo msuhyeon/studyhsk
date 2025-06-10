@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🈶 HSK Chinese Word Trainer
 
-## Getting Started
+> HSK 단어를 체계적으로 학습하고 반복 복습을 통해 장기 기억에 도움을 주는 웹 기반 학습 플랫폼입니다.
 
-First, run the development server:
+이 프로젝트는 사이드 프로젝트로 시작되었으며, 개발자 본인의 학습 흐름과 경험을 고려하여 기능을 설계하고 있습니다.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 1단계 목표 (MVP)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### ✅ 구현 기능
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **급수별 단어 리스트 조회**
+  - GNB에서 급수를 선택하여 해당 급수에 포함된 단어 리스트를 보여줍니다.
+  - 각 단어는 `한자`, `병음`, `뜻`으로 구성됩니다.
 
-## Learn More
+- **단어 상세 페이지**
+  - 단어를 구성하는 **각 한자의 의미**를 확인할 수 있습니다.
+  - 표시 항목: 한자, 병음, 뜻 
 
-To learn more about Next.js, take a look at the following resources:
+- **퀴즈 기능**
+  - 선택한 급수의 단어 중 랜덤하게 문제를 출제합니다.
+  - 문제는 `한자 → 병음과 뜻`을 맞히는 객관식 문제입니다.
+  - 정오답 여부를 실시간으로 확인할 수 있습니다.
+  - 틀린 문제는 로컬에서 임시 저장 (2단계에서 DB 저장 연동 예정)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📅 2단계 목표 (추가 기능 개발)
 
-## Deploy on Vercel
+- **구글 로그인 기능**
+  - Supabase OAuth를 이용한 간편 회원가입/로그인 구현
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **마이페이지 & 오답 복습 기능**
+  - 사용자의 퀴즈 결과를 저장하고, 날짜별로 복습할 수 있습니다.
+  - 찜한 단어, 학습 통계, 정답률 등도 함께 표시됩니다.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🧱 데이터베이스 구조 (Supabase)
+![image](https://github.com/user-attachments/assets/94bc144b-6ede-4379-af5b-e00a93c9304d)
+
+
+## 🛠 기술 스택
+
+- **Frontend**: Next.js, TypeScript, TailwindCSS, shadcn/ui
+- **Backend**: Supabase (PostgreSQL, Auth, Storage)
+- **기타 도구**:
+  - CSV → DB 자동 변환 스크립트
+  - HanziWriter: 한자 획순 애니메이션
+  - Google TTS: 병음 발음 재생 기능 (예정)
+
+
+## 📌 향후 계획
+
+- [ ] 1단계: 급수별 리스트 + 상세 + 퀴즈 기능 MVP 완성
+- [ ] 2단계: 구글 로그인 및 오답 복습 기능
+- [ ] 3단계: SRS(Spaced Repetition) 기반 복습 기능
+- [ ] 4단계: 관리자 페이지 및 단어/한자 CRUD 기능 추가
+- [ ] 5단계: 반응형 UI 및 모바일 UX 최적화
+
+
