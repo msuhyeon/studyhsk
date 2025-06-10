@@ -42,7 +42,6 @@
 - **Frontend**: Next.js, TypeScript, TailwindCSS, shadcn/ui
 - **Backend**: Supabase (PostgreSQL, Auth, Storage)
 - **기타 도구**:
-  - CSV → DB 자동 변환 스크립트
   - HanziWriter: 한자 획순 애니메이션
   - 병음 발음 재생 기능(라이브러리 미정)
 
