@@ -19,7 +19,6 @@ type Props = {
 const WordPage = async ({ params }: Props) => {
   const level = Number(params.level);
   const supabase = createServerSupabaseClient();
-
   const { data, error } = await supabase
     .from('words')
     .select('*')
@@ -36,7 +35,7 @@ const WordPage = async ({ params }: Props) => {
       <div className="grid grid-cols-5 gap-5">
         {data?.map((word) => (
           <Link key={word.id} href={`/word/${level}/${word.id}`}>
-            <Card>
+            <Card className="hover:bg-sky-100">
               <CardHeader className="text-center">
                 <CardTitle className="text-3xl">{word.word}</CardTitle>
                 <CardDescription>{word.pinyin}</CardDescription>
