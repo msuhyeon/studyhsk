@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-const Mark = () => {
+const Bookmark = () => {
   const [marked, setMarked] = useState(false);
 
   return (
@@ -28,4 +28,4 @@ const Mark = () => {
   );
 };
 
-export default Mark;
+export default Bookmark;
