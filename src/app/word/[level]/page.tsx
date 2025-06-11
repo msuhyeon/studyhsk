@@ -2,10 +2,8 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -37,10 +35,15 @@ const WordPage = async ({ params }: Props) => {
           <Link key={word.id} href={`/word/${level}/${word.id}`}>
             <Card className="hover:bg-sky-100">
               <CardHeader className="text-center">
-                <CardTitle className="text-3xl">{word.word}</CardTitle>
-                <CardDescription>{word.pinyin}</CardDescription>
+                <CardTitle className="text-4xl">{word.word}</CardTitle>
+                <CardDescription className="text-xl">
+                  {word.pinyin}
+                </CardDescription>
               </CardHeader>
-              <CardContent className="text-center">{word.meaning}</CardContent>
+              <CardContent className="text-center">
+                {word.meaning}{' '}
+                <span className="text-blue-400">{word.part_of_speech}</span>
+              </CardContent>
             </Card>
           </Link>
         ))}
