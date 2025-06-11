@@ -2,14 +2,21 @@ import Link from 'next/link';
 import {
   NavigationMenu,
   NavigationMenuContent,
-  //   NavigationMenuIndicator,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-  //   NavigationMenuViewport,
 } from '@/components/ui/navigation-menu';
-// import { CircleCheckIcon, CircleHelpIcon, CircleIcon } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { LogIn } from 'lucide-react';
+import LoginButton from './LoginButton';
 
 const Header = () => {
   const levels = [
@@ -85,6 +92,22 @@ const Header = () => {
           </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>
+      <div className="w-full flex justify-end">
+        <Dialog>
+          <DialogTrigger className="text-white flex justify-center items-center gap-2 cursor-pointer">
+            <LogIn />
+            로그인
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>로그인 하기</DialogTitle>
+              <DialogDescription>
+                <LoginButton />
+              </DialogDescription>
+            </DialogHeader>
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
   );
 };
