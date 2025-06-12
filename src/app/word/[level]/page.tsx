@@ -15,7 +15,8 @@ type Props = {
 };
 
 const WordPage = async ({ params }: Props) => {
-  const level = Number(params.level);
+  const { level } = params;
+
   const supabase = createServerSupabaseClient();
   const { data, error } = await supabase
     .from('words')
