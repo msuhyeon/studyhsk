@@ -7,17 +7,8 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { LogIn } from 'lucide-react';
-import LoginButton from './LoginButton';
 
+import Login from './Login';
 const Header = () => {
   const levels = [
     {
@@ -45,6 +36,7 @@ const Header = () => {
       link: '6',
     },
   ];
+
   return (
     <div className="px-10 py-5 bg-stone-700 flex items-center gap-10">
       <h1 className="font-bold text-3xl text-white">
@@ -93,20 +85,7 @@ const Header = () => {
         </NavigationMenuList>
       </NavigationMenu>
       <div className="w-full flex justify-end">
-        <Dialog>
-          <DialogTrigger className="text-white flex justify-center items-center gap-2 cursor-pointer">
-            <LogIn />
-            로그인
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>로그인 하기</DialogTitle>
-              <DialogDescription>
-                <LoginButton />
-              </DialogDescription>
-            </DialogHeader>
-          </DialogContent>
-        </Dialog>
+        <Login />
       </div>
     </div>
   );
