@@ -8,7 +8,7 @@ const Bookmark = () => {
 
   return (
     <button
-      className="cursor-pointer rounded-full p-2 transition duration-300 hover:bg-gray-100 hover:opacity-100 opacity-90"
+      className=" rounded-full p-2 transition duration-300 hover:bg-gray-100 hover:opacity-100 opacity-90"
       onClick={() => setMarked(!marked)}
     >
       <Star
