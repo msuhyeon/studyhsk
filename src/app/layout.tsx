@@ -32,7 +32,7 @@ export default function RootLayout({
       >
         <ClientUserProvider />
         <Header />
-        <main className="w-full max-w-4xl px-4 sm:px-6 lg:px-8 mx-auto">
+        <main className="w-full max-w-5xl px-4 sm:px-6 lg:px-8 mx-auto flex flex-1 flex-col py-10 lg:py-15">
           {children}
         </main>
         <Footer />
