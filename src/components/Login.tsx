@@ -15,6 +15,7 @@ import {
 import { logout } from '@/lib/supabase/userApi';
 import { LogInIcon } from 'lucide-react';
 import { useUserStore } from '@/store/user';
+import { Avatar, AvatarImage, AvatarFallback } from '@radix-ui/react-avatar';
 
 const GoogleIcon = () => (
   <svg
@@ -46,8 +47,6 @@ const GoogleIcon = () => (
 const Login = () => {
   const user = useUserStore((state) => state.user);
 
-  console.log('user-', user);
-
   const handleLogin = async () => {
     // 브라우저에서 팝업 또는 리다이렉트를 통해 동작하므로 client component
     const { data, error } = await supabase.auth.signInWithOAuth({
@@ -65,16 +64,16 @@ const Login = () => {
     <>
       {user ? (
         <div className="flex items-center">
-          {/* <span>{user.user_metadata.name}</span>님 */}
-          <Button variant="ghost">
-            <Image
-              className=' className="rounded-full"'
+          <Avatar className="rounded-lg">
+            <AvatarImage
+              className="mr-3"
               src={user.user_metadata.avatar_url}
               alt="profile image"
               width="35"
               height="35"
             />
-          </Button>
+            <AvatarFallback>CN</AvatarFallback>
+          </Avatar>
           <Button variant={'outline'} onClick={() => logout()}>
             로그아웃
           </Button>
