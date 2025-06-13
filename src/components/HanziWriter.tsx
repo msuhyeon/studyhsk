@@ -7,9 +7,9 @@ const HanziWriter = ({ characters }: { characters: string[] }) => {
     const run = async () => {
       // 모든 한자 writer를 생성하는데
       const writers = [];
+
       for (let i = 0; i < characters.length; i++) {
         const targetId = `character-target-${i}`;
-
         const writer = HanziWriterLib.create(targetId, characters[i], {
           width: 200,
           height: 200,
