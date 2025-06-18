@@ -52,7 +52,7 @@ const Login = () => {
     });
 
     if (error) {
-      console.error(`로그인 실패: ${error}`);
+      console.error(`[ERROR] Failed login: ${error}`);
     } else {
       console.log('로그인 성공!! 리다이렉트 하겠음', data.url);
     }

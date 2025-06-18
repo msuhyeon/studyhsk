@@ -6,7 +6,7 @@ export const getUser = async () => {
   const { data, error } = await supabase.auth.getUser();
 
   if (error) {
-    console.error(`유저 데이터 조회 에러 발생: ${error}`);
+    console.error(`[ERROR] SELECT User data: ${error}`);
   }
 
   useUserStore.getState().setUser(data.user ?? null);
@@ -16,7 +16,7 @@ export const logout = async () => {
   const { error } = await supabase.auth.signOut();
 
   if (error) {
-    console.error(`로그아웃 발생: ${error}`);
+    console.error(`[ERROR] failed logout: ${error}`);
   } else {
     const { clearUser } = useUserStore.getState();
     clearUser();

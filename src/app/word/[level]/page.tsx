@@ -29,7 +29,7 @@ const WordPage = async ({ params }: Props) => {
     .range(0, 27);
 
   if (error) {
-    console.error(`[ERRPR] SELECT words data ${error}`);
+    console.error(`[ERROR] SELECT words data ${error}`);
     return <ErrorFallback />;
   }
 

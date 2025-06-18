@@ -14,22 +14,26 @@ export async function GET(
     2. 각 예문에 대한 자연스러운 한국어 해석
     3. 해당 단어의 비슷한 뜻을 가진 단어들(유의어) 2개 제시
     4. 해당 단어의 반대/대조되는 뜻의 단어들(반의어) 1~2개 제시
-    5. 유의어, 반의어 단어의 한국어 해석도 같이 제시
+    5. 유의어, 반의어 단어의 한국어 해석도 같이 제시(반드시 meaning이라는 key로 리턴)
     6. 어떤 문맥에서 쓰이는 지도 같이 제시
     7. 예시 output format 
     
-    examples: [  
-      {
-        sentence: '我没有时间去购物。',
-        pinyin: 'Wǒ méiyǒu shíjiān qù gòuwù.',
-        meaning: '나는 쇼핑 갈 시간이 없다.',
-        context: '일상생활 - 시간 부족 표현',
-      },
-    ],
-    synonyms: [
-      { word: '饮', pinyin: 'shíhou', meaning: '마시다' },....
-    ],
-    antonyms: [{ word: '吐', meaning: '토하다' }...],
+{
+      "examples": [  
+        {
+          "sentence": "我没有时间去购物。",
+          "pinyin": "Wǒ méiyǒu shíjiān qù gòuwù.",
+          "meaning": "나는 쇼핑 갈 시간이 없다.",
+          "context": "일상생활 - 시간 부족 표현"
+        }
+      ],
+      "synonyms": [
+        { "word": "时候", "pinyin": "shíhou", "meaning": "때, 시간" }
+      ],
+      "antonyms": [
+        { "word": "时候", "pinyin": "shíhou", "meaning": "때, 시간" }
+      ]
+    }
 
   문장은 HSK 단어 범위 내에서 최대한 구성하며, 일상적인 상황을 반영한 예문으로. 자연스러운 의역을 우선해줘.
   출력은 반드시 코드블럭(\`\`\`json) 없이, JSON 문자열 형태만 출력해줘.
@@ -56,8 +60,12 @@ export async function GET(
   const content = result?.choices[0]?.message?.content;
 
   try {
-    return NextResponse.json(content);
+    const parsedContent = JSON.parse(content);
+    return NextResponse.json(parsedContent);
   } catch (error) {
-    console.error(`JSON 파싱 실패: ${error}`);
+    return NextResponse.json(
+      { error: `JSON 파싱 실패 ${error}` },
+      { status: 500 }
+    );
   }
 }

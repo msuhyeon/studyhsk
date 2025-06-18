@@ -12,7 +12,7 @@ export default function ErrorFallback({ message }: Props) {
   const router = useRouter();
 
   useEffect(() => {
-    console.error('ErrorFallback:', message);
+    console.error('[ErrorFallback]: ', message);
   }, [message]);
 
   return (
