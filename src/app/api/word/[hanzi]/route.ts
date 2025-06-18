@@ -1,12 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { hanzi: string } }
+  { params }: { params: Promise<{ hanzi: string }> }
 ) {
-  const hanzi = params.hanzi;
+  const { hanzi } = await params;
   const systemPrompt =
-    '너는 중국어 교육 플랫폼의 콘텐츠 생성 도우미야. 입력된 한자 단어를 바탕으로 예문과 한국어로 해석된 문장을 만들어줘.';
+    "너는 중국어 교육 플랫폼의 콘텐츠 생성 도우미야. 입력된 한자 단어를 바탕으로 예문과 한국어로 해석된 문장을 만들어줘.";
   const userPrompt = `
     단어: ${hanzi}
     요구사항:
@@ -39,18 +39,18 @@ export async function GET(
   출력은 반드시 코드블럭(\`\`\`json) 없이, JSON 문자열 형태만 출력해줘.
   `;
 
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
     headers: {
       Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      'Content-Type': 'application/json',
-      'Accept-Encoding': 'identity',
+      "Content-Type": "application/json",
+      "Accept-Encoding": "identity",
     },
     body: JSON.stringify({
-      model: 'gpt-3.5-turbo',
+      model: "gpt-3.5-turbo",
       messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
       ],
       temperature: 0.7,
     }),

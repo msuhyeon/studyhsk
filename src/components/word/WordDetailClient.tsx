@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase/client';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BookOpen, Link, Copy } from 'lucide-react';
-import { toast } from 'sonner';
-import Bookmark from '@/components/Bookmark';
-import PlayAudioButton from '@/components/word/PlayAudioButton';
-import HanziWriter from '@/components/word/HanziWriter';
-import WordDetailSkeleton from './WordDetailSkeleton';
+import { useState, useEffect, useRef } from "react";
+import { supabase } from "@/lib/supabase/client";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BookOpen, Link, Copy } from "lucide-react";
+import { toast } from "sonner";
+import Bookmark from "@/components/Bookmark";
+import PlayAudioButton from "@/components/word/PlayAudioButton";
+import HanziWriter from "@/components/word/HanziWriter";
+import WordDetailSkeleton from "./WordDetailSkeleton";
 
 type ExampleType = {
   sentence: string;
@@ -30,7 +30,7 @@ type RelationWordType = {
   relation_type?: RelationType;
 };
 
-type RelationType = 'synonym' | 'antonym';
+type RelationType = "synonym" | "antonym";
 
 type WordData = {
   id: string;
@@ -49,16 +49,23 @@ type WordDetailProps = {
 // 클라이언트 컴포넌트: 데이터 페칭 및 UI 렌더링
 const WordDetailClient = ({ wordId }: WordDetailProps) => {
   const [wordData, setWordData] = useState<WordData | null>(null);
-  const [audioUrl, setAudioUrl] = useState<string>('');
+  const [audioUrl, setAudioUrl] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isGeneratingData, setIsGeneratingData] = useState(false);
+  const [isGeneratingExamples, setIsGeneratingExamples] = useState(false);
+  const [hasAttemptedGeneration, setHasAttemptedGeneration] = useState(false);
+  const hasGeneratedData = useRef(false);
 
   useEffect(() => {
+    hasGeneratedData.current = false;
+    setHasAttemptedGeneration(false);
+    setIsGeneratingExamples(false);
     const fetchWordData = async () => {
       try {
         // 1. 기본 단어 데이터 가져오기
         const { data, error } = await supabase
-          .from('words')
+          .from("words")
           .select(
             `
             *,
@@ -76,10 +83,10 @@ const WordDetailClient = ({ wordId }: WordDetailProps) => {
             )
           `
           )
-          .eq('id', wordId);
+          .eq("id", wordId);
 
         if (error || !data || data.length === 0) {
-          throw new Error('단어를 찾을 수 없습니다.');
+          throw new Error("단어를 찾을 수 없습니다.");
         }
 
         const wordInfo = data[0];
@@ -94,35 +101,48 @@ const WordDetailClient = ({ wordId }: WordDetailProps) => {
         let examples = wordInfo.examples || [];
         let synonyms =
           wordInfo.word_relations?.filter(
-            (rel: RelationWordType) => rel.relation_type === 'synonym'
+            (rel: RelationWordType) => rel.relation_type === "synonym"
           ) || [];
         let antonyms =
           wordInfo.word_relations?.filter(
-            (rel: RelationWordType) => rel.relation_type === 'antonym'
+            (rel: RelationWordType) => rel.relation_type === "antonym"
           ) || [];
 
         // 3. DB에 없을 경우 AI로 데이터 생성
         if (
-          examples.length === 0 ||
-          synonyms.length === 0 ||
-          antonyms.length === 0
+          !hasGeneratedData.current &&
+          (examples.length === 0 ||
+            synonyms.length === 0 ||
+            antonyms.length === 0)
         ) {
+          hasGeneratedData.current = true;
+          setIsGeneratingData(true);
           const generatedData = await generateAIData(wordInfo.word);
 
           if (examples.length === 0) {
+            setIsGeneratingExamples(true);
             await insertExamples(generatedData.examples, wordId);
             examples = generatedData.examples;
+            setIsGeneratingExamples(false);
           }
 
-          if (synonyms.length === 0 || antonyms.length === 0) {
+          if (synonyms.length === 0 && antonyms.length === 0) {
             await insertWordRelations(
               generatedData.synonyms,
               generatedData.antonyms,
               wordId
             );
-            synonyms = generatedData.synonyms;
-            antonyms = generatedData.antonyms;
+            synonyms = generatedData.synonyms.map((s) => ({
+              ...s,
+              relation_type: "synonym" as const,
+            }));
+            antonyms = generatedData.antonyms.map((a) => ({
+              ...a,
+              relation_type: "antonym" as const,
+            }));
           }
+          setIsGeneratingData(false);
+          setHasAttemptedGeneration(true);
         }
 
         setWordData({
@@ -132,7 +152,7 @@ const WordDetailClient = ({ wordId }: WordDetailProps) => {
         });
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : '데이터를 불러올 수 없습니다.'
+          err instanceof Error ? err.message : "데이터를 불러올 수 없습니다."
         );
       } finally {
         setLoading(false);
@@ -157,9 +177,9 @@ const WordDetailClient = ({ wordId }: WordDetailProps) => {
       context: ex.context,
     }));
 
-    const { error } = await supabase.from('examples').insert(exampleRows);
+    const { error } = await supabase.from("examples").insert(exampleRows);
     if (error) {
-      console.error('[ERROR] INSERT examples:', error);
+      console.error("[ERROR] INSERT examples:", error);
     }
   };
 
@@ -173,7 +193,7 @@ const WordDetailClient = ({ wordId }: WordDetailProps) => {
       word: value.word,
       meaning: value.meaning,
       pinyin: value.pinyin,
-      relation_type: 'synonym' as const,
+      relation_type: "synonym" as const,
     }));
 
     const antonymRows = antonyms.map((value) => ({
@@ -181,15 +201,15 @@ const WordDetailClient = ({ wordId }: WordDetailProps) => {
       word: value.word,
       meaning: value.meaning,
       pinyin: value.pinyin,
-      relation_type: 'antonym' as const,
+      relation_type: "antonym" as const,
     }));
 
     const { error } = await supabase
-      .from('word_relations')
+      .from("word_relations")
       .insert([...synonymRows, ...antonymRows]);
 
     if (error) {
-      console.error('[ERROR] INSERT word_relations:', error);
+      console.error("[ERROR] INSERT word_relations:", error);
     }
   };
 
@@ -206,26 +226,26 @@ const WordDetailClient = ({ wordId }: WordDetailProps) => {
   }
 
   const synonyms =
-    wordData.word_relations?.filter((rel) => rel.relation_type === 'synonym') ||
+    wordData.word_relations?.filter((rel) => rel.relation_type === "synonym") ||
     [];
 
   const antonyms =
-    wordData.word_relations?.filter((rel) => rel.relation_type === 'antonym') ||
+    wordData.word_relations?.filter((rel) => rel.relation_type === "antonym") ||
     [];
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(wordData.word);
-      toast.success('단어를 복사했어요. 다른 곳에 붙여넣어 보세요!');
+      toast.success("단어를 복사했어요. 다른 곳에 붙여넣어 보세요!");
     } catch (err) {
-      console.error('[ERROR] Failed copy:', err);
-      toast.error('복사에 실패했어요. 다시 시도해 주세요.');
+      console.error("[ERROR] Failed copy:", err);
+      toast.error("복사에 실패했어요. 다시 시도해 주세요.");
     }
   };
   return (
     <>
       <div className="text-center mb-8">
-        <HanziWriter characters={wordData.word.split('')} />
+        <HanziWriter characters={wordData.word.split("")} />
         <div className="text-2xl text-gray-600 mb-2">[{wordData.pinyin}]</div>
         <div className="text-xl text-gray-700 mb-4">
           {wordData.meaning} <span>{wordData.part_of_speech}</span>
@@ -253,12 +273,35 @@ const WordDetailClient = ({ wordId }: WordDetailProps) => {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="examples">
-          {wordData.examples && wordData.examples.length > 0 && (
-            <div className="p-4">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">
-                예문으로 학습하기
-              </h3>
-              {wordData.examples.map((example, index) => (
+          <div className="p-4">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">
+              예문으로 학습하기
+            </h3>
+            {isGeneratingExamples ? (
+              // 예문 생성 중 스켈레톤 UI
+              <>
+                {[1, 2].map((_, index) => (
+                  <div
+                    key={index}
+                    className="bg-gray-50 rounded-lg p-6 mb-5 animate-pulse"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <div className="h-6 bg-gray-200 rounded mb-2 w-3/4"></div>
+                        <div className="h-4 bg-gray-200 rounded mb-2 w-2/3"></div>
+                        <div className="h-5 bg-gray-200 rounded w-4/5"></div>
+                      </div>
+                    </div>
+                    <div className="h-6 bg-gray-200 rounded-full w-32"></div>
+                  </div>
+                ))}
+                <div className="text-center text-sm text-gray-500 mt-4">
+                  AI가 예문을 생성하고 있어요...
+                </div>
+              </>
+            ) : wordData.examples && wordData.examples.length > 0 ? (
+              // 예문이 있을 때
+              wordData.examples.map((example, index) => (
                 <div
                   key={index}
                   className="bg-gray-50 rounded-lg p-6 hover:bg-gray-100 transition-colors mb-5"
@@ -280,67 +323,131 @@ const WordDetailClient = ({ wordId }: WordDetailProps) => {
                     💡 {example.context}
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+              ))
+            ) : (
+              // 예문이 없을 때
+              <div className="bg-gray-50 rounded-lg p-6 text-center">
+                <div className="text-gray-400 mb-2">📚</div>
+                <p className="text-gray-600">예문이 준비되지 않았어요</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  곧 AI가 예문을 생성할 예정이에요
+                </p>
+              </div>
+            )}
+          </div>
         </TabsContent>
         <TabsContent value="related">
           <div className="p-4">
-            <div className="mb-5">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">
-                동의어/유의어
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {synonyms.map((word, index) => (
-                  <div
-                    key={index}
-                    className="bg-green-50 rounded-lg p-4 hover:bg-green-100 transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-lg font-medium text-gray-900">
-                          {word.word}
-                        </div>
-                        <div className="text-gray-600 text-sm">
-                          [{word.pinyin}]
-                        </div>
-                        <div className="text-gray-800 font-medium">
-                          {word.meaning}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+            {isGeneratingData ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">
+                  AI가 관련 단어를 생성하고 있어요...
+                </p>
               </div>
-            </div>
-            {/* 반대/대조 단어 */}
-            <div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">
-                반대/대조 단어
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {antonyms.map((word, index) => (
-                  <div
-                    key={index}
-                    className="bg-red-50 rounded-lg p-4 hover:bg-red-100 transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-lg font-medium text-gray-900">
-                          {word.word}
+            ) : (
+              <>
+                {/* 동의어/유의어 */}
+                <div className="mb-8">
+                  <h3 className="text-xl font-semibold text-gray-800 mb-4">
+                    동의어/유의어
+                  </h3>
+                  {synonyms.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {synonyms.map((word, index) => (
+                        <div
+                          key={index}
+                          className="bg-green-50 rounded-lg p-4 hover:bg-green-100 transition-colors cursor-pointer"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="text-lg font-medium text-gray-900">
+                                {word.word}
+                              </div>
+                              <div className="text-gray-600 text-sm">
+                                [{word.pinyin}]
+                              </div>
+                              <div className="text-gray-800 font-medium">
+                                {word.meaning}
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-gray-600 text-sm">
-                          [{word.pinyin}]
-                        </div>
-                        <div className="text-gray-800 font-medium">
-                          {word.meaning}
-                        </div>
-                      </div>
+                      ))}
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+                  ) : hasAttemptedGeneration ? (
+                    <div className="bg-gray-50 rounded-lg p-6 text-center">
+                      <div className="text-gray-400 mb-2">🤷‍♂️</div>
+                      <p className="text-gray-600">
+                        이 단어에는 동의어가 없어요
+                      </p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        일부 단어는 동의어를 찾기 어려울 수 있어요
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 rounded-lg p-6 text-center">
+                      <div className="text-gray-400 mb-2">📝</div>
+                      <p className="text-gray-600">
+                        동의어가 준비되지 않았어요
+                      </p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        곧 AI가 관련 단어를 생성할 예정이에요
+                      </p>
+                    </div>
+                  )}
+                </div>
+                {/* 반의어 */}
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-4">
+                    반의어
+                  </h3>
+                  {antonyms.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {antonyms.map((word, index) => (
+                        <div
+                          key={index}
+                          className="bg-red-50 rounded-lg p-4 hover:bg-red-100 transition-colors cursor-pointer"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="text-lg font-medium text-gray-900">
+                                {word.word}
+                              </div>
+                              <div className="text-gray-600 text-sm">
+                                [{word.pinyin}]
+                              </div>
+                              <div className="text-gray-800 font-medium">
+                                {word.meaning}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : hasAttemptedGeneration ? (
+                    <div className="bg-gray-50 rounded-lg p-6 text-center">
+                      <p className="text-gray-600">
+                        이 단어에는 반의어가 없어요🤔
+                      </p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        숫자나 고유명사 등은 반의어가 없을 수 있어요
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 rounded-lg p-6 text-center">
+                      <div className="text-gray-400 mb-2">🔄</div>
+                      <p className="text-gray-600">
+                        반의어가 준비되지 않았어요
+                      </p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        곧 AI가 관련 단어를 생성할 예정이에요
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </TabsContent>
       </Tabs>

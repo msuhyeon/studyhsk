@@ -29,7 +29,8 @@ const WordPage = async ({ params }: Props) => {
     .range(0, 27);
 
   if (error) {
-    console.error(`[ERROR] SELECT words data ${error}`);
+    console.error(`[ERROR] SELECT words data:`, error);
+    console.error(`[ERROR] Error details:`, JSON.stringify(error, null, 2));
     return <ErrorFallback />;
   }
 
