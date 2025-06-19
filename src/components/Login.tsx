@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase/client';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -44,17 +45,15 @@ const GoogleIcon = () => (
 
 const Login = () => {
   const user = useUserStore((state) => state.user);
-
   const handleLogin = async () => {
     // 브라우저에서 팝업 또는 리다이렉트를 통해 동작하므로 client component
-    const { data, error } = await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
     });
 
     if (error) {
       console.error(`[ERROR] Failed login: ${error}`);
-    } else {
-      console.log('로그인 성공!! 리다이렉트 하겠음', data.url);
+      toast.error('로그인 실패. 다시 시도해주세요.');
     }
   };
 
@@ -63,13 +62,15 @@ const Login = () => {
       {user ? (
         <div className="flex items-center">
           <Avatar className="rounded-lg">
-            <AvatarImage
-              className="mr-3"
-              src={user.user_metadata.avatar_url}
-              alt="profile image"
-              width="35"
-              height="35"
-            />
+            <Button variant="link">
+              <AvatarImage
+                className="mr-3"
+                src={user.user_metadata.avatar_url}
+                alt="profile image"
+                width="35"
+                height="35"
+              />
+            </Button>
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
           <Button variant={'outline'} onClick={() => logout()}>
