@@ -1,15 +1,7 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import Link from 'next/link';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import ClientWordList from './ClientWordList';
+import ChallengeButton from '@/components/word/ChallengeButton';
 import ErrorFallback from '@/components/ErrorFallback';
+import ClientWordList from './ClientWordList';
 
 type Props = {
   params: {
@@ -22,12 +14,12 @@ const WordPage = async ({ params }: Props) => {
 
   const supabase = createServerSupabaseClient();
   // 렌더링 속도가 느려 SSR 렌더링 시 28글자만 가져옴
-  const { data, error } = await supabase
+  const { data: words, error } = await supabase
     .from('words')
     .select('*')
-    .eq('level', level)
+    .filter('level', 'cs', `{${level}}`)
+    .not('level', 'cs', `{${level + 1}}`)
     .range(0, 27);
-
   if (error) {
     console.error(`[ERROR] SELECT words data:`, error);
     console.error(`[ERROR] Error details:`, JSON.stringify(error, null, 2));
@@ -38,27 +30,10 @@ const WordPage = async ({ params }: Props) => {
     <div>
       <h1 className="mb-10 text-2xl font-semibold">{level}급 단어</h1>
       <div className="flex justify-end mb-10 animate-wiggle">
-        <Button className="">HSK{level}급 도전💪</Button>
+        {/* 학습중 으로 상태 변경하려면... usestate 필요. */}
+        <ChallengeButton level={level} />
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-        {data?.map((word) => (
-          <Link key={word.id} href={`/word/${level}/${word.id}`}>
-            <Card className="hover:bg-sky-100">
-              <CardHeader className="text-center">
-                <CardTitle className="text-4xl">{word.word}</CardTitle>
-                <CardDescription className="text-xl">
-                  [{word.pinyin}]
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="text-center">
-                {word.meaning}{' '}
-                <span className="text-blue-400">{word.part_of_speech}</span>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
-        <ClientWordList level={Number(level)} />
-      </div>
+      <ClientWordList wordList={words} level={Number(level)} />
     </div>
   );
 };
