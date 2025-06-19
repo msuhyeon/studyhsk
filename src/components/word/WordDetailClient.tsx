@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useRef } from "react";
-import { supabase } from "@/lib/supabase/client";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, Link, Copy } from "lucide-react";
-import { toast } from "sonner";
-import Bookmark from "@/components/Bookmark";
-import PlayAudioButton from "@/components/word/PlayAudioButton";
-import HanziWriter from "@/components/word/HanziWriter";
-import WordDetailSkeleton from "./WordDetailSkeleton";
+import { useState, useEffect, useRef } from 'react';
+import { supabase } from '@/lib/supabase/client';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { BookOpen, Link, Copy } from 'lucide-react';
+import { toast } from 'sonner';
+import Bookmark from '@/components/Bookmark';
+import PlayAudioButton from '@/components/word/PlayAudioButton';
+import HanziWriter from '@/components/word/HanziWriter';
+import WordDetailSkeleton from './WordDetailSkeleton';
 
 type ExampleType = {
   sentence: string;
@@ -30,7 +30,7 @@ type RelationWordType = {
   relation_type?: RelationType;
 };
 
-type RelationType = "synonym" | "antonym";
+type RelationType = 'synonym' | 'antonym';
 
 type WordData = {
   id: string;
@@ -49,7 +49,7 @@ type WordDetailProps = {
 // 클라이언트 컴포넌트: 데이터 페칭 및 UI 렌더링
 const WordDetailClient = ({ wordId }: WordDetailProps) => {
   const [wordData, setWordData] = useState<WordData | null>(null);
-  const [audioUrl, setAudioUrl] = useState<string>("");
+  const [audioUrl, setAudioUrl] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isGeneratingData, setIsGeneratingData] = useState(false);
@@ -65,7 +65,7 @@ const WordDetailClient = ({ wordId }: WordDetailProps) => {
       try {
         // 1. 기본 단어 데이터 가져오기
         const { data, error } = await supabase
-          .from("words")
+          .from('words')
           .select(
             `
             *,
@@ -83,10 +83,10 @@ const WordDetailClient = ({ wordId }: WordDetailProps) => {
             )
           `
           )
-          .eq("id", wordId);
+          .eq('id', wordId);
 
         if (error || !data || data.length === 0) {
-          throw new Error("단어를 찾을 수 없습니다.");
+          throw new Error('단어를 찾을 수 없습니다.');
         }
 
         const wordInfo = data[0];
@@ -101,11 +101,11 @@ const WordDetailClient = ({ wordId }: WordDetailProps) => {
         let examples = wordInfo.examples || [];
         let synonyms =
           wordInfo.word_relations?.filter(
-            (rel: RelationWordType) => rel.relation_type === "synonym"
+            (rel: RelationWordType) => rel.relation_type === 'synonym'
           ) || [];
         let antonyms =
           wordInfo.word_relations?.filter(
-            (rel: RelationWordType) => rel.relation_type === "antonym"
+            (rel: RelationWordType) => rel.relation_type === 'antonym'
           ) || [];
 
         // 3. DB에 없을 경우 AI로 데이터 생성
@@ -134,11 +134,11 @@ const WordDetailClient = ({ wordId }: WordDetailProps) => {
             );
             synonyms = generatedData.synonyms.map((s) => ({
               ...s,
-              relation_type: "synonym" as const,
+              relation_type: 'synonym' as const,
             }));
             antonyms = generatedData.antonyms.map((a) => ({
               ...a,
-              relation_type: "antonym" as const,
+              relation_type: 'antonym' as const,
             }));
           }
           setIsGeneratingData(false);
@@ -152,7 +152,7 @@ const WordDetailClient = ({ wordId }: WordDetailProps) => {
         });
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "데이터를 불러올 수 없습니다."
+          err instanceof Error ? err.message : '데이터를 불러올 수 없습니다.'
         );
       } finally {
         setLoading(false);
@@ -177,9 +177,9 @@ const WordDetailClient = ({ wordId }: WordDetailProps) => {
       context: ex.context,
     }));
 
-    const { error } = await supabase.from("examples").insert(exampleRows);
+    const { error } = await supabase.from('examples').insert(exampleRows);
     if (error) {
-      console.error("[ERROR] INSERT examples:", error);
+      console.error('[ERROR] INSERT examples:', error);
     }
   };
 
@@ -193,7 +193,7 @@ const WordDetailClient = ({ wordId }: WordDetailProps) => {
       word: value.word,
       meaning: value.meaning,
       pinyin: value.pinyin,
-      relation_type: "synonym" as const,
+      relation_type: 'synonym' as const,
     }));
 
     const antonymRows = antonyms.map((value) => ({
@@ -201,15 +201,15 @@ const WordDetailClient = ({ wordId }: WordDetailProps) => {
       word: value.word,
       meaning: value.meaning,
       pinyin: value.pinyin,
-      relation_type: "antonym" as const,
+      relation_type: 'antonym' as const,
     }));
 
     const { error } = await supabase
-      .from("word_relations")
+      .from('word_relations')
       .insert([...synonymRows, ...antonymRows]);
 
     if (error) {
-      console.error("[ERROR] INSERT word_relations:", error);
+      console.error('[ERROR] INSERT word_relations:', error);
     }
   };
 
@@ -226,26 +226,26 @@ const WordDetailClient = ({ wordId }: WordDetailProps) => {
   }
 
   const synonyms =
-    wordData.word_relations?.filter((rel) => rel.relation_type === "synonym") ||
+    wordData.word_relations?.filter((rel) => rel.relation_type === 'synonym') ||
     [];
 
   const antonyms =
-    wordData.word_relations?.filter((rel) => rel.relation_type === "antonym") ||
+    wordData.word_relations?.filter((rel) => rel.relation_type === 'antonym') ||
     [];
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(wordData.word);
-      toast.success("단어를 복사했어요. 다른 곳에 붙여넣어 보세요!");
+      toast.success('단어를 복사했어요. 다른 곳에 붙여넣어 보세요!');
     } catch (err) {
-      console.error("[ERROR] Failed copy:", err);
-      toast.error("복사에 실패했어요. 다시 시도해 주세요.");
+      console.error('[ERROR] Failed copy:', err);
+      toast.error('복사에 실패했어요. 다시 시도해 주세요.');
     }
   };
   return (
     <>
       <div className="text-center mb-8">
-        <HanziWriter characters={wordData.word.split("")} />
+        <HanziWriter characters={wordData.word.split('')} />
         <div className="text-2xl text-gray-600 mb-2">[{wordData.pinyin}]</div>
         <div className="text-xl text-gray-700 mb-4">
           {wordData.meaning} <span>{wordData.part_of_speech}</span>
