@@ -3,7 +3,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BookOpen, Link, Copy } from 'lucide-react';
+import { BookOpen, Link, Copy, Info } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import Bookmark from '@/components/Bookmark';
 import PlayAudioButton from '@/components/word/PlayAudioButton';
@@ -47,7 +52,7 @@ type WordDetailProps = {
 };
 
 // 클라이언트 컴포넌트: 데이터 페칭 및 UI 렌더링
-const WordDetailClient = ({ wordId }: WordDetailProps) => {
+const ClientWordDetail = ({ wordId }: WordDetailProps) => {
   const [wordData, setWordData] = useState<WordData | null>(null);
   const [audioUrl, setAudioUrl] = useState<string>('');
   const [loading, setLoading] = useState(true);
@@ -56,6 +61,19 @@ const WordDetailClient = ({ wordId }: WordDetailProps) => {
   const [isGeneratingExamples, setIsGeneratingExamples] = useState(false);
   const [hasAttemptedGeneration, setHasAttemptedGeneration] = useState(false);
   const hasGeneratedData = useRef(false);
+
+  const partOfSpeechMap: { [key: string]: string } = {
+    명: '명사 (Noun)',
+    동: '동사 (Verb)',
+    형: '형용사 (Adjective)',
+    부: '부사 (Adverb)',
+    대: '대명사 (Pronoun)',
+    수: '수사 (Numeral)',
+    양: '양사 (Measure word)',
+    개: '개사 (Preposition)',
+    조: '조사 (Particle)',
+    연: '연결어 (Conjunction)',
+  };
 
   useEffect(() => {
     hasGeneratedData.current = false;
@@ -247,8 +265,16 @@ const WordDetailClient = ({ wordId }: WordDetailProps) => {
       <div className="text-center mb-8">
         <HanziWriter characters={wordData.word.split('')} />
         <div className="text-2xl text-gray-600 mb-2">[{wordData.pinyin}]</div>
-        <div className="text-xl text-gray-700 mb-4">
-          {wordData.meaning} <span>{wordData.part_of_speech}</span>
+        <div className="text-xl text-gray-700 mb-4 flex justify-center items-center gap-2">
+          {wordData.meaning} ({wordData.part_of_speech})
+          <Tooltip>
+            <TooltipTrigger className="text-sm font-medium text-gray-600">
+              <Info width={18} />
+            </TooltipTrigger>
+            <TooltipContent>
+              {partOfSpeechMap[wordData.part_of_speech]}
+            </TooltipContent>
+          </Tooltip>
         </div>
         <div className="flex justify-center gap-4 mb-6">
           <Bookmark />
@@ -455,4 +481,4 @@ const WordDetailClient = ({ wordId }: WordDetailProps) => {
   );
 };
 
-export default WordDetailClient;
+export default ClientWordDetail;
