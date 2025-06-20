@@ -67,7 +67,6 @@ const ClientWordList = ({
           .from('words')
           .select('*')
           .eq('level', level)
-          // .eq('level', `{${level}}`) // PostgreSQL 배열 문법
           .range(0, 999);
 
         if (error) {
@@ -91,6 +90,7 @@ const ClientWordList = ({
           checked={showNewOnly}
           onCheckedChange={setShowNewOnly}
         />
+        {/* 데이터 핸들링이 힘들어서 삭제 필요 */}
         <Label className="text-lg" htmlFor="new-word-mode">
           {level}급 신규 단어만 보기
           {showNewOnly && `(${newWords.length}개)`}
@@ -108,7 +108,9 @@ const ClientWordList = ({
               </CardHeader>
               <CardContent className="text-center">
                 {word.meaning}
-                <span className="text-blue-400">{word.part_of_speech}</span>
+                <span className="text-blue-400 ml-1">
+                  ({word.part_of_speech})
+                </span>
               </CardContent>
             </Card>
           </Link>
