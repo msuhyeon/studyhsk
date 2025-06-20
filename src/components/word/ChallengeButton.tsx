@@ -24,17 +24,16 @@ const ChallengeButton = ({ level }: ChallengeButtonProps) => {
     setIsLoading(true);
 
     try {
-      // DB에 학습 시작 상태 업데이트 (예시)
-      const { error } = await supabase
-        .from('user_progress') // 실제 테이블명에 맞게 수정
-        .upsert({
-          user_id: user.id,
-          level: level,
-          status: 'studying',
-          started_at: new Date().toISOString(),
-        });
+      // DB에 학습 시작 상태 업데이트
+      const { error } = await supabase.from('learning_progress').upsert({
+        user_id: user.id,
+        level: level,
+        learning_status: 'studying',
+        started_at: new Date().toISOString(),
+      });
 
       if (error) {
+        console.error(`[ERROR] UPSERT user_progress: ${JSON.stringify(error)}`);
         throw error;
       }
 
