@@ -1,4 +1,4 @@
-import WordDetailClient from '@/components/word/WordDetailClient';
+import ClientWordDetail from '@/components/word/ClientWordDetail';
 
 type Props = {
   params: {
@@ -12,7 +12,7 @@ const WordDetailPage = async ({ params }: Props) => {
 
   return (
     <section className="w-full p-6 bg-white">
-      <WordDetailClient wordId={id} />
+      <ClientWordDetail wordId={id} />
     </section>
   );
 };
