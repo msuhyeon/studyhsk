@@ -11,14 +11,12 @@ type Props = {
 
 const WordPage = async ({ params }: Props) => {
   const { level } = params;
-
   const supabase = createServerSupabaseClient();
   // 렌더링 속도가 느려 SSR 렌더링 시 28글자만 가져옴
   const { data: words, error } = await supabase
     .from('words')
     .select('*')
-    .filter('level', 'cs', `{${level}}`)
-    .not('level', 'cs', `{${level + 1}}`)
+    .eq('level', level)
     .range(0, 27);
   if (error) {
     console.error(`[ERROR] SELECT words data:`, error);

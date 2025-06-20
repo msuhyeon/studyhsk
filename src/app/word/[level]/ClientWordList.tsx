@@ -45,8 +45,7 @@ const ClientWordList = ({
       const { data, error } = await supabase
         .from('words')
         .select('*')
-        .filter('level', 'cs', `{${level}}`)
-        .not('level', 'cs', `{${level + 1}}`)
+        .eq('level', level)
         .range(28, 999);
 
       if (error) {
@@ -67,7 +66,8 @@ const ClientWordList = ({
         const { data, error } = await supabase
           .from('words')
           .select('*')
-          .eq('level', `{${level}}`) // PostgreSQL 배열 문법
+          .eq('level', level)
+          // .eq('level', `{${level}}`) // PostgreSQL 배열 문법
           .range(0, 999);
 
         if (error) {
@@ -97,8 +97,8 @@ const ClientWordList = ({
         </Label>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-        {(showNewOnly ? newWords : allWords).map((word) => (
-          <Link key={word.id} href={`/word/${level}/${word.id}`}>
+        {(showNewOnly ? newWords : allWords).map((word, index) => (
+          <Link key={`${word.id}${index}`} href={`/word/${level}/${word.id}`}>
             <Card className="hover:bg-sky-100">
               <CardHeader className="text-center">
                 <CardTitle className="text-4xl">{word.word}</CardTitle>
