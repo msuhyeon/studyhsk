@@ -9,11 +9,7 @@ type Props = {
 const QuizLevelPage = ({ params }: Props) => {
   const { level } = params;
 
-  return (
-    <div className="min-h-screen">
-      <ClientQuizPage level={level} />
-    </div>
-  );
+  return <ClientQuizPage level={level} />;
 };
 
 export default QuizLevelPage;
