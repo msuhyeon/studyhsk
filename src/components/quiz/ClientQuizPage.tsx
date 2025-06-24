@@ -190,7 +190,7 @@ const ClientQuizPage = ({ level }: Props) => {
     ((currentQuestionIndex + 1) / quizData.total_questions) * 100;
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
+    <div className="min-w-full lg:min-w-2xl max-w-2xl mx-auto p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center text-gray-600">
           <Clock className="w-5 h-5 mr-2" />
