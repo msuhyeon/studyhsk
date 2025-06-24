@@ -157,9 +157,7 @@ const ClientQuizPage = ({ level }: Props) => {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="text-center">
-          <div className="text-red-500 text-xl mb-4">
-            퀴즈를 불러올 수 없습니다
-          </div>
+          <div className="text-xl mb-4">퀴즈를 불러올 수 없습니다🫢</div>
           <button
             onClick={() => router.back()}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
@@ -169,6 +167,22 @@ const ClientQuizPage = ({ level }: Props) => {
         </div>
       </div>
     );
+  } else {
+    if (quizData.questions.length < 1) {
+      return (
+        <div className="flex flex-col justify-center items-center min-h-screen gap-4">
+          <div className="text-xl">
+            {level}급 퀴즈를 준비 중 이에요. 조금만 기다려주세요😅
+          </div>
+          <button
+            onClick={() => router.back()}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          >
+            돌아가기
+          </button>
+        </div>
+      );
+    }
   }
 
   const currentQuestion = quizData.questions[currentQuestionIndex];

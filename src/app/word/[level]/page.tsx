@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import ChallengeButton from '@/components/word/ChallengeButton';
 import ErrorFallback from '@/components/ErrorFallback';
@@ -18,10 +19,27 @@ const WordPage = async ({ params }: Props) => {
     .select('*')
     .eq('level', level)
     .range(0, 27);
+
   if (error) {
     console.error(`[ERROR] SELECT words data:`, error);
     console.error(`[ERROR] Error details:`, JSON.stringify(error, null, 2));
     return <ErrorFallback />;
+  }
+
+  if (words.length < 1) {
+    return (
+      <div className="flex flex-col justify-center items-center min-h-screen gap-4">
+        <div className="text-xl">
+          {level}급 단어를 준비 중 이에요. 조금만 기다려주세요😅
+        </div>
+        <Link
+          href="/"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+        >
+          홈으로 돌아가기
+        </Link>
+      </div>
+    );
   }
 
   return (
