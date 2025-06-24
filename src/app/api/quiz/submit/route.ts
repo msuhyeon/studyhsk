@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     // 1. quiz 테이블에 퀴즈 결과 저장
     const { data: quizData, error: quizError } = await supabase
-      .from('quiz')
+      .from('quizzes')
       .insert({
         user_id,
         level: submission.level,
