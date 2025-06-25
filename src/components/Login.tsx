@@ -46,12 +46,13 @@ const GoogleIcon = () => (
 const Login = () => {
   const user = useUserStore((state) => state.user);
   const handleLogin = async () => {
-    // 브라우저에서 팝업 또는 리다이렉트를 통해 동작하므로 client component
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-    });
-
-    if (error) {
+    try {
+      // 브라우저에서 팝업 또는 리다이렉트를 통해 동작하므로 client component
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+      });
+      console.log('OAuth 시작:', data, error);
+    } catch (error) {
       console.error(`[ERROR] Failed login: ${error}`);
       toast.error('로그인 실패. 다시 시도해주세요.');
     }

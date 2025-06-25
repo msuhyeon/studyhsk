@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase/client';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
 type UserAnswer = {
   question_id: string;
@@ -12,51 +13,57 @@ type QuizSubmission = {
   total_questions: number;
   correct_answers: number;
   score: number;
-  duration: number;
   answers: UserAnswer[];
 };
 
 export async function POST(request: NextRequest) {
   try {
     const submission: QuizSubmission = await request.json();
+    const cookieStore = await cookies();
 
-    // TODO: 테스트용 하드코딩 auth.id 가져오도록 수정 필요
-    const user_id = '9741253a-93a2-441a-9201-3cecfc5ad5c2';
+    // 쿠키 디버깅
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options);
+            });
+          },
+        },
+      }
+    );
 
-    // 1. quiz 테이블에 퀴즈 결과 저장
-    const { data: quizData, error: quizError } = await supabase
-      .from('quizzes')
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return NextResponse.json(
+        { error: '로그인이 필요합니다.' },
+        { status: 401 }
+      );
+    }
+
+    const { data: quiz_id, error: quizError } = await supabase
+      .from('quiz_logs')
       .insert({
-        user_id,
+        user_id: user.id,
         level: submission.level,
         total_questions: submission.total_questions,
         correct_answers: submission.correct_answers,
         score: submission.score,
-        duration: submission.duration,
       })
-      .select('id')
-      .single();
+      .select('id');
 
     if (quizError) {
       throw quizError;
-    }
-
-    const quiz_id = quizData.id;
-
-    // 2. quiz_logs 테이블에 각 문제별 결과 저장
-    const quizLogs = submission.answers.map((answer) => ({
-      quiz_id,
-      word_id: answer.question_id,
-      selected_answer: answer.selected_answer,
-      is_correct: answer.is_correct,
-    }));
-
-    const { error: logsError } = await supabase
-      .from('quiz_logs')
-      .insert(quizLogs);
-
-    if (logsError) {
-      throw logsError;
     }
 
     return NextResponse.json({

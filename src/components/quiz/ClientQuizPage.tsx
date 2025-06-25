@@ -44,7 +44,6 @@ const ClientQuizPage = ({ level }: Props) => {
   const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
   const [selectedChoice, setSelectedChoice] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [startTime] = useState(new Date());
 
   useEffect(() => {
     const fetchQuizData = async () => {
@@ -103,20 +102,16 @@ const ClientQuizPage = ({ level }: Props) => {
     setIsSubmitting(true);
 
     try {
-      const endTime = new Date();
-      const duration = Math.floor(
-        (endTime.getTime() - startTime.getTime()) / 1000
-      );
       const correctCount = finalAnswers.filter(
         (answer) => answer.is_correct
       ).length;
+
       const score = Math.round((correctCount / quizData.total_questions) * 100);
       const quizResult = {
         level,
         total_questions: quizData.total_questions,
         correct_answers: correctCount,
         score,
-        duration,
         answers: finalAnswers,
       };
       const response = await fetch('/api/quiz/submit', {
@@ -186,8 +181,7 @@ const ClientQuizPage = ({ level }: Props) => {
   }
 
   const currentQuestion = quizData.questions[currentQuestionIndex];
-  const progress =
-    ((currentQuestionIndex + 1) / quizData.total_questions) * 100;
+  const progress = (currentQuestionIndex / quizData.total_questions) * 100;
 
   return (
     <div className="min-w-full lg:min-w-2xl max-w-2xl mx-auto p-6">
