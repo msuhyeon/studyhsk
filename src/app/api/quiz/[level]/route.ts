@@ -11,46 +11,18 @@ export async function GET(request: NextRequest, { params }: Props) {
   const { level } = params;
   const { searchParams } = new URL(request.url);
   const count = parseInt(searchParams.get('count') || '10');
-  const levelMaxMap: Record<number, number> = {
-    1: 150,
-    2: 150,
-    3: 300,
-    4: 300,
-    5: 1200,
-    6: 1500,
-  };
-
-  const maxId = levelMaxMap[Number(level)];
 
   try {
-    // 필요한 단어 수 계산 (문제 5개 + 오답풀 15개)
-    const neededWords = count + 15;
-    const randomStart =
-      Math.floor(Math.random() * Math.max(1, maxId - neededWords)) + 1;
-
-    console.log('검색 범위:', randomStart, '~', randomStart + neededWords - 1);
-
-    // 디비에서 필요한 단어들 가져오기
-    const { data: allWords, error } = await supabase
-      .from('words')
-      .select('id, word, meaning, pinyin, word_index')
-      .eq('level', level)
-      .gte('word_index', randomStart)
-      .lte('word_index', randomStart + neededWords)
-      .order('word_index');
+    // RPC(Remote Procedure Call): supabase api에서 random()을 지원하지 않아서 프로시저로 만들어 호출
+    const { data: allWords, error } = await supabase.rpc('get_random_words', {
+      level: '3',
+      count,
+    });
 
     if (error) {
-      console.error(`왠 에러? ${error}`);
+      console.error(`[ERROR] SELECT Quiz: ${error}`);
       throw error;
     }
-
-    console.log('allWords 개수:', allWords?.length);
-    console.log(
-      '실제 word_index 범위:',
-      allWords?.[0]?.word_index,
-      '~',
-      allWords?.[allWords?.length - 1]?.word_index
-    );
 
     if (!allWords || allWords.length < count + 3) {
       return NextResponse.json(
@@ -59,15 +31,16 @@ export async function GET(request: NextRequest, { params }: Props) {
       );
     }
 
-    const questionWords = allWords.slice(0, count);
-    const answerPool = allWords.slice(count);
+    // 랜덤하게 섞기
+    const shuffledWords = [...allWords].sort(() => Math.random() - 0.5);
+    const questionWords = shuffledWords.slice(0, count);
+    const answerPool = shuffledWords.slice(count, count * 4);
 
+    // 현재 값이랑 다른거 중에서 랜덤하게 뽑아옴
+    // 정답이 항상 첫번째 일 순 없으니 정오답 순서 셔플
     const questions = questionWords.map((word) => {
-      // answerPool 복사본 만들어서 섞기 (원본 보호)
       const shuffledAnswers = [...answerPool].sort(() => Math.random() - 0.5);
       const wrongAnswers = shuffledAnswers.slice(0, 3);
-
-      // 선택지 생성 (정답 + 오답 3개)
       const choices = [word, ...wrongAnswers]
         .sort(() => Math.random() - 0.5)
         .map((w) => ({
@@ -80,7 +53,6 @@ export async function GET(request: NextRequest, { params }: Props) {
         question: word.word,
         pinyin: word.pinyin,
         choices,
-        correct_answer: word.id,
       };
     });
 
