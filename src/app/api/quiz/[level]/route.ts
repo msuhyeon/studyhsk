@@ -41,18 +41,19 @@ export async function GET(request: NextRequest, { params }: Props) {
     const questions = questionWords.map((word) => {
       const shuffledAnswers = [...answerPool].sort(() => Math.random() - 0.5);
       const wrongAnswers = shuffledAnswers.slice(0, 3);
-      const choices = [word, ...wrongAnswers]
-        .sort(() => Math.random() - 0.5)
-        .map((w) => ({
-          id: w.id,
-          text: w.meaning,
-        }));
+      const allChoices = [word, ...wrongAnswers];
+      const shuffledChoices = [...allChoices].sort(() => Math.random() - 0.5);
+      const choices = shuffledChoices.map((w) => ({
+        id: w.id,
+        text: w.meaning,
+      }));
 
       return {
         id: word.id,
         question: word.word,
         pinyin: word.pinyin,
         choices,
+        correct_answer: word.id,
       };
     });
 

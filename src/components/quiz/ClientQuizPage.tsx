@@ -129,7 +129,7 @@ const ClientQuizPage = ({ level }: Props) => {
       const result = await response.json();
 
       // 결과 페이지로 이동
-      router.push(`/quiz/result/${result.quiz_id}`);
+      router.push(`/quiz/result/${result.quiz.id}`);
     } catch (error) {
       console.error('[ERROR] Quiz submit:', error);
       toast.error('퀴즈 제출에 실패했습니다.');

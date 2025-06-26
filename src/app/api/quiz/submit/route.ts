@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: quiz_id, error: quizError } = await supabase
+    const { data: quiz, error: quizError } = await supabase
       .from('quiz_logs')
       .insert({
         user_id: user.id,
@@ -60,7 +60,8 @@ export async function POST(request: NextRequest) {
         correct_answers: submission.correct_answers,
         score: submission.score,
       })
-      .select('id');
+      .select('id')
+      .single();
 
     if (quizError) {
       throw quizError;
@@ -68,7 +69,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      quiz_id,
+      quiz,
       message: '퀴즈가 성공적으로 제출되었습니다.',
     });
   } catch (error) {

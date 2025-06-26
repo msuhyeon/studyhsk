@@ -6,11 +6,11 @@ type Props = {
   };
 };
 
-const QuizResultPage = ({ params }: Props) => {
-  const { id } = params;
+const QuizResultPage = async ({ params }: Props) => {
+  const { id } = await params;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <ClientQuizResult quizId={id} />
     </div>
   );
