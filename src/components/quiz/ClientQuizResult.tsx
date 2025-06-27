@@ -5,10 +5,11 @@ import { useRouter } from 'next/navigation';
 import {
   ArrowLeft,
   Trophy,
-  // Clock,
+  Clock,
   CheckCircle,
-  // XCircle,
+  XCircle,
   RotateCcw,
+  Loader2Icon,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -91,7 +92,7 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <Loader2Icon className="animate-spin" />
       </div>
     );
   }

@@ -44,6 +44,8 @@ const ClientQuizPage = ({ level }: Props) => {
   const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
   const [selectedChoice, setSelectedChoice] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
 
   useEffect(() => {
     const fetchQuizData = async () => {
@@ -56,6 +58,7 @@ const ClientQuizPage = ({ level }: Props) => {
         }
 
         setQuizData(data);
+        setStartTime(Date.now());
       } catch (error) {
         console.error('[ERROR] Quiz fetch:', error);
         toast.error(
@@ -70,6 +73,16 @@ const ClientQuizPage = ({ level }: Props) => {
 
     fetchQuizData();
   }, [level]);
+
+  useEffect(() => {
+    if (!startTime) return;
+
+    const timer = setInterval(() => {
+      setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [startTime]);
 
   const handleChoiceSelect = (choiceId: string) => {
     setSelectedChoice(choiceId);
@@ -107,11 +120,15 @@ const ClientQuizPage = ({ level }: Props) => {
       ).length;
 
       const score = Math.round((correctCount / quizData.total_questions) * 100);
+      const duration = startTime
+        ? Math.floor((Date.now() - startTime) / 1000)
+        : 0;
       const quizResult = {
         level,
         total_questions: quizData.total_questions,
         correct_answers: correctCount,
         score,
+        duration,
         answers: finalAnswers,
       };
       const response = await fetch('/api/quiz/submit', {
@@ -128,7 +145,6 @@ const ClientQuizPage = ({ level }: Props) => {
 
       const result = await response.json();
 
-      // 결과 페이지로 이동
       router.push(`/quiz/result/${result.quiz.id}`);
     } catch (error) {
       console.error('[ERROR] Quiz submit:', error);
@@ -189,6 +205,11 @@ const ClientQuizPage = ({ level }: Props) => {
         <div className="flex items-center text-gray-600">
           <Clock className="w-5 h-5 mr-2" />
           HSK {level}급 퀴즈
+        </div>
+        <div className="flex items-center text-gray-600">
+          <Clock className="w-4 h-4 mr-1" />
+          {Math.floor(elapsedTime / 60)}:
+          {(elapsedTime % 60).toString().padStart(2, '0')}
         </div>
       </div>
       {/* 진행 상황 */}
