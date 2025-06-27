@@ -13,6 +13,7 @@ type QuizSubmission = {
   total_questions: number;
   correct_answers: number;
   score: number;
+  duration: number;
   answers: UserAnswer[];
 };
 
@@ -59,6 +60,7 @@ export async function POST(request: NextRequest) {
         total_questions: submission.total_questions,
         correct_answers: submission.correct_answers,
         score: submission.score,
+        duration: submission.duration,
       })
       .select('id')
       .single();
