@@ -6,8 +6,8 @@ type Props = {
   };
 };
 
-const QuizLevelPage = ({ params }: Props) => {
-  const { level } = params;
+const QuizLevelPage = async ({ params }: Props) => {
+  const { level } = await params;
 
   return <ClientQuizPage level={level} />;
 };

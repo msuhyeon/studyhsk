@@ -197,7 +197,8 @@ const ClientQuizPage = ({ level }: Props) => {
   }
 
   const currentQuestion = quizData.questions[currentQuestionIndex];
-  const progress = (currentQuestionIndex / quizData.total_questions) * 100;
+  const progress =
+    ((currentQuestionIndex + 1) / quizData.total_questions) * 100;
 
   return (
     <div className="min-w-full lg:min-w-2xl max-w-2xl mx-auto p-6">
@@ -218,7 +219,7 @@ const ClientQuizPage = ({ level }: Props) => {
           <span>
             문제 {currentQuestionIndex + 1} / {quizData.total_questions}
           </span>
-          <span>{Math.round(progress)}% 완료</span>
+          <span>{Math.ceil(progress)}%</span>
         </div>
         <Progress value={progress} />
       </div>

@@ -14,7 +14,7 @@ export async function GET(request: NextRequest, { params }: Props) {
     const supabase = await createClient();
 
     const { data: quizData, error: quizError } = await supabase
-      .from('quiz_logs')
+      .from('quiz_attempts')
       .select('level, score, correct_answers')
       .eq('id', id)
       .single();

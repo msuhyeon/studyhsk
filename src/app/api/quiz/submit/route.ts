@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { data: quiz, error: quizError } = await supabase
-      .from('quiz_logs')
+      .from('quiz_attempts')
       .insert({
         user_id: user.id,
         level: submission.level,
