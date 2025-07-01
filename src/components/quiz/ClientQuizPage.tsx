@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Clock, CheckCircle, Loader2Icon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import QuizTimer from './QuizTimer';
 
 type Choice = {
   id: string;
@@ -14,6 +15,7 @@ type Choice = {
 
 type Question = {
   id: string;
+  word_id: string;
   question: string;
   pinyin: string;
   choices: Choice[];
@@ -23,6 +25,8 @@ type Question = {
 type QuizData = {
   level: string;
   total_questions: number;
+  quiz_type: string;
+  attempt_id: string;
   questions: Question[];
 };
 
@@ -45,7 +49,6 @@ const ClientQuizPage = ({ level }: Props) => {
   const [selectedChoice, setSelectedChoice] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [startTime, setStartTime] = useState<number | null>(null);
-  const [elapsedTime, setElapsedTime] = useState(0);
 
   useEffect(() => {
     const fetchQuizData = async () => {
@@ -74,19 +77,22 @@ const ClientQuizPage = ({ level }: Props) => {
     fetchQuizData();
   }, [level]);
 
-  useEffect(() => {
-    if (!startTime) return;
-
-    const timer = setInterval(() => {
-      setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [startTime]);
-
-  const handleChoiceSelect = (choiceId: string) => {
+  const handleChoiceSelect = useCallback((choiceId: string) => {
     setSelectedChoice(choiceId);
-  };
+  }, []);
+
+  const currentQuestion = useMemo(
+    () => quizData?.questions[currentQuestionIndex],
+    [quizData, currentQuestionIndex]
+  );
+
+  const progress = useMemo(
+    () =>
+      quizData
+        ? ((currentQuestionIndex + 1) / quizData.total_questions) * 100
+        : 0,
+    [currentQuestionIndex, quizData]
+  );
 
   const handleNextQuestion = () => {
     if (!selectedChoice || !quizData) return;
@@ -114,6 +120,22 @@ const ClientQuizPage = ({ level }: Props) => {
 
     setIsSubmitting(true);
 
+    // TODO: 배열로 문제 푼 정보를 가지고 있다가 배열로 넘겨야함
+    const quizAnswers = finalAnswers.map((userAnswer) => {
+      const question = quizData.questions.find(
+        (q) => q.id === userAnswer.question_id
+      );
+
+      return {
+        attempt_id: quizData.attempt_id,
+        word_id: question?.word_id || '',
+        quiz_type: quizData.quiz_type,
+        user_response: userAnswer.selected_answer,
+        correct_answer: question?.correct_answer || '',
+        is_correct: userAnswer.selected_answer === question?.correct_answer,
+      };
+    });
+
     try {
       const correctCount = finalAnswers.filter(
         (answer) => answer.is_correct
@@ -129,7 +151,7 @@ const ClientQuizPage = ({ level }: Props) => {
         correct_answers: correctCount,
         score,
         duration,
-        answers: finalAnswers,
+        answers: quizAnswers,
       };
       const response = await fetch('/api/quiz/submit', {
         method: 'POST',
@@ -196,9 +218,7 @@ const ClientQuizPage = ({ level }: Props) => {
     }
   }
 
-  const currentQuestion = quizData.questions[currentQuestionIndex];
-  const progress =
-    ((currentQuestionIndex + 1) / quizData.total_questions) * 100;
+  console.log('quizData-', quizData);
 
   return (
     <div className="min-w-full lg:min-w-2xl max-w-2xl mx-auto p-6">
@@ -207,17 +227,13 @@ const ClientQuizPage = ({ level }: Props) => {
           <Clock className="w-5 h-5 mr-2" />
           HSK {level}급 퀴즈
         </div>
-        <div className="flex items-center text-gray-600">
-          <Clock className="w-4 h-4 mr-1" />
-          {Math.floor(elapsedTime / 60)}:
-          {(elapsedTime % 60).toString().padStart(2, '0')}
-        </div>
+        <QuizTimer startTime={startTime} />
       </div>
       {/* 진행 상황 */}
       <div className="mb-8">
         <div className="flex justify-between text-sm text-gray-600 mb-2">
           <span>
-            문제 {currentQuestionIndex + 1} / {quizData.total_questions}
+            문제 {currentQuestionIndex + 1} / {quizData?.total_questions}
           </span>
           <span>{Math.ceil(progress)}%</span>
         </div>
@@ -227,14 +243,14 @@ const ClientQuizPage = ({ level }: Props) => {
       <div className="bg-white rounded-lg shadow-lg p-8 mb-6">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-gray-800 mb-2">
-            {currentQuestion.question}
+            {currentQuestion?.question}
           </h2>
           <p className="text-lg text-gray-600 mb-1">
-            [{currentQuestion.pinyin}]
+            [{currentQuestion?.pinyin}]
           </p>
         </div>
         <div className="space-y-3">
-          {currentQuestion.choices.map((answer, index) => (
+          {currentQuestion?.choices.map((answer, index) => (
             <button
               key={answer.id}
               onClick={() => handleChoiceSelect(answer.id)}
@@ -263,7 +279,7 @@ const ClientQuizPage = ({ level }: Props) => {
         >
           {isSubmitting ? (
             <p>제출 중...</p>
-          ) : currentQuestionIndex === quizData.total_questions - 1 ? (
+          ) : currentQuestionIndex === (quizData?.total_questions || 0) - 1 ? (
             <>
               <CheckCircle className="w-4 h-4 mr-2" />
               퀴즈 완료

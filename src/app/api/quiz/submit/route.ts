@@ -22,6 +22,8 @@ export async function POST(request: NextRequest) {
     const submission: QuizSubmission = await request.json();
     const cookieStore = await cookies();
 
+    console.log('====>', submission);
+
     // 쿠키 디버깅
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -52,21 +54,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: quiz, error: quizError } = await supabase
+    const { data: quiz, error: attemptsError } = await supabase
       .from('quiz_attempts')
       .insert({
         user_id: user.id,
         level: submission.level,
         total_questions: submission.total_questions,
-        correct_answers: submission.correct_answers,
         score: submission.score,
         duration: submission.duration,
       })
       .select('id')
       .single();
 
-    if (quizError) {
-      throw quizError;
+    if (attemptsError) {
+      throw attemptsError;
+    }
+
+    const { data, error: responsesError } = await supabase
+      .from('quiz_responses')
+      .insert({
+        attemp_id: quiz.id,
+        word_id: word.id,
+        quiz_type: quiz.type,
+        user_response: quiz.response,
+        correct_answers: submission.correct_answers,
+        is_correct: quiz.isCorrect,
+      });
+
+    if (responsesError) {
+      throw responsesError;
     }
 
     return NextResponse.json({
