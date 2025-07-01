@@ -49,7 +49,7 @@ export async function GET(request: NextRequest, { params }: Props) {
       }));
 
       return {
-        id: word.id,
+        word_id: word.id,
         question: word.word,
         pinyin: word.pinyin,
         choices,
