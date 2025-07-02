@@ -126,11 +126,13 @@ const ClientQuizPage = ({ level }: Props) => {
         (q) => q.id === userAnswer.question_id
       );
 
+      console.log('quizData: ', quizData);
+
       return {
         attempt_id: quizData.attempt_id,
         word_id: question?.word_id || '',
         quiz_type: quizData.quiz_type,
-        user_response: userAnswer.selected_answer,
+        user_answer: userAnswer.selected_answer,
         correct_answer: question?.correct_answer || '',
         is_correct: userAnswer.selected_answer === question?.correct_answer,
       };
@@ -161,11 +163,15 @@ const ClientQuizPage = ({ level }: Props) => {
         body: JSON.stringify(quizResult),
       });
 
+      console.log('res-', response);
+
       if (!response.ok) {
         throw new Error('퀴즈 제출에 실패했습니다.');
       }
 
       const result = await response.json();
+
+      console.log('result-', result);
 
       router.push(`/quiz/result/${result.quiz.id}`);
     } catch (error) {
