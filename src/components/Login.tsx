@@ -51,7 +51,6 @@ const Login = () => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
       });
-      console.log('OAuth 시작:', data, error);
     } catch (error) {
       console.error(`[ERROR] Failed login: ${error}`);
       toast.error('로그인 실패. 다시 시도해주세요.');
