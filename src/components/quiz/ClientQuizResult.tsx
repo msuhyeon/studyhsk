@@ -36,9 +36,20 @@ type QuizDetail = {
   };
 };
 
+type WrongAnswer = {
+  user_answer: string;
+  correct_answer: string;
+  word_id: string;
+  words: {
+    word: string;
+    pinyin: string;
+    meaning: string;
+  };
+};
+
 type QuizResultData = {
   quiz: QuizResult;
-  details: QuizDetail[];
+  wrongAnswers: WrongAnswer[];
 };
 
 type ClientQuizResultProps = {
@@ -49,7 +60,7 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
   const router = useRouter();
   const [resultData, setResultData] = useState<QuizResultData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showDetails, setShowDetails] = useState(false);
+  const [showWrongAnswers, setShowWrongAnswers] = useState(false);
 
   useEffect(() => {
     const fetchResult = async () => {
@@ -151,12 +162,14 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
           </div>
         </div>
         <div className="flex justify-center gap-4">
-          <button
-            onClick={() => setShowDetails(!showDetails)}
-            className="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            {showDetails ? '상세 결과 숨기기' : '상세 결과 보기'}
-          </button>
+          {resultData.wrongAnswers.length > 0 && (
+            <button
+              onClick={() => setShowWrongAnswers(!showWrongAnswers)}
+              className="bg-red-100 text-red-700 px-6 py-3 rounded-lg hover:bg-red-200 transition-colors"
+            >
+              {showWrongAnswers ? '틀린 문제 숨기기' : `틀린 문제 ${resultData.wrongAnswers.length}개 보기`}
+            </button>
+          )}
           <button
             onClick={() => router.push(`/quiz/${quiz.level}`)}
             className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
@@ -166,57 +179,56 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
           </button>
         </div>
       </div>
-      {/* 상세 결과 데이터 쌓기 */}
-      {/*
-      {showDetails && (
+      {/* 틀린 문제 요약 */}
+      {showWrongAnswers && resultData.wrongAnswers.length > 0 && (
         <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-6">
-            문제별 상세 결과
+          <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
+            <XCircle className="w-6 h-6 text-red-500 mr-2" />
+            틀린 문제 요약
           </h2>
           <div className="space-y-4">
-            {details.map((detail, index) => (
+            {resultData.wrongAnswers.map((wrongAnswer, index) => (
               <div
-                key={detail.id}
-                className={`p-4 rounded-lg border-l-4 ${
-                  detail.is_correct
-                    ? 'bg-green-50 border-green-500'
-                    : 'bg-red-50 border-red-500'
-                }`}
+                key={wrongAnswer.word_id}
+                className="p-4 rounded-lg border-l-4 bg-red-50 border-red-500"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center mb-2">
-                      <span className="text-lg font-medium text-gray-800 mr-2">
-                        {index + 1}. {detail.words.word}
+                      <span className="text-2xl font-bold text-gray-800 mr-3">
+                        {wrongAnswer.words.word}
                       </span>
-                      {detail.is_correct ? (
-                        <CheckCircle className="w-5 h-5 text-green-500" />
-                      ) : (
-                        <XCircle className="w-5 h-5 text-red-500" />
-                      )}
+                      <span className="text-gray-600 text-sm">
+                        [{wrongAnswer.words.pinyin}]
+                      </span>
                     </div>
-                    <div className="text-gray-600 text-sm mb-1">
-                      [{detail.words.pinyin}] ({detail.words.part_of_speech})
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
+                      <div className="bg-white p-3 rounded-lg border">
+                        <div className="text-sm text-gray-500 mb-1">정답</div>
+                        <div className="font-medium text-green-700">
+                          {wrongAnswer.correct_answer}
+                        </div>
+                      </div>
+                      <div className="bg-white p-3 rounded-lg border">
+                        <div className="text-sm text-gray-500 mb-1">내 답</div>
+                        <div className="font-medium text-red-700">
+                          {wrongAnswer.user_answer}
+                        </div>
+                      </div>
+                      <div className="bg-white p-3 rounded-lg border">
+                        <div className="text-sm text-gray-500 mb-1">뜻</div>
+                        <div className="font-medium text-gray-800">
+                          {wrongAnswer.words.meaning}
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-gray-800 font-medium">
-                      정답: {detail.words.meaning}
-                    </div>
-                  </div>
-                  <div
-                    className={`text-sm px-3 py-1 rounded-full ${
-                      detail.is_correct
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}
-                  >
-                    {detail.is_correct ? '정답' : '오답'}
                   </div>
                 </div>
               </div>
             ))}
           </div>
         </div>
-      )} */}
+      )}
     </div>
   );
 };

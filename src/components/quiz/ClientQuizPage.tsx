@@ -173,7 +173,7 @@ const ClientQuizPage = ({ level }: Props) => {
 
       console.log('result-', result);
 
-      router.push(`/quiz/result/${result.quiz.id}`);
+      router.push(`/quiz/result/${result.inputedQuiz.id}`);
     } catch (error) {
       console.error('[ERROR] Quiz submit:', error);
       toast.error('퀴즈 제출에 실패했습니다.');
