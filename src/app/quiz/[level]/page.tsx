@@ -1,9 +1,9 @@
 import ClientQuizPage from '@/components/quiz/ClientQuizPage';
 
 type Props = {
-  params: {
+  params: Promise<{
     level: string;
-  };
+  }>;
 };
 
 const QuizLevelPage = async ({ params }: Props) => {
