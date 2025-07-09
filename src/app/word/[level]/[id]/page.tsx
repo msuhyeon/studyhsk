@@ -1,9 +1,9 @@
 import ClientWordDetail from '@/components/word/ClientWordDetail';
 
 type Props = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 // 서버 컴포넌트: 파라미터만 전달

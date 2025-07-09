@@ -1,9 +1,9 @@
 import ClientQuizResult from '@/components/quiz/ClientQuizResult';
 
 type Props = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 const QuizResultPage = async ({ params }: Props) => {
