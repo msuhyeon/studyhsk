@@ -5,9 +5,9 @@ import ErrorFallback from '@/components/ErrorFallback';
 import ClientWordList from './ClientWordList';
 
 type Props = {
-  params: {
+  params: Promise<{
     level: string;
-  };
+  }>;
 };
 
 const WordPage = async ({ params }: Props) => {
