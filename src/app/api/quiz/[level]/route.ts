@@ -12,10 +12,18 @@ export async function GET(request: NextRequest, { params }: Props) {
   const { searchParams } = new URL(request.url);
   const count = parseInt(searchParams.get('count') || '10');
 
+  // 4급, 5급, 6급은 아직 데이터가 없음
+  if (['4', '5', '6'].includes(level)) {
+    return NextResponse.json(
+      { error: `${level}급 퀴즈는 아직 준비 중입니다. 현재 1급, 2급, 3급 퀴즈만 이용 가능합니다.` },
+      { status: 400 }
+    );
+  }
+
   try {
     // RPC(Remote Procedure Call): supabase api에서 random()을 지원하지 않아서 프로시저로 만들어 호출
     const { data: allWords, error } = await supabase.rpc('get_random_words', {
-      level: '3',
+      level: level,
       count,
     });
 
