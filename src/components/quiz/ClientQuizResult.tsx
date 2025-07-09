@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   ArrowLeft,
   Trophy,
-  Clock,
+  // Clock,
   CheckCircle,
   XCircle,
   RotateCcw,
@@ -21,19 +21,6 @@ type QuizResult = {
   score: number;
   duration: number;
   created_at: string;
-};
-
-type QuizDetail = {
-  id: string;
-  word_id: string;
-  selected_answer: string;
-  is_correct: boolean;
-  words: {
-    word: string;
-    pinyin: string;
-    meaning: string;
-    part_of_speech: string;
-  };
 };
 
 type WrongAnswer = {
@@ -167,7 +154,9 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
               onClick={() => setShowWrongAnswers(!showWrongAnswers)}
               className="bg-red-100 text-red-700 px-6 py-3 rounded-lg hover:bg-red-200 transition-colors"
             >
-              {showWrongAnswers ? '틀린 문제 숨기기' : `틀린 문제 ${resultData.wrongAnswers.length}개 보기`}
+              {showWrongAnswers
+                ? '틀린 문제 숨기기'
+                : `틀린 문제 ${resultData.wrongAnswers.length}개 보기`}
             </button>
           )}
           <button
@@ -187,7 +176,7 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
             틀린 문제 요약
           </h2>
           <div className="space-y-4">
-            {resultData.wrongAnswers.map((wrongAnswer, index) => (
+            {resultData.wrongAnswers.map((wrongAnswer) => (
               <div
                 key={wrongAnswer.word_id}
                 className="p-4 rounded-lg border-l-4 bg-red-50 border-red-500"
