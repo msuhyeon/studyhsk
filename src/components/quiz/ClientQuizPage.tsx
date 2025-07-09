@@ -208,6 +208,7 @@ const ClientQuizPage = ({ level }: Props) => {
     );
   } else {
     if (quizData.questions.length < 1) {
+      
       return (
         <div className="flex flex-col justify-center items-center min-h-screen gap-4">
           <div className="text-xl">

@@ -15,7 +15,9 @@ export async function GET(request: NextRequest, { params }: Props) {
   // 4급, 5급, 6급은 아직 데이터가 없음
   if (['4', '5', '6'].includes(level)) {
     return NextResponse.json(
-      { error: `${level}급 퀴즈는 아직 준비 중입니다. 현재 1급, 2급, 3급 퀴즈만 이용 가능합니다.` },
+      {
+        error: `${level}급 퀴즈는 아직 준비 중입니다. 현재 1급, 2급, 3급 퀴즈만 이용 가능합니다.`,
+      },
       { status: 400 }
     );
   }
