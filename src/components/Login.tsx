@@ -45,11 +45,14 @@ const GoogleIcon = () => (
 
 const Login = () => {
   const user = useUserStore((state) => state.user);
-  const handleLogin = async () => {
+  const handleLogin = () => {
     try {
       // 브라우저에서 팝업 또는 리다이렉트를 통해 동작하므로 client component
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      supabase.auth.signInWithOAuth({
         provider: 'google',
+        options: {
+          redirectTo: process.env.NEXT_PUBLIC_BASE_URL,
+        },
       });
     } catch (error) {
       console.error(`[ERROR] Failed login: ${error}`);
