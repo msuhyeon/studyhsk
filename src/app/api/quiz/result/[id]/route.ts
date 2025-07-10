@@ -15,7 +15,7 @@ export async function GET(request: NextRequest, { params }: Props) {
 
     const { data: quizData, error: quizError } = await supabase
       .from('quiz_attempts')
-      .select('level, score')
+      .select('level, score, duration')
       .eq('id', id)
       .single();
 
@@ -28,13 +28,28 @@ export async function GET(request: NextRequest, { params }: Props) {
       .from('quiz_responses')
       .select(
         `
+        word_id,
         user_answer,
         correct_answer,
-        word_id,
-        words (
+        question_word:words!word_id (
           word,
           pinyin,
           meaning
+        ),
+        user_word:words!user_answer (
+          word,
+          pinyin,
+          meaning
+        ),
+        correct_word:words!correct_answer (
+          word,
+          pinyin,
+          meaning
+        )
+        example_sentence:examples!word_id (
+          sentence,
+          meaning,
+          pinyin
         )
       `
       )
