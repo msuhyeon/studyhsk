@@ -55,10 +55,11 @@ export async function POST(request: NextRequest) {
     const insertData = submission.answers.map((quiz) => ({
       attempt_id: inputedQuiz.id,
       word_id: quiz.word_id,
-      quiz_type: quiz.quiz_type,
+      quiz_type: quiz.quiz_type || null,
       user_answer: quiz.user_answer,
       correct_answer: quiz.correct_answer,
       is_correct: quiz.is_correct,
+      user_id: user.id,
     }));
 
     const { error } = await supabase
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
       .select('id');
 
     if (error) {
-      console.error(`[ERROR]: INSERT quiz_responses ${error}`);
+      console.error(`[ERROR]: INSERT quiz_responses ${error.message}`);
       throw error;
     }
 
@@ -77,7 +78,6 @@ export async function POST(request: NextRequest) {
       message: '퀴즈가 성공적으로 제출되었습니다.',
     });
   } catch (error) {
-    console.log(' 여기라고?', error);
     console.error('[ERROR] Quiz submit:', error);
     return NextResponse.json(
       {

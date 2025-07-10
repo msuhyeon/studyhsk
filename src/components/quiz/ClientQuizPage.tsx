@@ -34,6 +34,7 @@ type UserAnswer = {
   question_id: string;
   selected_answer: string;
   is_correct: boolean;
+  word_id: string;
 };
 
 type Props = {
@@ -53,7 +54,7 @@ const ClientQuizPage = ({ level }: Props) => {
   useEffect(() => {
     const fetchQuizData = async () => {
       try {
-        const response = await fetch(`/api/quiz/${level}?count=5`);
+        const response = await fetch(`/api/quiz/${level}?count=2`);
         const data = await response.json();
 
         if (!response.ok) {
@@ -77,15 +78,10 @@ const ClientQuizPage = ({ level }: Props) => {
     fetchQuizData();
   }, [level]);
 
-  const handleChoiceSelect = useCallback((choiceId: string) => {
+  const handleChoiceSelect = (choiceId: string) => {
     setSelectedChoice(choiceId);
-  }, []);
-
-  const currentQuestion = useMemo(
-    () => quizData?.questions[currentQuestionIndex],
-    [quizData, currentQuestionIndex]
-  );
-
+  };
+  const currentQuestion = quizData?.questions[currentQuestionIndex];
   const progress = useMemo(
     () =>
       quizData
@@ -103,6 +99,7 @@ const ClientQuizPage = ({ level }: Props) => {
       question_id: currentQuestion.id,
       selected_answer: selectedChoice,
       is_correct: isCorrect,
+      word_id: currentQuestion.word_id,
     };
 
     setUserAnswers((data) => [...data, userAnswer]);
@@ -126,11 +123,9 @@ const ClientQuizPage = ({ level }: Props) => {
         (q) => q.id === userAnswer.question_id
       );
 
-      console.log('quizData: ', quizData);
-
       return {
         attempt_id: quizData.attempt_id,
-        word_id: question?.word_id || '',
+        word_id: userAnswer.word_id || '',
         quiz_type: quizData.quiz_type,
         user_answer: userAnswer.selected_answer,
         correct_answer: question?.correct_answer || '',
@@ -155,6 +150,7 @@ const ClientQuizPage = ({ level }: Props) => {
         duration,
         answers: quizAnswers,
       };
+
       const response = await fetch('/api/quiz/submit', {
         method: 'POST',
         headers: {
@@ -163,15 +159,11 @@ const ClientQuizPage = ({ level }: Props) => {
         body: JSON.stringify(quizResult),
       });
 
-      console.log('res-', response);
-
       if (!response.ok) {
         throw new Error('퀴즈 제출에 실패했습니다.');
       }
 
       const result = await response.json();
-
-      console.log('result-', result);
 
       router.push(`/quiz/result/${result.inputedQuiz.id}`);
     } catch (error) {
@@ -208,7 +200,6 @@ const ClientQuizPage = ({ level }: Props) => {
     );
   } else {
     if (quizData.questions.length < 1) {
-      
       return (
         <div className="flex flex-col justify-center items-center min-h-screen gap-4">
           <div className="text-xl">
@@ -224,8 +215,6 @@ const ClientQuizPage = ({ level }: Props) => {
       );
     }
   }
-
-  console.log('quizData-', quizData);
 
   return (
     <div className="min-w-full lg:min-w-2xl max-w-2xl mx-auto p-6">
