@@ -67,10 +67,14 @@ export async function GET(request: NextRequest, { params }: Props) {
       };
     });
 
+    // TODO: 다양한 타입 처리 필요
+    // meaning: 뜻 맞추기
+    // pronunciation: 발음 맞추기
     return NextResponse.json({
       level,
       total_questions: count,
       questions,
+      quiz_type: 'meaning',
     });
   } catch (error) {
     console.error('[ERROR] Quiz API:', error);
