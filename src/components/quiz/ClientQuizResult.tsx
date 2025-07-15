@@ -5,15 +5,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { formatDuration } from '@/lib/utils';
 import {
-  ArrowLeft,
   Trophy,
   Clock,
   CheckCircle,
   XCircle,
-  RotateCcw,
   Loader2Icon,
   Target,
-  ChevronDown,
 } from 'lucide-react';
 import {
   Accordion,
@@ -47,7 +44,7 @@ type QuestionWordType = {
 };
 
 type WrongAnswer = {
-  user_answer: WordType;
+  user_word: WordType;
   question_word: QuestionWordType;
   example: string;
   word_id: string;
@@ -67,19 +64,7 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
   const router = useRouter();
   const [quizResult, setQuizResult] = useState<QuizResultData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showWrongAnswers, setShowWrongAnswers] = useState(false);
-
-  const [openItems, setOpenItems] = useState(new Set());
-
-  const toggleAccordion = (id: string) => {
-    const newOpenItems = new Set(openItems);
-    if (newOpenItems.has(id)) {
-      newOpenItems.delete(id);
-    } else {
-      newOpenItems.add(id);
-    }
-    setOpenItems(newOpenItems);
-  };
+  // const [openItems, setOpenItems] = useState(new Set());
 
   useEffect(() => {
     const fetchResult = async () => {
@@ -107,17 +92,17 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
     fetchResult();
   }, [quizId]);
 
-  const getScoreColor = (score: number) => {
-    if (score >= 90) return 'text-green-600';
-    if (score >= 70) return 'text-yellow-600';
-    return 'text-red-600';
-  };
+  // const getScoreColor = (score: number) => {
+  //   if (score >= 90) return 'text-green-600';
+  //   if (score >= 70) return 'text-yellow-600';
+  //   return 'text-red-600';
+  // };
 
-  const getScoreEmoji = (score: number) => {
-    if (score >= 90) return '🎉';
-    if (score >= 70) return '👍';
-    return '💪';
-  };
+  // const getScoreEmoji = (score: number) => {
+  //   if (score >= 90) return '🎉';
+  //   if (score >= 70) return '👍';
+  //   return '💪';
+  // };
 
   if (loading) {
     return (
@@ -144,6 +129,8 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
   }
 
   const { quiz, wrongAnswers } = quizResult;
+
+  console.log('wrongAnswers?', wrongAnswers);
 
   return (
     <div className="max-w-4xl mx-auto p-6">
