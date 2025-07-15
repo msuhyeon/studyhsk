@@ -31,10 +31,9 @@ type QuizData = {
 };
 
 type UserAnswer = {
-  question_word_id: string; // TODO: 필요한가?
+  question_word_id: string;
   user_choice_id: string;
   is_correct: boolean;
-  selected_meaning?: string; //TODO: 테스트 후 제거
 };
 
 type Props = {
@@ -133,59 +132,6 @@ const ClientQuizPage = ({ level }: Props) => {
 
     const finalAnswers = userAnswers;
 
-    // api route에 이런 구조로 보내야함
-    // {
-    //   user_id: 'user123',
-    //   level: '2',
-    //   quiz_type: 'meaning',
-    //   duration: 45,
-    //   questions: [
-    //     {
-    //       word_id: '4de5993d-b75b-4a2b-b89c-e3247f420b3e',
-    //       user_choice_id: 'af23c257-3c2e-43f4-a579-067ca688ab75',
-    //       is_correct: false,
-    //     },
-    //     {
-    //       word_id: '94e6a6bd-4202-44e7-a88c-a49d625d239f',
-    //       user_choice_id: '94e6a6bd-4202-44e7-a88c-a49d625d239f',
-    //       is_correct: true,
-    //     },
-    //   ],
-    // };
-
-    console.log('userAnswers?', userAnswers);
-    console.log('quizData?', quizData);
-
-    // const quizAnswers = userAnswers.map((answer) => {
-    // const question = quizData.queztio
-    // });
-
-    // // TODO: 배열로 문제 푼 정보를 가지고 있다가 배열로 넘겨야함
-    // const quizAnswers = finalAnswers.map((userAnswer) => {
-    //   const question = quizData.questions.find(
-    //     (q) => q.id === userAnswer.question_id
-    //   );
-
-    //   console.log(`userAnswer:`, userAnswer);
-    //   console.log(`question:`, question);
-
-    //   // console.log('user_answer--->', userAnswer);
-    //   // console.log('correct_answer====>', question);
-    //   // console.log(
-    //   //   'is_correct: ',
-    //   //   userAnswer.user_answer === question?.correct_answer
-    //   // );
-
-    //   return {
-    //     attempt_id: quizData.attempt_id,
-    //     word_id: question?.word_id || '',
-    //     quiz_type: quizData.quiz_type,
-    //     user_answer: userAnswer.user_answer,
-    //     correct_answer: question?.correct_answer || '',
-    //     is_correct: userAnswer.user_answer === question?.correct_answer,
-    //   };
-    // });
-
     try {
       const correctCount = finalAnswers.filter(
         (answer) => answer.is_correct
@@ -195,15 +141,11 @@ const ClientQuizPage = ({ level }: Props) => {
         ? Math.floor((Date.now() - startTime) / 1000)
         : 0;
       const quizResult = {
-        level,
-        total_questions: quizData.total_questions,
-        correct_answers: correctCount,
         score,
         duration,
+        ...quizData,
         questions: userAnswers,
       };
-
-      console.log('quizReuslt-', quizResult);
 
       const response = await fetch('/api/quiz/submit', {
         method: 'POST',
@@ -212,8 +154,6 @@ const ClientQuizPage = ({ level }: Props) => {
         },
         body: JSON.stringify(quizResult),
       });
-
-      console.log('quizResult: ', quizResult);
 
       if (!response.ok) {
         throw new Error('퀴즈 제출에 실패했습니다.');

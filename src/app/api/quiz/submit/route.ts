@@ -2,12 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
 type UserAnswer = {
-  attempt_id: string;
-  word_id: string;
-  quiz_type?: string;
-  correct_answer: string;
-  user_answer: string;
+  question_word_id: string; // TODO: 필요한가?
+  user_choice_id: string;
   is_correct: boolean;
+  quiz_type: string;
 };
 
 type QuizSubmission = {
@@ -16,7 +14,7 @@ type QuizSubmission = {
   correct_answers: number;
   score: number;
   duration: number;
-  answers: UserAnswer[];
+  questions: UserAnswer[];
 };
 
 export async function POST(request: NextRequest) {
@@ -52,24 +50,12 @@ export async function POST(request: NextRequest) {
       throw attemptsError;
     }
 
-    console.log('submission: ', submission);
-
-    console.log('여기: ', {
+    const insertData = submission.questions.map((quiz) => ({
       attempt_id: inputedQuiz.id,
-      word_id: quiz.word_id,
+      word_id: quiz.question_word_id,
       quiz_type: quiz.quiz_type || null,
-      user_answer: quiz.user_answer, // uuid
-      correct_answer: quiz.correct_answer, // uuid
-      is_correct: quiz.is_correct,
-      user_id: user.id,
-    });
-
-    const insertData = submission.answers.map((quiz) => ({
-      attempt_id: inputedQuiz.id,
-      word_id: quiz.word_id,
-      quiz_type: quiz.quiz_type || null,
-      user_answer: quiz.user_answer, // uuid
-      correct_answer: quiz.correct_answer, // uuid
+      user_answer: quiz.user_choice_id, // uuid
+      correct_answer: quiz.question_word_id, // uuid
       is_correct: quiz.is_correct,
       user_id: user.id,
     }));
