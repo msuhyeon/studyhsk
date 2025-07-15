@@ -98,14 +98,11 @@ const ClientQuizPage = ({ level }: Props) => {
   const handleNextQuestion = () => {
     if (!selectedChoice || !quizData) return;
 
-    console.log('selectedChoice.id>>', selectedChoice);
-    console.log('currentQuestion', quizData.questions[currentQuestionIndex]);
-
     const currentQuestion = quizData.questions[currentQuestionIndex];
     const isCorrect = selectedChoice.id === currentQuestion.word_id;
     const userAnswer: UserAnswer = {
       user_choice_id: selectedChoice.id,
-      selected_meaning: selectedChoice.meaning,
+      // selected_meaning: selectedChoice.meaning,
       question_word_id: currentQuestion.word_id,
       is_correct: isCorrect,
     };

@@ -32,8 +32,6 @@ const ClientUserProvider = () => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth event:', event, 'Session:', !!session?.user);
-
       if (event === 'SIGNED_IN' && session?.user && !hasShownLoginToast) {
         const user = session.user;
         setUser(user);

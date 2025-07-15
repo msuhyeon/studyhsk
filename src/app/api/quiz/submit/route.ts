@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
 type UserAnswer = {
-  question_word_id: string; // TODO: 필요한가?
+  question_word_id: string;
   user_choice_id: string;
   is_correct: boolean;
   quiz_type: string;

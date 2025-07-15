@@ -143,7 +143,7 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
     );
   }
 
-  const { quiz } = quizResult;
+  const { quiz, wrongAnswers } = quizResult;
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -180,93 +180,111 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
           </div>
         </div>
         {/* 틀린 문제 섹션 */}
-        <div className="bg-white rounded-lg border">
-          <div className="p-6 border-b">
-            <h2 className="text-xl font-semibold flex items-center">
-              <XCircle className="text-red-500 mr-2" size={24} />
-              틀린 문제
-              <span className="ml-2 bg-red-500 text-white text-sm px-2 py-1 rounded">
-                {quizResult.wrongAnswers.length}개
-              </span>
-            </h2>
-          </div>
-          <div className="p-6">
-            <div className="space-y-4">
-              <Accordion type="single" collapsible className="w-full">
-                {quizResult.wrongAnswers.map((question, index) => (
-                  <AccordionItem
-                    value={`item-${Number(index) + 1}`}
-                    key={index}
-                  >
-                    <AccordionTrigger>
-                      <div className="flex items-center space-x-4">
-                        <span className="bg-red-500 text-white text-sm px-2 py-1 rounded">
-                          문제
-                          {/* 번호는 인덱스? 굳이 문제 번호를 보여줘야할까...*/}
-                        </span>
-                        <div>
-                          <span className="text-2xl font-bold mr-3">
-                            {question.question_word.word}
+        {wrongAnswers.length > 0 ? (
+          <div className="bg-white rounded-lg border">
+            <div className="p-6 border-b">
+              <h2 className="text-xl font-semibold flex items-center">
+                <XCircle className="text-red-500 mr-2" size={24} />
+                틀린 문제
+                <span className="ml-2 bg-red-500 text-white text-sm px-2 py-1 rounded">
+                  {wrongAnswers.length}개
+                </span>
+              </h2>
+            </div>
+            <div className="p-6">
+              <div className="space-y-4">
+                <Accordion type="single" collapsible className="w-full">
+                  {wrongAnswers.map((question, index) => (
+                    <AccordionItem
+                      value={`item-${Number(index) + 1}`}
+                      key={index}
+                    >
+                      <AccordionTrigger>
+                        <div className="flex items-center space-x-4">
+                          <span className="bg-red-500 text-white text-sm px-2 py-1 rounded">
+                            문제
                           </span>
-                          <span className="text-gray-600">
-                            [{question.question_word.pinyin}]
-                          </span>
-                        </div>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="flex flex-col gap-4 text-balance">
-                      <div className="p-6 bg-white border-t space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="border border-green-200 bg-green-50 rounded-lg p-4">
-                            <div className="flex items-center mb-2">
-                              <CheckCircle
-                                className="text-green-600 mr-2"
-                                size={18}
-                              />
-                              <span className="font-medium text-green-700">
-                                정답
-                              </span>
-                            </div>
-                            <div className="text-lg font-semibold text-green-800">
-                              {question.question_word.meaning}
-                            </div>
+                          <div>
+                            <span className="text-2xl font-bold mr-3">
+                              {question.question_word.word}
+                            </span>
+                            <span className="text-gray-600">
+                              [{question.question_word.pinyin}]
+                            </span>
                           </div>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="flex flex-col gap-4 text-balance">
+                        <div className="p-6 bg-white border-t space-y-6">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="border border-green-200 bg-green-50 rounded-lg p-4">
+                              <div className="flex items-center mb-2">
+                                <CheckCircle
+                                  className="text-green-600 mr-2"
+                                  size={18}
+                                />
+                                <span className="font-medium text-green-700">
+                                  정답
+                                </span>
+                              </div>
+                              <div className="text-lg font-semibold text-green-800">
+                                {question.question_word.meaning}
+                              </div>
+                            </div>
 
-                          <div className="border border-red-200 bg-red-50 rounded-lg p-4">
-                            <div className="flex items-center mb-2">
-                              <XCircle
-                                className="text-red-600 mr-2"
-                                size={18}
-                              />
-                              <span className="font-medium text-red-700">
-                                내가 선택한 답
-                              </span>
-                            </div>
-                            <div className="text-lg font-semibold text-red-800">
-                              {question.user_word.meaning}
+                            <div className="border border-red-200 bg-red-50 rounded-lg p-4">
+                              <div className="flex items-center mb-2">
+                                <XCircle
+                                  className="text-red-600 mr-2"
+                                  size={18}
+                                />
+                                <span className="font-medium text-red-700">
+                                  내가 선택한 답
+                                </span>
+                              </div>
+                              <div className="text-lg font-semibold text-red-800">
+                                {question.user_word.meaning}
+                              </div>
                             </div>
                           </div>
+                          <div className="border border-blue-200 bg-blue-50 rounded-lg p-4">
+                            <h4 className="font-medium text-blue-700 mb-2 flex items-center">
+                              📖 예문
+                            </h4>
+                            <p className="text-blue-800">{question.example}</p>
+                          </div>
                         </div>
-                        <div className="border border-blue-200 bg-blue-50 rounded-lg p-4">
-                          <h4 className="font-medium text-blue-700 mb-2 flex items-center">
-                            📖 예문
-                          </h4>
-                          <p className="text-blue-800">{question.example}</p>
-                        </div>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          // 완벽한 점수일 때 축하 섹션
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+            <div className="p-8 text-center">
+              <div className="text-6xl mb-4">🎉</div>
+              <h2 className="text-2xl font-bold text-green-800 mb-2">
+                완벽합니다!
+              </h2>
+              <p className="text-green-700 mb-4">
+                모든 문제를 정확히 맞혔습니다. 대단해요!
+              </p>
+              <div className="inline-flex items-center bg-green-100 text-green-800 px-4 py-2 rounded-full">
+                <Trophy className="mr-2" size={20} />
+                <span className="font-semibold">Perfect Score!</span>
+              </div>
+            </div>
+          </div>
+        )}
         <div className="flex justify-center">
           <Link
             href={`/quiz/${quiz.level}`}
             className="bg-blue-500 hover:bg-blue-600 text-white py-3 px-12 rounded-lg font-medium transition-colors"
           >
-            다시 풀기
+            다음 퀴즈 도전
           </Link>
           {/* TODO: 틀린 단어만 모아논 페이지를 만들어서 연결하는 버튼 고려 */}
         </div>
