@@ -28,29 +28,22 @@ export async function GET(request: NextRequest, { params }: Props) {
       .from('quiz_responses')
       .select(
         `
-        word_id,
-        user_answer,
-        correct_answer,
-        question_word:words!word_id (
-          word,
-          pinyin,
-          meaning
-        ),
-        user_word:words!user_answer (
-          word,
-          pinyin,
-          meaning
-        ),
-        correct_word:words!correct_answer (
-          word,
-          pinyin,
-          meaning
-        )
-        example_sentence:examples!word_id (
-          sentence,
-          meaning,
-          pinyin
-        )
+      word_id,
+      user_word:words!user_answer (
+        word,
+        pinyin,
+        meaning
+      ),
+      correct_word:words!correct_answer (
+        word,
+        pinyin,
+        meaning
+      ),
+      example_sentence:examples!word_id (
+        sentence,
+        meaning,
+        pinyin
+      )
       `
       )
       .eq('attempt_id', id)
