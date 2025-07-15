@@ -31,14 +31,19 @@ type QuizData = {
 };
 
 type UserAnswer = {
-  question_id: string;
-  selected_answer: string;
+  question_word_id: string; // TODO: 필요한가?
+  user_choice_id: string;
   is_correct: boolean;
-  word_id: string;
+  selected_meaning?: string; //TODO: 테스트 후 제거
 };
 
 type Props = {
   level: string;
+};
+
+type SelectedAnswerType = {
+  id: string;
+  meaning: string;
 };
 
 const ClientQuizPage = ({ level }: Props) => {
@@ -47,7 +52,8 @@ const ClientQuizPage = ({ level }: Props) => {
   const [loading, setLoading] = useState(true);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
-  const [selectedChoice, setSelectedChoice] = useState<string>('');
+  const [selectedChoice, setSelectedChoice] =
+    useState<SelectedAnswerType | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [startTime, setStartTime] = useState<number | null>(null);
 
@@ -78,8 +84,8 @@ const ClientQuizPage = ({ level }: Props) => {
     fetchQuizData();
   }, [level]);
 
-  const handleChoiceSelect = (choiceId: string) => {
-    setSelectedChoice(choiceId);
+  const handleChoiceSelect = (choiceId: string, text: string) => {
+    setSelectedChoice({ id: choiceId, meaning: text });
   };
   const currentQuestion = quizData?.questions[currentQuestionIndex];
   const progress = useMemo(
@@ -93,51 +99,97 @@ const ClientQuizPage = ({ level }: Props) => {
   const handleNextQuestion = () => {
     if (!selectedChoice || !quizData) return;
 
+    console.log('selectedChoice.id>>', selectedChoice);
+    console.log('currentQuestion', quizData.questions[currentQuestionIndex]);
+
     const currentQuestion = quizData.questions[currentQuestionIndex];
-    const isCorrect = selectedChoice === currentQuestion.correct_answer;
+    const isCorrect = selectedChoice.id === currentQuestion.word_id;
     const userAnswer: UserAnswer = {
-      question_id: currentQuestion.id,
-      selected_answer: selectedChoice,
+      user_choice_id: selectedChoice.id,
+      selected_meaning: selectedChoice.meaning,
+      question_word_id: currentQuestion.word_id,
       is_correct: isCorrect,
-      word_id: currentQuestion.word_id,
     };
 
     setUserAnswers((data) => [...data, userAnswer]);
-    setSelectedChoice('');
+    setSelectedChoice(null);
 
     if (currentQuestionIndex < quizData.questions.length - 1) {
       setCurrentQuestionIndex((data) => data + 1);
-    } else {
-      handleQuizComplete([...userAnswers, userAnswer]);
     }
   };
 
-  const handleQuizComplete = async (finalAnswers: UserAnswer[]) => {
+  // userAnswers가 업데이트될 때마다 퀴즈 완료 여부 체크
+  useEffect(() => {
+    if (quizData && userAnswers.length === quizData.total_questions) {
+      handleQuizComplete();
+    }
+  }, [userAnswers, quizData]);
+
+  const handleQuizComplete = async () => {
     if (!quizData) return;
 
     setIsSubmitting(true);
 
-    // TODO: 배열로 문제 푼 정보를 가지고 있다가 배열로 넘겨야함
-    const quizAnswers = finalAnswers.map((userAnswer) => {
-      const question = quizData.questions.find(
-        (q) => q.id === userAnswer.question_id
-      );
+    const finalAnswers = userAnswers;
 
-      return {
-        attempt_id: quizData.attempt_id,
-        word_id: userAnswer.word_id || '',
-        quiz_type: quizData.quiz_type,
-        user_answer: userAnswer.selected_answer,
-        correct_answer: question?.correct_answer || '',
-        is_correct: userAnswer.selected_answer === question?.correct_answer,
-      };
-    });
+    // api route에 이런 구조로 보내야함
+    // {
+    //   user_id: 'user123',
+    //   level: '2',
+    //   quiz_type: 'meaning',
+    //   duration: 45,
+    //   questions: [
+    //     {
+    //       word_id: '4de5993d-b75b-4a2b-b89c-e3247f420b3e',
+    //       user_choice_id: 'af23c257-3c2e-43f4-a579-067ca688ab75',
+    //       is_correct: false,
+    //     },
+    //     {
+    //       word_id: '94e6a6bd-4202-44e7-a88c-a49d625d239f',
+    //       user_choice_id: '94e6a6bd-4202-44e7-a88c-a49d625d239f',
+    //       is_correct: true,
+    //     },
+    //   ],
+    // };
+
+    console.log('userAnswers?', userAnswers);
+    console.log('quizData?', quizData);
+
+    // const quizAnswers = userAnswers.map((answer) => {
+    // const question = quizData.queztio
+    // });
+
+    // // TODO: 배열로 문제 푼 정보를 가지고 있다가 배열로 넘겨야함
+    // const quizAnswers = finalAnswers.map((userAnswer) => {
+    //   const question = quizData.questions.find(
+    //     (q) => q.id === userAnswer.question_id
+    //   );
+
+    //   console.log(`userAnswer:`, userAnswer);
+    //   console.log(`question:`, question);
+
+    //   // console.log('user_answer--->', userAnswer);
+    //   // console.log('correct_answer====>', question);
+    //   // console.log(
+    //   //   'is_correct: ',
+    //   //   userAnswer.user_answer === question?.correct_answer
+    //   // );
+
+    //   return {
+    //     attempt_id: quizData.attempt_id,
+    //     word_id: question?.word_id || '',
+    //     quiz_type: quizData.quiz_type,
+    //     user_answer: userAnswer.user_answer,
+    //     correct_answer: question?.correct_answer || '',
+    //     is_correct: userAnswer.user_answer === question?.correct_answer,
+    //   };
+    // });
 
     try {
       const correctCount = finalAnswers.filter(
         (answer) => answer.is_correct
       ).length;
-
       const score = Math.round((correctCount / quizData.total_questions) * 100);
       const duration = startTime
         ? Math.floor((Date.now() - startTime) / 1000)
@@ -148,8 +200,10 @@ const ClientQuizPage = ({ level }: Props) => {
         correct_answers: correctCount,
         score,
         duration,
-        answers: quizAnswers,
+        questions: userAnswers,
       };
+
+      console.log('quizReuslt-', quizResult);
 
       const response = await fetch('/api/quiz/submit', {
         method: 'POST',
@@ -158,6 +212,8 @@ const ClientQuizPage = ({ level }: Props) => {
         },
         body: JSON.stringify(quizResult),
       });
+
+      console.log('quizResult: ', quizResult);
 
       if (!response.ok) {
         throw new Error('퀴즈 제출에 실패했습니다.');
@@ -249,9 +305,9 @@ const ClientQuizPage = ({ level }: Props) => {
           {currentQuestion?.choices.map((answer, index) => (
             <button
               key={answer.id}
-              onClick={() => handleChoiceSelect(answer.id)}
+              onClick={() => handleChoiceSelect(answer.id, answer.text)}
               className={`w-full p-4 text-left rounded-lg border-2 transition-all cursor-pointer ${
-                selectedChoice === answer.id
+                selectedChoice?.id === answer.id
                   ? 'bg-blue-100'
                   : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
               }`}
@@ -266,9 +322,9 @@ const ClientQuizPage = ({ level }: Props) => {
       <div className="flex justify-end">
         <Button
           onClick={handleNextQuestion}
-          disabled={!selectedChoice || isSubmitting}
+          disabled={!selectedChoice?.id || isSubmitting}
           className={`px-6 py-3 rounded-lg font-medium flex items-center ${
-            selectedChoice && !isSubmitting
+            selectedChoice?.id && !isSubmitting
               ? 'bg-blue-600 text-white hover:bg-blue-700'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}

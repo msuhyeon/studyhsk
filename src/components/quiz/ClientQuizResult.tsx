@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { formatDuration } from '@/lib/utils';
 import {
@@ -260,13 +261,14 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
             </div>
           </div>
         </div>
-        <div className="flex flex-col sm:flex-row gap-3">
-          {/* <button className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 px-6 rounded-lg font-medium transition-colors">
+        <div className="flex justify-center">
+          <Link
+            href={`/quiz/${quiz.level}`}
+            className="bg-blue-500 hover:bg-blue-600 text-white py-3 px-12 rounded-lg font-medium transition-colors"
+          >
             다시 풀기
-          </button> */}
-          <button className="text-right mr-0 bg-blue-500 hover:bg-blue-600 text-white py-3 px-6 rounded-lg font-medium transition-colors border">
-            다른 퀴즈
-          </button>
+          </Link>
+          {/* TODO: 틀린 단어만 모아논 페이지를 만들어서 연결하는 버튼 고려 */}
         </div>
       </div>
     </div>

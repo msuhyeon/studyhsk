@@ -52,12 +52,24 @@ export async function POST(request: NextRequest) {
       throw attemptsError;
     }
 
+    console.log('submission: ', submission);
+
+    console.log('여기: ', {
+      attempt_id: inputedQuiz.id,
+      word_id: quiz.word_id,
+      quiz_type: quiz.quiz_type || null,
+      user_answer: quiz.user_answer, // uuid
+      correct_answer: quiz.correct_answer, // uuid
+      is_correct: quiz.is_correct,
+      user_id: user.id,
+    });
+
     const insertData = submission.answers.map((quiz) => ({
       attempt_id: inputedQuiz.id,
       word_id: quiz.word_id,
       quiz_type: quiz.quiz_type || null,
-      user_answer: quiz.user_answer,
-      correct_answer: quiz.correct_answer,
+      user_answer: quiz.user_answer, // uuid
+      correct_answer: quiz.correct_answer, // uuid
       is_correct: quiz.is_correct,
       user_id: user.id,
     }));
