@@ -14,7 +14,8 @@ import {
 import { logout } from '@/lib/supabase/userApi';
 import { LogInIcon } from 'lucide-react';
 import { useUserStore } from '@/store/user';
-import { Avatar, AvatarImage, AvatarFallback } from '@radix-ui/react-avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useRouter } from 'next/navigation';
 
 const GoogleIcon = () => (
   <svg
@@ -60,22 +61,30 @@ const Login = () => {
     }
   };
 
+  const router = useRouter();
+
   return (
     <>
       {user ? (
         <div className="flex items-center">
-          <Avatar className="rounded-lg">
-            <Button variant="link" className="flex items-center justify-center">
+          <Button
+            variant="ghost"
+            className="flex items-center justify-center p-0 mr-5 hover:bg-transparent"
+            onClick={() => router.push('/mypage')}
+          >
+            <Avatar className="rounded-lg">
               <AvatarImage
                 className="mr-3 rounded-full"
                 src={user.user_metadata.avatar_url}
                 alt="profile image"
-                width="40"
-                height="40"
+                width="50"
+                height="50"
               />
-            </Button>
-            <AvatarFallback>CN</AvatarFallback>
-          </Avatar>
+              <AvatarFallback className="rounded-full bg-zinc-600 text-white text-sm">
+                {user.user_metadata.name.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+          </Button>
           <Button variant={'outline'} onClick={() => logout()}>
             로그아웃
           </Button>
