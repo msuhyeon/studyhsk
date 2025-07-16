@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Clock, CheckCircle, Loader2Icon } from 'lucide-react';
+import { CheckCircle, Loader2Icon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import QuizTimer from './QuizTimer';
@@ -212,10 +212,7 @@ const ClientQuizPage = ({ level }: Props) => {
   return (
     <div className="min-w-full lg:min-w-2xl max-w-2xl mx-auto p-6">
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center text-gray-600">
-          <Clock className="w-5 h-5 mr-2" />
-          HSK {level}급 퀴즈
-        </div>
+        <h1 className="title">HSK {level}급 퀴즈</h1>
         <QuizTimer startTime={startTime} />
       </div>
       {/* 진행 상황 */}

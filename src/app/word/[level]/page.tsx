@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import ChallengeButton from '@/components/word/ChallengeButton';
 import ErrorFallback from '@/components/ErrorFallback';
-import ClientWordList from './ClientWordList';
+import ClientWordList from '@/components/word/ClientWordList';
 
 type Props = {
   params: Promise<{
@@ -44,7 +44,7 @@ const WordPage = async ({ params }: Props) => {
 
   return (
     <div>
-      <h1 className="mb-10 text-2xl font-semibold">{level}급 단어</h1>
+      <h1 className="title">{level}급 단어</h1>
       <div className="flex justify-end mb-10 animate-wiggle">
         {/* 학습중 으로 상태 변경하려면... usestate 필요. */}
         <ChallengeButton level={level} />
