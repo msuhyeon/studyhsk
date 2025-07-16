@@ -38,16 +38,19 @@ export async function GET(request: NextRequest, { params }: Props) {
         word,
         pinyin,
         meaning
-      ),
-      example_sentence:examples!word_id (
-        sentence,
-        meaning,
-        pinyin
       )
       `
       )
       .eq('attempt_id', id)
       .eq('is_correct', false);
+
+    // TODO: 예문 모두 셋팅되면 그때 사용
+    // example:examples!word_id (
+    //   sentence,
+    //   meaning,
+    //   pinyin,
+    //   context
+    // )
 
     if (wrongError) {
       throw wrongError;

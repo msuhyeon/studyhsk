@@ -37,7 +37,7 @@ type WordType = {
   meaning: string;
 };
 
-type QuestionWordType = {
+type CorrectWordType = {
   word: string;
   pinyin: string;
   meaning: string;
@@ -45,8 +45,8 @@ type QuestionWordType = {
 
 type WrongAnswer = {
   user_word: WordType;
-  question_word: QuestionWordType;
-  example: string;
+  correct_word: CorrectWordType;
+  example?: string;
   word_id: string;
   words: WordType;
 };
@@ -130,7 +130,7 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
 
   const { quiz, wrongAnswers } = quizResult;
 
-  console.log('wrongAnswers?', wrongAnswers);
+  console.log('quizResult?', quizResult);
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -166,7 +166,6 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
             </div>
           </div>
         </div>
-        {/* 틀린 문제 섹션 */}
         {wrongAnswers.length > 0 ? (
           <div className="bg-white rounded-lg border">
             <div className="p-6 border-b">
@@ -193,10 +192,10 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
                           </span>
                           <div>
                             <span className="text-2xl font-bold mr-3">
-                              {question.question_word.word}
+                              {question.correct_word.word}
                             </span>
                             <span className="text-gray-600">
-                              [{question.question_word.pinyin}]
+                              [{question.correct_word.pinyin}]
                             </span>
                           </div>
                         </div>
@@ -215,10 +214,9 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
                                 </span>
                               </div>
                               <div className="text-lg font-semibold text-green-800">
-                                {question.question_word.meaning}
+                                {question.correct_word.meaning}
                               </div>
                             </div>
-
                             <div className="border border-red-200 bg-red-50 rounded-lg p-4">
                               <div className="flex items-center mb-2">
                                 <XCircle
@@ -234,12 +232,16 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
                               </div>
                             </div>
                           </div>
-                          <div className="border border-blue-200 bg-blue-50 rounded-lg p-4">
-                            <h4 className="font-medium text-blue-700 mb-2 flex items-center">
-                              📖 예문
-                            </h4>
-                            <p className="text-blue-800">{question.example}</p>
-                          </div>
+                          {question?.example && (
+                            <div className="border border-blue-200 bg-blue-50 rounded-lg p-4">
+                              <h4 className="font-medium text-blue-700 mb-2 flex items-center">
+                                📖 예문
+                              </h4>
+                              <p className="text-blue-800">
+                                {question.example}
+                              </p>
+                            </div>
+                          )}
                         </div>
                       </AccordionContent>
                     </AccordionItem>
@@ -249,7 +251,6 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
             </div>
           </div>
         ) : (
-          // 완벽한 점수일 때 축하 섹션
           <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
             <div className="p-8 text-center">
               <div className="text-6xl mb-4">🎉</div>
