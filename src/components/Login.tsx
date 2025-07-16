@@ -65,13 +65,13 @@ const Login = () => {
       {user ? (
         <div className="flex items-center">
           <Avatar className="rounded-lg">
-            <Button variant="link">
+            <Button variant="link" className="flex items-center justify-center">
               <AvatarImage
-                className="mr-3"
+                className="mr-3 rounded-full"
                 src={user.user_metadata.avatar_url}
                 alt="profile image"
-                width="35"
-                height="35"
+                width="40"
+                height="40"
               />
             </Button>
             <AvatarFallback>CN</AvatarFallback>
