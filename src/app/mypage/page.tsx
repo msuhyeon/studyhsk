@@ -12,11 +12,12 @@ import { Progress } from '@/components/ui/progress';
 import {
   BookOpen,
   Trophy,
-  Settings,
+  // Settings,
   TrendingUp,
   Award,
   Star,
 } from 'lucide-react';
+// import Link from 'next/link';
 
 const MyPage = () => {
   return (
@@ -24,10 +25,17 @@ const MyPage = () => {
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="flex justify-between items-end">
           <h1 className="title">마이페이지</h1>
-          <Button variant="outline" className="flex items-center space-x-2">
-            <Settings className="w-4 h-4" />
-            <span>계정 정보 수정</span>
-          </Button>
+          {/* TODO: 계정 정보 뭘 수정할지 확인 */}
+          {/* <Button
+            variant="outline"
+            className="flex items-center space-x-2"
+            asChild
+          >
+            <Link href="/mypage/settings">
+              <Settings className="w-4 h-4" />
+              <span>계정 정보 수정</span>
+            </Link>
+          </Button> */}
         </div>
         <Card className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
           <CardHeader>
