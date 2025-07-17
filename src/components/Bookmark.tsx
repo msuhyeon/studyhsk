@@ -3,13 +3,38 @@
 import { useState } from 'react';
 import { Star } from 'lucide-react';
 
-const Bookmark = () => {
-  const [marked, setMarked] = useState(false);
+type BookmarkProps = {
+  id: string;
+  isBookmarked?: boolean;
+};
+
+const Bookmark = ({ id, isBookmarked = false }: BookmarkProps) => {
+  const [marked, setMarked] = useState(isBookmarked);
+
+  const handleClickBoockmark = async () => {
+    setMarked(!marked);
+
+    if (marked) {
+      await fetch(`/api/bookmark`, {
+        method: 'DELETE',
+        body: JSON.stringify({
+          wordId: id,
+        }),
+      }).then((result) => console.log(result));
+    } else {
+      await fetch(`/api/bookmark`, {
+        method: 'POST',
+        body: JSON.stringify({
+          wordId: id,
+        }),
+      }).then((result) => console.log(result));
+    }
+  };
 
   return (
     <button
       className=" rounded-full p-2 transition duration-300 hover:bg-gray-100 hover:opacity-100 opacity-90"
-      onClick={() => setMarked(!marked)}
+      onClick={handleClickBoockmark}
     >
       <Star
         fill={`${marked ? '#facc15' : 'none'}`}

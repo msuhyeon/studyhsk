@@ -45,6 +45,7 @@ type WordData = {
   part_of_speech: string;
   examples: ExampleType[];
   word_relations: RelationWordType[];
+  is_bookmarked?: boolean;
 };
 
 type WordDetailProps = {
@@ -81,8 +82,12 @@ const ClientWordDetail = ({ wordId }: WordDetailProps) => {
     setIsGeneratingExamples(false);
     const fetchWordData = async () => {
       try {
-        // 1. 기본 단어 데이터 가져오기
-        const { data, error } = await supabase
+        // 1. 기본 단어 데이터 가져오기 (북마크 정보 포함)
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        const { data: wordInfo, error } = await supabase
           .from('words')
           .select(
             `
@@ -98,16 +103,21 @@ const ClientWordDetail = ({ wordId }: WordDetailProps) => {
               meaning,
               pinyin,
               relation_type
+            ),
+            bookmarks!word_id (
+              id,
+              user_id
             )
           `
           )
-          .eq('id', wordId);
+          .eq('id', wordId)
+          .single();
 
-        if (error || !data || data.length === 0) {
+        if (error || !wordInfo) {
           throw new Error('단어를 찾을 수 없습니다.');
         }
 
-        const wordInfo = data[0];
+        const isBookmarked = !!(user && wordInfo.bookmarks);
 
         // 2. 오디오 URL 가져오기
         const audioRes = await fetch(
@@ -167,6 +177,7 @@ const ClientWordDetail = ({ wordId }: WordDetailProps) => {
           ...wordInfo,
           examples,
           word_relations: [...synonyms, ...antonyms],
+          is_bookmarked: isBookmarked,
         });
       } catch (err) {
         setError(
@@ -277,7 +288,7 @@ const ClientWordDetail = ({ wordId }: WordDetailProps) => {
           </Tooltip>
         </div>
         <div className="flex justify-center gap-4 mb-6">
-          <Bookmark />
+          <Bookmark id={wordId} isBookmarked={wordData.is_bookmarked} />
           <PlayAudioButton audioUrl={audioUrl} />
           <button
             className=" rounded-full p-2 transition duration-300 hover:bg-gray-100 hover:opacity-100 opacity-90"
