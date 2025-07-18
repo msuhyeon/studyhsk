@@ -130,8 +130,6 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
 
   const { quiz, wrongAnswers } = quizResult;
 
-  console.log('quizResult?', quizResult);
-
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="max-w-4xl mx-auto p-6 space-y-6">
