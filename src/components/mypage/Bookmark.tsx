@@ -19,7 +19,7 @@ type WordsType = {
 };
 
 type BookmarkType = {
-  words: WordsType[];
+  words: WordsType;
   count: number;
 };
 
