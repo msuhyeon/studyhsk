@@ -61,7 +61,7 @@ export async function DELETE(request: NextRequest) {
       .delete()
       .eq('word_id', wordId)
       .eq('user_id', userInfo.user.id);
-   
+
     if (error) {
       console.error(`[ERROR]: DELETE bookmarks ${error.message}`);
       throw error;
@@ -78,6 +78,66 @@ export async function DELETE(request: NextRequest) {
       {
         success: false,
         error: '북마크 삭제에 실패했습니다.',
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET() {
+  const supabase = await createClient();
+
+  try {
+    const { data: userInfo, error: userError } = await supabase.auth.getUser();
+
+    if (userError || !userInfo) {
+      return NextResponse.json(
+        { error: '로그인이 필요합니다.' },
+        { status: 401 }
+      );
+    }
+
+    const { data: bookmarks, error: bookmarkError } = await supabase
+      .from('bookmarks')
+      .select(
+        `
+        words:words!word_id(
+            word,
+            pinyin, 
+            part_of_speech,
+            meaning
+        )
+        `
+      )
+      .eq('user_id', userInfo.user.id)
+      .limit(3);
+
+    if (bookmarkError) {
+      console.error(`[ERROR]: GET bookmakred words ${bookmarkError.message}`);
+      throw bookmarkError;
+    }
+
+    const { count, error: countError } = await supabase
+      .from('bookmarks')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userInfo.user.id);
+
+    if (countError) {
+      console.error(`[ERROR]: COUNT bookmarks ${countError.message}`);
+      throw countError;
+    }
+
+    return NextResponse.json({
+      success: true,
+      bookmarks: bookmarks,
+      count: count || 0,
+    });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: '북마크한 단어 조회에 실패했습니다.',
       },
       { status: 500 }
     );

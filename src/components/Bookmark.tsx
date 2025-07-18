@@ -20,14 +20,14 @@ const Bookmark = ({ id, isBookmarked = false }: BookmarkProps) => {
         body: JSON.stringify({
           wordId: id,
         }),
-      }).then((result) => console.log(result));
+      });
     } else {
       await fetch(`/api/bookmark`, {
         method: 'POST',
         body: JSON.stringify({
           wordId: id,
         }),
-      }).then((result) => console.log(result));
+      });
     }
   };
 
