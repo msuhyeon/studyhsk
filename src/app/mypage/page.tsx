@@ -18,6 +18,7 @@ import {
   Award,
   Star,
 } from 'lucide-react';
+import Link from 'next/link';
 // import Link from 'next/link';
 
 // 공식 예제들이 대부분 async function을 씀. 이유는 TypeScript 타입 추론과 displayName (디버깅 시 이름) 때문에.
@@ -141,8 +142,10 @@ const MyPage = () => {
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">총 12회 응시</span>
                     <Button variant="outline" size="sm">
-                      <BookOpen className="w-4 h-4 mr-2" />
-                      전체 보기
+                      <Link href="">
+                        <BookOpen className="w-4 h-4 mr-2" />
+                        전체 보기
+                      </Link>
                     </Button>
                   </div>
                 </div>
