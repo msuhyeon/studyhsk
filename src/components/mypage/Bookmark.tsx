@@ -23,7 +23,7 @@ type BookmarkType = {
   count: number;
 };
 
-const Bookmark = () => {
+const Bookmark = ({ limit = 3 }: { limit?: number } = {}) => {
   const [bookmarks, setBookmarks] = useState<BookmarkType[]>([]);
   const [totalWords, setTotalWords] = useState(0);
 
@@ -31,7 +31,7 @@ const Bookmark = () => {
     // TypeScript 타입 추론과 displayName (디버깅 시 이름) 때문에 공식 예제들이 대부분 async function으로 작성 돼 있음
     // const로 선언 시 스택트레이스에서 함수 이름이 익명으로 보이거나 최적화가 덜 되는 경우가 있었음
     async function getBookmarks() {
-      const response = await fetch('/api/bookmark', {
+      const response = await fetch(`/api/bookmark?limit=${limit}`, {
         cache: 'no-cache',
         method: 'GET',
       });
@@ -46,7 +46,7 @@ const Bookmark = () => {
     }
 
     getBookmarks();
-  }, []);
+  }, [limit]);
 
   return (
     <Card className="h-fit">

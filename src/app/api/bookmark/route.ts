@@ -84,8 +84,10 @@ export async function DELETE(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const supabase = await createClient();
+  const { searchParams } = new URL(request.url);
+  const limit = parseInt(searchParams.get('limit') || '3');
 
   try {
     const { data: userInfo, error: userError } = await supabase.auth.getUser();
@@ -110,7 +112,7 @@ export async function GET() {
         `
       )
       .eq('user_id', userInfo.user.id)
-      .limit(3);
+      .limit(limit);
 
     if (bookmarkError) {
       console.error(`[ERROR]: GET bookmakred words ${bookmarkError.message}`);
