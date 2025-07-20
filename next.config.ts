@@ -1,8 +1,14 @@
 import type { NextConfig } from 'next';
+import bundleAnalyzer from '@next/bundle-analyzer';
+
+// 번들 분석기
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+});
 
 const nextConfig: NextConfig = {
   images: {
-    // 외부 이미지 허용을 위해 추가
+    // 외부 이미지 허용
     domains: ['lh3.googleusercontent.com'],
   },
   // CSP 설정 추가
@@ -27,4 +33,5 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// 번들 분석기 적용 후 내보내기
+export default withBundleAnalyzer(nextConfig);
