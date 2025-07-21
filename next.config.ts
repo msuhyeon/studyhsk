@@ -3,7 +3,7 @@ import bundleAnalyzer from '@next/bundle-analyzer';
 
 // 번들 분석기
 const withBundleAnalyzer = bundleAnalyzer({
-  enabled: process.env.ANALYZE === 'true',
+  enabled: false,
 });
 
 const nextConfig: NextConfig = {

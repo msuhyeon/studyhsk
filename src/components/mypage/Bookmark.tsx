@@ -106,10 +106,10 @@ const Bookmark = ({ limit = 3 }: { limit?: number } = {}) => {
               총 {totalWords}개 단어
             </span>
             {totalWords > 3 && (
-              <Button variant="outline" className="w-auto">
-                <Link href="/mypage/bookmarks">
+              <Button variant="outline" className="w-27">
+                <Link href="/mypage/bookmarks" className="flex items-center">
                   <BookOpen className="w-4 h-4 mr-2" />
-                  전체 보기
+                  <span>전체 보기</span>
                 </Link>
               </Button>
             )}
