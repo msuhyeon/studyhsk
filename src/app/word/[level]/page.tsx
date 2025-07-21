@@ -13,7 +13,7 @@ type Props = {
 const WordPage = async ({ params }: Props) => {
   const { level } = await params;
   const supabase = await createClient();
-  // 렌더링 속도가 느려 SSR 렌더링 시 28글자만 가져옴
+  // 렌더링 속도가 느려 SSR 렌더링 시 28글자만 가져옴, 나머진 CSR로 가져옴
   const { data: words, error } = await supabase
     .from('words')
     .select('*')
