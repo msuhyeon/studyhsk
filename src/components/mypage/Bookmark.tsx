@@ -10,6 +10,7 @@ import {
 import { useEffect, useState } from 'react';
 import { BookOpen, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 type WordsType = {
   word: string;
@@ -105,9 +106,11 @@ const Bookmark = ({ limit = 3 }: { limit?: number } = {}) => {
               총 {totalWords}개 단어
             </span>
             {totalWords > 3 && (
-              <Button variant="outline" size="sm">
-                <BookOpen className="w-4 h-4 mr-2" />
-                전체 보기
+              <Button variant="outline" className="w-auto">
+                <Link href="/mypage/bookmarks">
+                  <BookOpen className="w-4 h-4 mr-2" />
+                  전체 보기
+                </Link>
               </Button>
             )}
           </div>
