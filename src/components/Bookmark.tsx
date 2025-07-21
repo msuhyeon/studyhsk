@@ -11,7 +11,7 @@ type BookmarkProps = {
 const Bookmark = ({ id, isBookmarked = false }: BookmarkProps) => {
   const [marked, setMarked] = useState(isBookmarked);
 
-  const handleClickBoockmark = async () => {
+  const handleClickBookmark = async () => {
     setMarked(!marked);
 
     if (marked) {
@@ -34,7 +34,7 @@ const Bookmark = ({ id, isBookmarked = false }: BookmarkProps) => {
   return (
     <button
       className=" rounded-full p-2 transition duration-300 hover:bg-gray-100 hover:opacity-100 opacity-90"
-      onClick={handleClickBoockmark}
+      onClick={handleClickBookmark}
     >
       <Star
         fill={`${marked ? '#facc15' : 'none'}`}

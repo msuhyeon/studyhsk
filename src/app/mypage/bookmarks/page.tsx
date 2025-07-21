@@ -11,18 +11,16 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { supabase } from '@/lib/supabase/client';
 import Link from 'next/link';
+import { useEffect } from 'react';
 
-type Props = {
-  params: {
-    level: string;
-    id: string;
-  };
-};
-
-const BookmarksPage = ({ params }: Props) => {
-  const { level, id } = params;
+const BookmarksPage = () => {
   const handleDelete = () => {};
+
+  useEffect(async () => {
+    const response = await supabase();
+  });
 
   return (
     <div>
