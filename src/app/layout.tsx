@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ClientUserProvider from '@/components/ClientUserProvider';
 import { Toaster } from '@/components/ui/sonner';
+import { Providers } from './providers';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -31,13 +32,15 @@ export default function RootLayout({
       <body
         className={`flex flex-col min-h-screen ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ClientUserProvider />
-        <Header />
-        <main className="w-full max-w-5xl px-4 sm:px-6 lg:px-8 mx-auto flex flex-1 flex-col py-10 lg:py-15">
-          {children}
-        </main>
-        <Footer />
-        <Toaster position="top-right" expand={true} richColors />
+        <Providers>
+          <ClientUserProvider />
+          <Header />
+          <main className="w-full max-w-5xl px-4 sm:px-6 lg:px-8 mx-auto flex flex-1 flex-col py-10 lg:py-15">
+            {children}
+          </main>
+          <Footer />
+          <Toaster position="top-right" expand={true} richColors />
+        </Providers>
       </body>
     </html>
   );
