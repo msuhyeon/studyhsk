@@ -103,7 +103,9 @@ export async function GET(request: NextRequest) {
       .from('bookmarks')
       .select(
         `
-        words:words!word_id(
+        word_id,
+        words:words!inner(
+            id,
             word,
             pinyin, 
             part_of_speech,
