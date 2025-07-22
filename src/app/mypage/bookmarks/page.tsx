@@ -29,7 +29,7 @@ const BookmarksPage = () => {
             삭제
           </Button>
           <Button asChild>
-            <Link href={`word/${level}/${id}`}>상세보기</Link>
+            <Link href="">상세보기</Link>
           </Button>
         </CardFooter>
       </Card>
