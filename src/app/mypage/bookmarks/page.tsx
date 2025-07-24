@@ -11,16 +11,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { supabase } from '@/lib/supabase/client';
 import Link from 'next/link';
-import { useEffect } from 'react';
 
 const BookmarksPage = () => {
   const handleDelete = () => {};
-
-  useEffect(async () => {
-    const response = await supabase();
-  });
 
   return (
     <div>
@@ -35,7 +29,7 @@ const BookmarksPage = () => {
             삭제
           </Button>
           <Button asChild>
-            <Link href={`word/${level}/${id}`}>상세보기</Link>
+            <Link href="">상세보기</Link>
           </Button>
         </CardFooter>
       </Card>

@@ -52,7 +52,7 @@ const Bookmark = ({ limit = 3 }: { limit?: number } = {}) => {
   const { bookmarks = [], count = 0 } = data || {};
 
   return (
-    <Card className="h-fit">
+    <Card className="h-[450px]">
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <Star fill="#facc15" stroke="#facc15" />
@@ -61,47 +61,49 @@ const Bookmark = ({ limit = 3 }: { limit?: number } = {}) => {
         <CardDescription>저장한 단어들을 복습하세요</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3 min-h-56">
+        <div className="h-64">
           {isLoading ? (
-            <div className="flex items-center justify-center h-60">
+            <div className="flex items-center justify-center h-full">
               <div className="text-gray-500">로딩 중...</div>
             </div>
           ) : isError ? (
-            <div className="flex items-center justify-center h-60">
+            <div className="flex items-center justify-center h-full">
               <div className="text-red-500">
                 북마크를 불러오는데 실패했습니다.
               </div>
             </div>
           ) : bookmarks.length === 0 ? (
-            <div className="flex items-center justify-center h-60">
+            <div className="flex items-center justify-center h-full">
               <div className="text-gray-500">북마크된 단어가 없습니다.</div>
             </div>
           ) : (
-            bookmarks.map((item, index) => (
-              <div
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                key={index}
-              >
-                <div>
-                  <div className="font-semibold text-gray-900">
-                    {item.words.word}
-                  </div>
+            <div className="space-y-3 h-full overflow-y-auto">
+              {bookmarks.map((item, index) => (
+                <div
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  key={index}
+                >
                   <div>
-                    <span className="text-sm text-gray-600">
-                      {item.words.pinyin}
-                    </span>
-                    {/* TODO: 어떻게 표현할지 고민 */}
-                    {/* <span className="text-sm text-gray-600 ml-2">
-                          {item.words.part_of_speech}
-                        </span> 
-                    */}
+                    <div className="font-semibold text-gray-900">
+                      {item.words.word}
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-600">
+                        {item.words.pinyin}
+                      </span>
+                      {/* TODO: 어떻게 표현할지 고민 */}
+                      {/* <span className="text-sm text-gray-600 ml-2">
+                            {item.words.part_of_speech}
+                          </span> 
+                      */}
+                    </div>
+                  </div>
+                  <div className="textdkrktbansfklskdffjslksdjffflslskdfjflf-sm text-gray-600">
+                    {item.words.meaning}
                   </div>
                 </div>
-                <div className="textdkrktbansfklskdffjslksdjffflslskdfjflf-sm text-gray-600">
-                  {item.words.meaning}
-                </div>
-              </div>
-            ))
+              ))}
+            </div>
           )}
         </div>
         <div className="mt-4 pt-4 border-t">

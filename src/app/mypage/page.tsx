@@ -75,7 +75,7 @@ const MyPage = () => {
         </Card>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Bookmark />
-          <Card className="h-fit">
+          <Card className="h-[450px]">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Trophy className="w-5 h-5 text-yellow-500" />
@@ -85,7 +85,7 @@ const MyPage = () => {
             </CardHeader>
             <CardContent className="relative">
               <div className="blur-sm">
-                <div className="space-y-3">
+                <div className="space-y-3 h-64">
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
