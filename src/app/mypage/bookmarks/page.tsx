@@ -2,6 +2,8 @@
 // hydration 비용이 크지 않을 듯 하여 client component로 생성함
 'use client';
 
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -11,28 +13,63 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { supabase } from '@/lib/supabase/client';
 import Link from 'next/link';
+import { useEffect } from 'react';
+
+type BookmarkType = {
+  word: string;
+  part_of_speech: string;
+  meaning: string;
+  id: string;
+};
 
 const BookmarksPage = () => {
+  const [allBookmakrs, setBookmarks] = useState<BookmarkType[]>([]);
+  useEffect(() => {
+    const fetchAllBookmarks = async () => {
+      // TODO: query 조건 수정 필요
+      const { data, error } = await supabase.from('words').select('*');
+
+      if (error) {
+        console.error('북마크 데이터 조회 실패: ', error);
+        toast.error('전체 단어 조회 실패. 다시 시도해주세요.');
+      } else {
+        setBookmarks(data);
+      }
+    };
+
+    fetchAllBookmarks();
+  }, []);
+
   const handleDelete = () => {};
 
   return (
-    <div>
-      <Card className="w-full max-w-sm h-sm">
-        <CardHeader>
-          <CardTitle>한자</CardTitle>
-          <CardDescription>명사</CardDescription>
-        </CardHeader>
-        <CardContent></CardContent>
-        <CardFooter className="flex gap-2 justify-end">
-          <Button variant="outline" onClick={handleDelete}>
-            삭제
-          </Button>
-          <Button asChild>
-            <Link href="">상세보기</Link>
-          </Button>
-        </CardFooter>
-      </Card>
+    <div className="grid grid-cols-3 gap-4">
+      {allBookmakrs.map((item, index) => {
+        return (
+          <Card className="w-full max-w-sm h-sm" key={index}>
+            <CardHeader>
+              <CardTitle>{item.word}</CardTitle>
+              <CardDescription>
+                <span className="text-lg font-semibold mr-5">
+                  {item.meaning}
+                </span>
+                <span className="text-zinc-400">{item.part_of_speech}</span>
+              </CardDescription>
+            </CardHeader>
+            <CardContent></CardContent>
+            <CardFooter className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={handleDelete}>
+                삭제
+              </Button>
+              <Button asChild>
+                <Link href={`/word/detail/${item.id}`}>상세보기</Link>
+              </Button>
+            </CardFooter>
+          </Card>
+        );
+      })}
     </div>
   );
 };
