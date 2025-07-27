@@ -27,22 +27,18 @@ type BookmarkType = {
 
 const BookmarksPage = () => {
   const [allBookmakrs, setBookmarks] = useState<BookmarkType[]>([]);
+
   useEffect(() => {
-    const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+    fetchAllBookmarks();
+  }, []);
 
-      return user;
-    };
+  const fetchAllBookmarks = async () => {
+    const user = await getUser();
 
-    const fetchAllBookmarks = async () => {
-      const user = await getUser();
-
-      const { data, error } = await supabase
-        .from('words')
-        .select(
-          `
+    const { data, error } = await supabase
+      .from('words')
+      .select(
+        `
             id,
             word, 
             pinyin, 
@@ -51,21 +47,49 @@ const BookmarksPage = () => {
             level,
             bookmarks!inner(word_id)
         `
-        )
-        .eq('bookmarks.user_id', user?.id);
+      )
+      .eq('bookmarks.user_id', user?.id);
 
-      if (error) {
-        console.error('북마크 데이터 조회 실패: ', error);
-        toast.error('전체 단어 조회 실패. 다시 시도해주세요.');
-      } else {
-        setBookmarks(data);
-      }
-    };
+    if (error) {
+      console.error('북마크 데이터 조회 실패: ', error);
+      toast.error('전체 단어 조회 실패. 다시 시도해주세요.');
+    } else {
+      setBookmarks(data);
+    }
+  };
 
-    fetchAllBookmarks();
-  }, []);
+  const handleDelete = async (wordId: string) => {
+    const user = await getUser();
+    const { id: userId } = user || {};
 
-  const handleDelete = () => {};
+    if (userId) {
+      deleteBookmarks(wordId, userId);
+    }
+  };
+
+  const getUser = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    return user;
+  };
+
+  const deleteBookmarks = async (wordId: string, userId: string) => {
+    const { error } = await supabase
+      .from('bookmarks')
+      .delete()
+      .eq('user_id', userId)
+      .eq('word_id', wordId)
+      .select();
+
+    if (!error) {
+      toast.success('북마크에서 삭제되었습니다.');
+      fetchAllBookmarks();
+    } else {
+      toast.error('북마크에서 삭제되지 않았습니다. 다시 시도해주세요!');
+    }
+  };
 
   return (
     <div className="grid grid-cols-3 gap-4">
@@ -83,7 +107,7 @@ const BookmarksPage = () => {
               <span className="text-zinc-400">{item.part_of_speech}</span>
             </CardContent>
             <CardFooter className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={handleDelete}>
+              <Button variant="outline" onClick={() => handleDelete(item.id)}>
                 삭제
               </Button>
               <Button asChild>
