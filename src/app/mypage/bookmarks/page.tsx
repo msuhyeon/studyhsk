@@ -21,15 +21,38 @@ type BookmarkType = {
   word: string;
   part_of_speech: string;
   meaning: string;
+  level: string;
   id: string;
 };
 
 const BookmarksPage = () => {
   const [allBookmakrs, setBookmarks] = useState<BookmarkType[]>([]);
   useEffect(() => {
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      return user;
+    };
+
     const fetchAllBookmarks = async () => {
-      // TODO: query 조건 수정 필요
-      const { data, error } = await supabase.from('words').select('*');
+      const user = await getUser();
+
+      const { data, error } = await supabase
+        .from('words')
+        .select(
+          `
+            id,
+            word, 
+            pinyin, 
+            part_of_speech, 
+            meaning, 
+            level,
+            bookmarks!inner(word_id)
+        `
+        )
+        .eq('bookmarks.user_id', user?.id);
 
       if (error) {
         console.error('북마크 데이터 조회 실패: ', error);
@@ -51,14 +74,14 @@ const BookmarksPage = () => {
           <Card className="w-full max-w-sm h-sm" key={index}>
             <CardHeader>
               <CardTitle>{item.word}</CardTitle>
-              <CardDescription>
-                <span className="text-lg font-semibold mr-5">
-                  {item.meaning}
-                </span>
-                <span className="text-zinc-400">{item.part_of_speech}</span>
+              <CardDescription className="text-xs text-blue-600/75">
+                {item.level}급
               </CardDescription>
             </CardHeader>
-            <CardContent></CardContent>
+            <CardContent>
+              <span className="text-lg font-semibold mr-5">{item.meaning}</span>
+              <span className="text-zinc-400">{item.part_of_speech}</span>
+            </CardContent>
             <CardFooter className="flex gap-2 justify-end">
               <Button variant="outline" onClick={handleDelete}>
                 삭제
