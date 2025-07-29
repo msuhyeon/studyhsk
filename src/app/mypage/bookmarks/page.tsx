@@ -2,7 +2,7 @@
 // hydration 비용이 크지 않을 듯 하여 client component로 생성함
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,24 +16,23 @@ import {
 import { supabase } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { useEffect } from 'react';
+import { User } from '@supabase/supabase-js';
 
 type BookmarkType = {
   word: string;
   part_of_speech: string;
+  pinyin: string;
   meaning: string;
   level: string;
   id: string;
 };
 
 const BookmarksPage = () => {
-  const [allBookmakrs, setBookmarks] = useState<BookmarkType[]>([]);
+  const [bookmarks, setBookmarks] = useState<BookmarkType[]>([]);
+  const [user, setUser] = useState<User | null>(null);
 
-  useEffect(() => {
-    fetchAllBookmarks();
-  }, []);
-
-  const fetchAllBookmarks = async () => {
-    const user = await getUser();
+  const fetchAllBookmarks = useCallback(async () => {
+    if (!user) return;
 
     const { data, error } = await supabase
       .from('words')
@@ -48,31 +47,42 @@ const BookmarksPage = () => {
             bookmarks!inner(word_id)
         `
       )
-      .eq('bookmarks.user_id', user?.id);
+      .eq('bookmarks.user_id', user.id);
 
     if (error) {
-      console.error('북마크 데이터 조회 실패: ', error);
+      console.error('북마크 데이터 조회 실패: ', error.message);
       toast.error('전체 단어 조회 실패. 다시 시도해주세요.');
     } else {
       setBookmarks(data);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    const initUser = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      setUser(data.user);
+
+      if (error) {
+        toast.error('사용자 정보를 찾을 수 없습니다. 다시 로그인 해주세요.');
+        console.error('사용자 정보 조회 실패: ', error.message);
+      }
+    };
+
+    initUser();
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchAllBookmarks();
+    }
+  }, [user, fetchAllBookmarks]);
 
   const handleDelete = async (wordId: string) => {
-    const user = await getUser();
     const { id: userId } = user || {};
 
     if (userId) {
       deleteBookmarks(wordId, userId);
     }
-  };
-
-  const getUser = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    return user;
   };
 
   const deleteBookmarks = async (wordId: string, userId: string) => {
@@ -93,9 +103,9 @@ const BookmarksPage = () => {
 
   return (
     <div className="grid grid-cols-3 gap-4">
-      {allBookmakrs.map((item, index) => {
+      {bookmarks.map((item) => {
         return (
-          <Card className="w-full max-w-sm h-sm" key={index}>
+          <Card className="w-full max-w-sm h-sm" key={item.id}>
             <CardHeader>
               <CardTitle>{item.word}</CardTitle>
               <CardDescription className="text-xs text-blue-600/75">
