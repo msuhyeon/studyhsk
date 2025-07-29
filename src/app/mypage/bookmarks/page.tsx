@@ -107,13 +107,15 @@ const BookmarksPage = () => {
         return (
           <Card className="w-full max-w-sm h-sm" key={item.id}>
             <CardHeader>
-              <CardTitle>{item.word}</CardTitle>
+              <CardTitle className="text-xl">
+                {item.word} <span>[{item.pinyin}]</span>
+              </CardTitle>
               <CardDescription className="text-xs text-blue-600/75">
                 {item.level}급
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <span className="text-lg font-semibold mr-5">{item.meaning}</span>
+              <span className="font-semibold mr-3">{item.meaning}</span>
               <span className="text-zinc-400">{item.part_of_speech}</span>
             </CardContent>
             <CardFooter className="flex gap-2 justify-end">
