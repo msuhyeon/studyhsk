@@ -6,6 +6,11 @@ on:
 jobs:
   code-review:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write # 댓글작성용
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -25,9 +30,18 @@ jobs:
         run: |
           pip install google-generativeai requests
 
+      - name: Debug info
+        run: |
+          echo "Changed files: ${{ steps.changed-files.outputs.all_changed_files }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "PR number: ${{ github.event.pull_request.number }}"
+
       - name: Run Gemini Code Review
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
         run: |
           python .github/scripts/gemini_review.py "${{ steps.changed-files.outputs.all_changed_files }}"
