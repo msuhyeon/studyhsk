@@ -80,6 +80,25 @@ const ClientWordDetail = ({ wordId }: WordDetailProps) => {
     hasGeneratedData.current = false;
     setHasAttemptedGeneration(false);
     setIsGeneratingExamples(false);
+
+    const getPinyinAudio = async (wordInfo: WordData) => {
+      try {
+        const response = await fetch(
+          `https://pinyin-word-api.vercel.app/api/${wordInfo.word}`
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const audioRes = await response.json();
+        setAudioUrl(audioRes.url);
+      } catch (error) {
+        console.error('API 호출 에러:', error);
+        toast.info('현재 발음을 들을 수 없어요. 잠시 후 다시 시도해주세요.🙇');
+      }
+    };
+
     const fetchWordData = async () => {
       try {
         // 1. 기본 단어 데이터 가져오기 (북마크 정보 포함)
@@ -120,11 +139,7 @@ const ClientWordDetail = ({ wordId }: WordDetailProps) => {
         const isBookmarked = !!(user && wordInfo.bookmarks);
 
         // 2. 오디오 URL 가져오기
-        const audioRes = await fetch(
-          `https://pinyin-word-api.vercel.app/api/${wordInfo.word}`
-        );
-        const audioData = await audioRes.json();
-        setAudioUrl(audioData.url);
+        getPinyinAudio(wordInfo);
 
         let examples = wordInfo.examples || [];
         let synonyms =
@@ -289,7 +304,7 @@ const ClientWordDetail = ({ wordId }: WordDetailProps) => {
         </div>
         <div className="flex justify-center gap-4 mb-6">
           <Bookmark id={wordId} isBookmarked={wordData.is_bookmarked} />
-          <PlayAudioButton audioUrl={audioUrl} />
+          {audioUrl && <PlayAudioButton audioUrl={audioUrl} />}
           <button
             className=" rounded-full p-2 transition duration-300 hover:bg-gray-100 hover:opacity-100 opacity-90"
             onClick={handleCopy}
