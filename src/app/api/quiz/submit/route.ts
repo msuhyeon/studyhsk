@@ -16,6 +16,7 @@ type QuizSubmission = {
   duration: number;
   questions: UserAnswer[];
   quiz_type: string;
+  correct_count: number;
 };
 
 export async function POST(request: NextRequest) {
@@ -41,6 +42,9 @@ export async function POST(request: NextRequest) {
         level: submission.level,
         duration: submission.duration,
         score: submission.score,
+        quiz_type: 'meaning',
+        total_questions: submission.total_questions,
+        correct_count: submission.correct_count,
       })
       .select('id')
       .single();
@@ -53,12 +57,14 @@ export async function POST(request: NextRequest) {
     const insertData = submission.questions.map((quiz) => ({
       attempt_id: inputedQuiz.id,
       word_id: quiz.question_word_id,
-      quiz_type: submission.quiz_type || null, // TODO: 문제마다 다르게 갈지 퀴즈를 따라갈지 고민 필요
+      quiz_type: submission.quiz_type || '', // TODO: 문제마다 다르게 갈지 퀴즈를 따라갈지 고민 필요
       user_answer: quiz.user_choice_id,
       correct_answer: quiz.question_word_id,
       is_correct: quiz.is_correct,
       user_id: user.id,
     }));
+
+    console.log('insertData=', insertData);
 
     const { error } = await supabase
       .from('quiz_responses')
