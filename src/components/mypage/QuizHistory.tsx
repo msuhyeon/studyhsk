@@ -1,5 +1,7 @@
 'use client';
 
+import { supabase } from '@/lib/supabase/client';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -10,13 +12,36 @@ import {
 } from '@/components/ui/card';
 import { Trophy, Award, BookOpen } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
-async function fetchQuizzes(limit: number) {
-  // TODO: quiz 내역 가져오는 쿼리 작성
-  // 어떤 정보를 어떻게 보여줄지 고민 필요
+
+interface QuizType = {
+
 }
 
 const QuizHistory = () => {
+  const [quizzes, setQuizzes] = useState<QuizType[]>([]);
+
+  useEffect(() => {
+    const fetchQuizzes = async (limit: number) => {
+      // TODO: quiz 내역 가져오는 쿼리 작성
+      // 어떤 정보를 어떻게 보여줄지 고민 필요
+      const { data, error } = await supabase
+        .from('words')
+        .select('*')
+        .eq('level', limit)
+        .range(28, 999);
+
+      if (error) {
+        console.error('퀴즈 내역 조회 실패:', error);
+        toast.error('퀴즈 내역 조회 실패. 다시 시도해주세요.');
+      }
+      setQuizzes(data)
+    };
+
+    fetchQuizzes(3);
+  }, []);
+
   return (
     <Card className="h-[450px]">
       <CardHeader>
