@@ -2,11 +2,11 @@
 
 import Bookmark from '@/components/mypage/Bookmark';
 import QuizHistory from '@/components/mypage/QuizHistory';
-import { Button } from '@/components/ui/button';
+// import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
-  CardDescription,
+  // CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
