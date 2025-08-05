@@ -34,22 +34,23 @@ const QuizHistory = () => {
                 <Award className="w-4 h-4 text-green-600" />
               </div>
               <div>
-                <div className="font-semibold text-gray-900">HSK 3급 퀴즈</div>
-                <div className="text-sm text-gray-600">2시간 전</div>
+                <div className="font-semibold text-gray-900">3급</div>
+                <div className="text-xs text-gray-600">2일 전</div>
               </div>
             </div>
             <div className="text-right">
-              <div className="font-semibold text-green-600">85%</div>
-              <div className="text-sm text-gray-600">17/20</div>
+              <div className="font-semibold text-green-600">4/5</div>
+              {/* <div className="text-sm text-gray-600">1:22</div> */}
+              <div className="text-sm text-gray-600">총 5문제</div>
             </div>
           </div>
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          {/* <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                 <Award className="w-4 h-4 text-blue-600" />
               </div>
               <div>
-                <div className="font-semibold text-gray-900">HSK 2급 퀴즈</div>
+                <div className="font-semibold text-gray-900">2급</div>
                 <div className="text-sm text-gray-600">1일 전</div>
               </div>
             </div>
@@ -64,7 +65,7 @@ const QuizHistory = () => {
                 <Award className="w-4 h-4 text-orange-600" />
               </div>
               <div>
-                <div className="font-semibold text-gray-900">HSK 3급 퀴즈</div>
+                <div className="font-semibold text-gray-900">3급</div>
                 <div className="text-sm text-gray-600">3일 전</div>
               </div>
             </div>
@@ -72,7 +73,7 @@ const QuizHistory = () => {
               <div className="font-semibold text-orange-600">76%</div>
               <div className="text-sm text-gray-600">15/20</div>
             </div>
-          </div>
+          </div> */}
         </div>
         <div className="mt-4 pt-4 border-t">
           <div className="flex items-center justify-between">

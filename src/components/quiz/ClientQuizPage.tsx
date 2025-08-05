@@ -138,6 +138,7 @@ const ClientQuizPage = ({ level }: Props) => {
         ? Math.floor((Date.now() - startTime) / 1000)
         : 0;
       const quizResult = {
+        correct_count: correctCount,
         score,
         duration,
         ...quizData,
