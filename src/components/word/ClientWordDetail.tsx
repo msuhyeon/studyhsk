@@ -329,6 +329,7 @@ const ClientWordDetail = ({ wordId }: WordDetailProps) => {
             <h3 className="text-xl font-semibold text-gray-800 mb-4">
               예문으로 학습하기
             </h3>
+            {/* TODO: 예문의 병음을 알 수 있는 기능을 추가 고민 */}
             {isGeneratingExamples ? (
               // 예문 생성 중 스켈레톤 UI
               <>

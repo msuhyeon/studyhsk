@@ -141,15 +141,19 @@ const MyPage = () => {
                 <div className="mt-4 pt-4 border-t">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">총 12회 응시</span>
-                    <Button variant="outline" size="sm">
-                      <Link href="">
+                    <Button variant="outline" className="w-27">
+                      <Link
+                        href="/mypage/bookmarks"
+                        className="flex items-center"
+                      >
                         <BookOpen className="w-4 h-4 mr-2" />
-                        전체 보기
+                        <span>전체 보기</span>
                       </Link>
                     </Button>
                   </div>
                 </div>
               </div>
+              {/* TODO: 해당 구조를 위한 db 구조 연구 */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center">
                   <div className="text-lg font-semibold text-gray-700 mb-2">
