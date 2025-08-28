@@ -5,6 +5,9 @@ import { supabase } from '@/lib/supabase/client';
 import { useUserStore } from '@/store/user';
 import { toast } from 'sonner';
 
+// 탭 포커스 시 토큰이 자동 갱신되므로 toast 중복 노출 방지 필요
+let hasShownLoginToast = false;
+
 // layout.tsx는 서버 컴포넌트이므로 클라이언트 전용 로직을 분리해 유저 정보 초기화
 const ClientUserProvider = () => {
   const setUser = useUserStore((state) => state.setUser);
@@ -23,9 +26,6 @@ const ClientUserProvider = () => {
     };
 
     fetchUser();
-
-    // 탭 포커스 시 토큰이 자동 갱신되므로 toast 중복 노출 방지 필요
-    let hasShownLoginToast = false;
 
     // Auth state 변화 감지
     // https://supabase.com/docs/reference/javascript/auth-onauthstatechange
