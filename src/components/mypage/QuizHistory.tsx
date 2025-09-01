@@ -15,12 +15,13 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 
-interface QuizType = {
+// interface QuizType = {
 
-}
+// }
 
 const QuizHistory = () => {
-  const [quizzes, setQuizzes] = useState<QuizType[]>([]);
+  // const [quizzes, setQuizzes] = useState<QuizType[]>([]);
+  const [quizzes, setQuizzes] = useState([]);
 
   useEffect(() => {
     const fetchQuizzes = async (limit: number) => {
