@@ -14,21 +14,22 @@ import { Trophy, Award, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-
 // interface QuizType = {
 
 // }
 
 const QuizHistory = () => {
   // const [quizzes, setQuizzes] = useState<QuizType[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [quizzes, setQuizzes] = useState([]);
 
   useEffect(() => {
     const fetchQuizzes = async (limit: number) => {
       // TODO: quiz 내역 가져오는 쿼리 작성
       // 어떤 정보를 어떻게 보여줄지 고민 필요
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { data, error } = await supabase
-        .from('words')
+        .from('quiz_responses')
         .select('*')
         .eq('level', limit)
         .range(28, 999);
@@ -37,7 +38,8 @@ const QuizHistory = () => {
         console.error('퀴즈 내역 조회 실패:', error);
         toast.error('퀴즈 내역 조회 실패. 다시 시도해주세요.');
       }
-      setQuizzes(data)
+
+      // setQuizzes(data);
     };
 
     fetchQuizzes(3);
