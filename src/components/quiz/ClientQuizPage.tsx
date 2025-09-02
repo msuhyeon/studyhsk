@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, Loader2Icon } from 'lucide-react';
@@ -115,14 +115,7 @@ const ClientQuizPage = ({ level }: Props) => {
     }
   };
 
-  // userAnswers가 업데이트될 때마다 퀴즈 완료 여부 체크
-  useEffect(() => {
-    if (quizData && userAnswers.length === quizData.total_questions) {
-      handleQuizComplete();
-    }
-  }, [userAnswers, quizData]);
-
-  const handleQuizComplete = async () => {
+  const handleQuizComplete = useCallback(async () => {
     if (!quizData) return;
 
     setIsSubmitting(true);
@@ -138,6 +131,7 @@ const ClientQuizPage = ({ level }: Props) => {
         ? Math.floor((Date.now() - startTime) / 1000)
         : 0;
       const quizResult = {
+        correct_count: correctCount,
         score,
         duration,
         ...quizData,
@@ -165,7 +159,14 @@ const ClientQuizPage = ({ level }: Props) => {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [quizData, userAnswers, startTime, router]);
+
+  // userAnswers가 업데이트될 때마다 퀴즈 완료 여부 체크
+  useEffect(() => {
+    if (quizData && userAnswers.length === quizData.total_questions) {
+      handleQuizComplete();
+    }
+  }, [userAnswers, quizData, handleQuizComplete]);
 
   // 스켈레톤 UI 적용 필요
   if (loading) {

@@ -16,6 +16,7 @@ type QuizSubmission = {
   duration: number;
   questions: UserAnswer[];
   quiz_type: string;
+  correct_count: number;
 };
 
 export async function POST(request: NextRequest) {
@@ -41,6 +42,9 @@ export async function POST(request: NextRequest) {
         level: submission.level,
         duration: submission.duration,
         score: submission.score,
+        quiz_type: 'meaning',
+        total_questions: submission.total_questions,
+        correct_count: submission.correct_count,
       })
       .select('id')
       .single();
