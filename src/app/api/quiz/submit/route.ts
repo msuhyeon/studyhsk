@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { data: inputedQuiz, error: attemptsError } = await supabase
-      .from('quiz_attempts')
+      .from('quiz_sessions')
       .insert({
         user_id: user.id,
         level: submission.level,
@@ -50,12 +50,12 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (attemptsError) {
-      console.error(`[ERROR]: INSERT quiz_responses ${attemptsError}`);
+      console.error(`[ERROR]: INSERT user_quiz_answers ${attemptsError}`);
       throw attemptsError;
     }
 
     const insertData = submission.questions.map((quiz) => ({
-      attempt_id: inputedQuiz.id,
+      session_id: inputedQuiz.id,
       word_id: quiz.question_word_id,
       quiz_type: submission.quiz_type || null, // TODO: 문제마다 다르게 갈지 퀴즈를 따라갈지 고민 필요
       user_answer: quiz.user_choice_id,
@@ -65,12 +65,12 @@ export async function POST(request: NextRequest) {
     }));
 
     const { error } = await supabase
-      .from('quiz_responses')
+      .from('user_quiz_answers')
       .insert(insertData)
       .select('id');
 
     if (error) {
-      console.error(`[ERROR]: INSERT quiz_responses ${error.message}`);
+      console.error(`[ERROR]: INSERT user_quiz_answers ${error.message}`);
       throw error;
     }
 

@@ -53,7 +53,6 @@ const MyPage = () => {
                 <div>
                   <div className="text-3xl font-bold mb-2">HSK 3급</div>
                   {/* TODO: 진행률 어떻게 산정할건지 고민 */}
-
                   <div className="text-blue-100">진행률: 10% 완료</div>
                 </div>
                 <div className="text-right">

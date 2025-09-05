@@ -26,7 +26,7 @@ type QuizData = {
   level: string;
   total_questions: number;
   quiz_type: string;
-  attempt_id: string;
+  session_id: string;
   questions: Question[];
 };
 
