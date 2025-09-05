@@ -23,26 +23,20 @@ const QuizHistory = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [quizzes, setQuizzes] = useState([]);
 
+  async function fetchQuizHistorys(limit: number) {
+    const response = await fetch(`/api/quiz/history?limit=${limit}`, {
+      method: 'GET',
+    });
+    const { quizHistory } = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        quizHistory?.error || '퀴즈 내역을 불러오는데 실패했습니다.'
+      );
+    }
+  }
   useEffect(() => {
-    const fetchQuizzes = async (limit: number) => {
-      // TODO: quiz 내역 가져오는 쿼리 작성
-      // 어떤 정보를 어떻게 보여줄지 고민 필요
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { data, error } = await supabase
-        .from('quiz_responses')
-        .select('*')
-        .eq('level', limit)
-        .range(28, 999);
-
-      if (error) {
-        console.error('퀴즈 내역 조회 실패:', error);
-        toast.error('퀴즈 내역 조회 실패. 다시 시도해주세요.');
-      }
-
-      // setQuizzes(data);
-    };
-
-    fetchQuizzes(3);
+    fetchQuizHistorys(3);
   }, []);
 
   return (

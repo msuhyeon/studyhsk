@@ -72,9 +72,15 @@ src/
 ### 주요 테이블
 - **words**: HSK 단어 데이터
 - **word_characters**: 한자별 상세 정보
+<<<<<<< Updated upstream
 - **quiz_attempts**: 퀴즈 시도 기록
 - **quiz_responses**: 퀴즈 문항별 응답 데이터
 - **bookmarks**: 북마크한 단어
+=======
+- **quiz_sessions**: 퀴즈 시도 기록
+- **user_quiz_answers**: 문항별 응답 데이터
+- **bookmarks**: 사용자 북마크
+>>>>>>> Stashed changes
 
 ## 배포 및 운영
 
