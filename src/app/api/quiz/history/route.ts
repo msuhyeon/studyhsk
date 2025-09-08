@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
-export async function GET(request: NextRequest, response: NextResponse) {
+export async function GET(request: NextRequest) {
   try {
-    console.log('잘했냐');
-
     const supabase = await createClient();
+    const { searchParams } = new URL(request.url);
+    const limit = parseInt(searchParams.get('limit') || '3');
     const {
       data: { user },
       error: userError,
@@ -18,8 +18,6 @@ export async function GET(request: NextRequest, response: NextResponse) {
       );
     }
 
-    // console.log('request-', request);
-
     const { data: quizHistoryData, error: quizHistoryError } = await supabase
       .from('quiz_sessions')
       .select(
@@ -27,15 +25,18 @@ export async function GET(request: NextRequest, response: NextResponse) {
             id,
             level,
             total_questions,
+            correct_count,
+            duration,
             created_at,
             user_quiz_answers!inner (
                 session_id
             )
         `
       )
-      .eq('user_id', user.id);
+      .eq('user_id', user.id)
+      .limit(limit);
 
-    console.log('quizHistoryData >>> ', quizHistoryData);
+    console.log('쿼리한 히스토리 >>> ', quizHistoryData);
 
     if (quizHistoryError) {
       throw quizHistoryError;
