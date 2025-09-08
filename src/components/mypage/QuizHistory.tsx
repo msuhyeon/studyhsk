@@ -24,13 +24,14 @@ interface QuizType {
 
 const QuizHistory = () => {
   const [quizzes, setQuizzes] = useState<QuizType[]>([]);
-
+  const [total, setTotal] = useState(0);
   async function fetchQuizHistorys(limit: number) {
     const response = await fetch(`/api/quiz/history?limit=${limit}`, {
       method: 'GET',
     });
-    const { quizHistory } = await response.json();
+    const { quizHistory, totalCount } = await response.json();
     setQuizzes(quizHistory);
+    setTotal(totalCount);
 
     console.log('quizHistory', quizHistory);
 
@@ -122,7 +123,7 @@ const QuizHistory = () => {
         </div>
         <div className="mt-4 pt-4 border-t">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">총 12회 응시</span>
+            <span className="text-sm text-gray-600">총 {total}회 응시</span>
             {/* {count > 3 && ( */}
             <Button variant="outline" className="w-27">
               <Link href="/mypage/quizzes" className="flex items-center">

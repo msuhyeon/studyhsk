@@ -1,6 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
+async function getTotalQuizCount(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string
+): Promise<number> {
+  const { count, error } = await supabase
+    .from('quiz_sessions')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId);
+
+  if (error) {
+    console.error('Error counting quiz sessions:', error);
+    return 0;
+  }
+
+  return count || 0;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -36,14 +53,15 @@ export async function GET(request: NextRequest) {
       .eq('user_id', user.id)
       .limit(limit);
 
-    console.log('쿼리한 히스토리 >>> ', quizHistoryData);
-
     if (quizHistoryError) {
       throw quizHistoryError;
     }
 
+    const totalCount = await getTotalQuizCount(await supabase, user.id);
+
     return NextResponse.json({
       quizHistory: quizHistoryData,
+      totalCount,
     });
   } catch (error) {
     console.error('[ERROR] Quiz History API:', error);
