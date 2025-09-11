@@ -14,7 +14,7 @@ export async function GET(request: NextRequest, { params }: Props) {
     const supabase = await createClient();
 
     const { data: quizData, error: quizError } = await supabase
-      .from('quiz_attempts')
+      .from('quiz_sessions')
       .select('level, score, duration')
       .eq('id', id)
       .single();
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest, { params }: Props) {
 
     // 틀린 문제만 가져오기
     const { data: wrongAnswers, error: wrongError } = await supabase
-      .from('quiz_responses')
+      .from('user_quiz_answers')
       .select(
         `
       word_id,
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest, { params }: Props) {
       )
       `
       )
-      .eq('attempt_id', id)
+      .eq('session_id', id)
       .eq('is_correct', false);
 
     // TODO: 예문 모두 셋팅되면 그때 사용

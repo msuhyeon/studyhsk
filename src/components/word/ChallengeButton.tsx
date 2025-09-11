@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase/client';
-import { useUserStore } from '@/store/user';
+import { useUser } from '@/hooks/useUser';
 import { toast } from 'sonner';
 
 type ChallengeButtonProps = {
@@ -13,7 +13,7 @@ type ChallengeButtonProps = {
 const ChallengeButton = ({ level }: ChallengeButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isStarted, setIsStarted] = useState(false);
-  const user = useUserStore((state) => state.user);
+  const { data: user } = useUser();
 
   const handleChallenge = async () => {
     if (!user) {
