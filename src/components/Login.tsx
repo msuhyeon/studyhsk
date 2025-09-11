@@ -13,9 +13,10 @@ import {
 } from '@/components/ui/dialog';
 import { logout } from '@/lib/supabase/userApi';
 import { LogInIcon } from 'lucide-react';
-import { useUserStore } from '@/store/user';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useRouter } from 'next/navigation';
+import { useUser } from '@/hooks/useUser';
+import { useQueryClient } from '@tanstack/react-query';
 
 const GoogleIcon = () => (
   <svg
@@ -45,7 +46,10 @@ const GoogleIcon = () => (
 );
 
 const Login = () => {
-  const user = useUserStore((state) => state.user);
+  const { data: user } = useUser();
+  const queryClient = useQueryClient();
+  const router = useRouter();
+
   const handleLogin = () => {
     try {
       // 브라우저에서 팝업 또는 리다이렉트를 통해 동작하므로 client component
@@ -61,7 +65,16 @@ const Login = () => {
     }
   };
 
-  const router = useRouter();
+  const handleLogout = async () => {
+    try {
+      await logout();
+      // 사용자 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+    } catch (error) {
+      console.error(`[ERROR] Failed logout: ${error}`);
+      toast.error('로그아웃 실패. 다시 시도해주세요.');
+    }
+  };
 
   return (
     <>
@@ -85,7 +98,7 @@ const Login = () => {
               </AvatarFallback>
             </Avatar>
           </Button>
-          <Button variant={'outline'} onClick={() => logout()}>
+          <Button variant={'outline'} onClick={handleLogout}>
             로그아웃
           </Button>
         </div>
