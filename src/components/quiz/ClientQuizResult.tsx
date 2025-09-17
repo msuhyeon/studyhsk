@@ -69,7 +69,7 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
   useEffect(() => {
     const fetchResult = async () => {
       try {
-        const response = await fetch(`/api/quiz/result/${quizId}`);
+        const response = await fetch(`/api/v1/quiz/result/${quizId}`);
         const data = await response.json();
 
         if (!response.ok) {

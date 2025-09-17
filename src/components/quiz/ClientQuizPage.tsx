@@ -59,7 +59,7 @@ const ClientQuizPage = ({ level }: Props) => {
   useEffect(() => {
     const fetchQuizData = async () => {
       try {
-        const response = await fetch(`/api/v2/quiz/${level}`);
+        const response = await fetch(`/api/v1/quiz/${level}`);
         const data = await response.json();
 
         if (!response.ok) {
@@ -138,7 +138,7 @@ const ClientQuizPage = ({ level }: Props) => {
   //       questions: userAnswers,
   //     };
 
-  //     const response = await fetch('/api/quiz/submit', {
+  //     const response = await fetch('/api/v1/quiz/submit', {
   //       method: 'POST',
   //       headers: {
   //         'Content-Type': 'application/json',

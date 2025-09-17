@@ -15,7 +15,7 @@ interface QuizType {
 }
 
 async function fetchQuizHistorys(limit: number) {
-  const response = await fetch(`/api/quiz/history?limit=${limit}`, {
+  const response = await fetch(`/api/v1/quiz/history?limit=${limit}`, {
     method: 'GET',
   });
 
