@@ -59,7 +59,7 @@ const ClientQuizPage = ({ level }: Props) => {
   useEffect(() => {
     const fetchQuizData = async () => {
       try {
-        const response = await fetch(`/api/quiz/${level}?count=5`);
+        const response = await fetch(`/api/quiz-new/${level}`);
         const data = await response.json();
 
         if (!response.ok) {
@@ -83,140 +83,139 @@ const ClientQuizPage = ({ level }: Props) => {
     fetchQuizData();
   }, [level]);
 
-  const handleChoiceSelect = (choiceId: string, text: string) => {
-    setSelectedChoice({ id: choiceId, meaning: text });
-  };
-  const currentQuestion = quizData?.questions[currentQuestionIndex];
-  const progress = useMemo(
-    () =>
-      quizData
-        ? ((currentQuestionIndex + 1) / quizData.total_questions) * 100
-        : 0,
-    [currentQuestionIndex, quizData]
-  );
+  // const handleChoiceSelect = (choiceId: string, text: string) => {
+  //   setSelectedChoice({ id: choiceId, meaning: text });
+  // };
+  // const currentQuestion = quizData?.questions[currentQuestionIndex];
+  // const progress = useMemo(
+  //   () =>
+  //     quizData
+  //       ? ((currentQuestionIndex + 1) / quizData.total_questions) * 100
+  //       : 0,
+  //   [currentQuestionIndex, quizData]
+  // );
 
-  const handleNextQuestion = () => {
-    if (!selectedChoice || !quizData) return;
+  // const handleNextQuestion = () => {
+  //   if (!selectedChoice || !quizData) return;
 
-    const currentQuestion = quizData.questions[currentQuestionIndex];
-    const isCorrect = selectedChoice.id === currentQuestion.word_id;
-    const userAnswer: UserAnswer = {
-      user_choice_id: selectedChoice.id,
-      // selected_meaning: selectedChoice.meaning,
-      question_word_id: currentQuestion.word_id,
-      is_correct: isCorrect,
-    };
+  //   const currentQuestion = quizData.questions[currentQuestionIndex];
+  //   const isCorrect = selectedChoice.id === currentQuestion.word_id;
+  //   const userAnswer: UserAnswer = {
+  //     user_choice_id: selectedChoice.id,
+  //     // selected_meaning: selectedChoice.meaning,
+  //     question_word_id: currentQuestion.word_id,
+  //     is_correct: isCorrect,
+  //   };
 
-    setUserAnswers((data) => [...data, userAnswer]);
-    setSelectedChoice(null);
+  //   setUserAnswers((data) => [...data, userAnswer]);
+  //   setSelectedChoice(null);
 
-    if (currentQuestionIndex < quizData.questions.length - 1) {
-      setCurrentQuestionIndex((data) => data + 1);
-    }
-  };
+  //   if (currentQuestionIndex < quizData.questions.length - 1) {
+  //     setCurrentQuestionIndex((data) => data + 1);
+  //   }
+  // };
 
-  const handleQuizComplete = useCallback(async () => {
-    if (!quizData) return;
+  // const handleQuizComplete = useCallback(async () => {
+  //   if (!quizData) return;
 
-    setIsSubmitting(true);
+  //   setIsSubmitting(true);
 
-    const finalAnswers = userAnswers;
+  //   const finalAnswers = userAnswers;
 
-    try {
-      const correctCount = finalAnswers.filter(
-        (answer) => answer.is_correct
-      ).length;
-      const score = Math.round((correctCount / quizData.total_questions) * 100);
-      const duration = startTime
-        ? Math.floor((Date.now() - startTime) / 1000)
-        : 0;
-      const quizResult = {
-        correct_count: correctCount,
-        score,
-        duration,
-        ...quizData,
-        questions: userAnswers,
-      };
+  //   try {
+  //     const correctCount = finalAnswers.filter(
+  //       (answer) => answer.is_correct
+  //     ).length;
+  //     const score = Math.round((correctCount / quizData.total_questions) * 100);
+  //     const duration = startTime
+  //       ? Math.floor((Date.now() - startTime) / 1000)
+  //       : 0;
+  //     const quizResult = {
+  //       correct_count: correctCount,
+  //       score,
+  //       duration,
+  //       ...quizData,
+  //       questions: userAnswers,
+  //     };
 
-      const response = await fetch('/api/quiz/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(quizResult),
-      });
+  //     const response = await fetch('/api/quiz/submit', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify(quizResult),
+  //     });
 
-      if (!response.ok) {
-        throw new Error('퀴즈 제출에 실패했습니다.');
-      }
+  //     if (!response.ok) {
+  //       throw new Error('퀴즈 제출에 실패했습니다.');
+  //     }
 
-      const result = await response.json();
+  //     const result = await response.json();
 
-      router.push(`/quiz/result/${result.inputedQuiz.id}`);
-    } catch (error) {
-      console.error('[ERROR] Quiz submit:', error);
-      toast.error('퀴즈 제출에 실패했습니다.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [quizData, userAnswers, startTime, router]);
+  //     router.push(`/quiz/result/${result.inputedQuiz.id}`);
+  //   } catch (error) {
+  //     console.error('[ERROR] Quiz submit:', error);
+  //     toast.error('퀴즈 제출에 실패했습니다.');
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // }, [quizData, userAnswers, startTime, router]);
 
   // userAnswers가 업데이트될 때마다 퀴즈 완료 여부 체크
-  useEffect(() => {
-    if (quizData && userAnswers.length === quizData.total_questions) {
-      handleQuizComplete();
-    }
-  }, [userAnswers, quizData, handleQuizComplete]);
+  // useEffect(() => {
+  //   if (quizData && userAnswers.length === quizData.total_questions) {
+  //     handleQuizComplete();
+  //   }
+  // }, [userAnswers, quizData, handleQuizComplete]);
 
-  // 스켈레톤 UI 적용 필요
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <Loader2Icon className="animate-spin" />
-      </div>
-    );
-  }
+  // // 스켈레톤 UI 적용 필요
+  // if (loading) {
+  //   return (
+  //     <div className="flex justify-center items-center min-h-screen">
+  //       <Loader2Icon className="animate-spin" />
+  //     </div>
+  //   );
+  // }
 
-  // 퀴즈가 없는 경우
-  if (!quizData) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-center">
-          <div className="text-xl mb-4">퀴즈를 불러올 수 없습니다🫢</div>
-          <button
-            onClick={() => router.back()}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-          >
-            돌아가기
-          </button>
-        </div>
-      </div>
-    );
-  } else {
-    if (quizData.questions.length < 1) {
-      return (
-        <div className="flex flex-col justify-center items-center min-h-screen gap-4">
-          <div className="text-xl">
-            {level}급 퀴즈를 준비 중 이에요. 조금만 기다려주세요😅
-          </div>
-          <button
-            onClick={() => router.back()}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-          >
-            돌아가기
-          </button>
-        </div>
-      );
-    }
-  }
+  // // 퀴즈가 없는 경우
+  // if (!quizData) {
+  //   return (
+  //     <div className="flex justify-center items-center min-h-screen">
+  //       <div className="text-center">
+  //         <div className="text-xl mb-4">퀴즈를 불러올 수 없습니다🫢</div>
+  //         <button
+  //           onClick={() => router.back()}
+  //           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+  //         >
+  //           돌아가기
+  //         </button>
+  //       </div>
+  //     </div>
+  //   );
+  // } else {
+  //   if (quizData.questions.length < 1) {
+  //     return (
+  //       <div className="flex flex-col justify-center items-center min-h-screen gap-4">
+  //         <div className="text-xl">
+  //           {level}급 퀴즈를 준비 중 이에요. 조금만 기다려주세요😅
+  //         </div>
+  //         <button
+  //           onClick={() => router.back()}
+  //           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+  //         >
+  //           돌아가기
+  //         </button>
+  //       </div>
+  //     );
+  //   }
+  // }
 
   return (
     <div className="min-w-full lg:min-w-2xl max-w-2xl mx-auto p-6">
-      <div className="flex items-center justify-between mb-6">
+      {/* <div className="flex items-center justify-between mb-6">
         <h1 className="title">HSK {level}급 퀴즈</h1>
         <QuizTimer startTime={startTime} />
       </div>
-      {/* 진행 상황 */}
       <div className="mb-8">
         <div className="flex justify-between text-sm text-gray-600 mb-2">
           <span>
@@ -226,7 +225,6 @@ const ClientQuizPage = ({ level }: Props) => {
         </div>
         <Progress value={progress} />
       </div>
-      {/* 문제 */}
       <div className="bg-white rounded-lg shadow-lg p-8 mb-6">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-gray-800 mb-2">
@@ -275,7 +273,7 @@ const ClientQuizPage = ({ level }: Props) => {
             '다음 문제'
           )}
         </Button>
-      </div>
+      </div> */}
     </div>
   );
 };
