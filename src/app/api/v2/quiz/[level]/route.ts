@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabase/client';
 
 type Props = {
   params: Promise<{
@@ -14,6 +15,8 @@ function getQuestionType(index: number) {
   if (index <= 2) return 'basic';
   if (index <= 6) return 'sentence';
   if (index <= 8) return 'construction';
+  // TODO: 마지막 문제는 hanzi-writer 라이브러리 이용 예정, 3번 이상 틀릴 시 틀린 문제로 처리
+  // if (index <= 9) return 'writing'
   return 'situation';
 }
 
@@ -31,7 +34,6 @@ function buildPrompt(
     - 오답 3개: 비슷한 품사이지만 다른 의미의 한국어 단어들
     **중요**: options 배열에서 정답의 위치를 랜덤하게 배치해주세요.
 
-
     응답 형식:
     {
       "question_text": "다음 한자의 의미는?",
@@ -47,12 +49,13 @@ function buildPrompt(
     - 일상생활 상황의 문장
     - 정답: 주어진 단어의 의미
     - 오답 3개: 문맥상 헷갈릴 수 있는 비슷한 의미의 단어들
+    - 반드시 주어진 단어 "${word}"가 포함된 중국어 문장을 만드세요
     **중요**: options 배열에서 정답의 위치를 랜덤하게 배치해주세요.
 
     응답 형식:
     {
       "question_text": "다음 문장에서 밑줄 친 단어의 의미는?",
-      "sentence": "중국어 문장 (밑줄 친 단어는 **${word}**로 표시)",
+      "sentence": "중국어 문장 (밑줄 친 단어는 **${word}** 형태로 강조 표시)",
       "options": ["정답", "오답1", "오답2", "오답3"],
       "correct_answer": "정답"
     }`,
@@ -86,45 +89,86 @@ function buildPrompt(
       "options": ["정답 표현", "오답1", "오답2", "오답3"],
       "correct_answer": "정답 표현"
     }`,
+    writing: `단어: ${word}, 병음: ${pinyin}, 의미: ${meaning}
+
+    주어진 
+    `,
   };
 
   return templates[type as keyof typeof templates];
 }
 export async function GET(request: NextRequest, { params }: Props) {
   const { level } = await params;
+  // const { searchParams } = new URL(request.url);
+
+  const { data: allWords, error } = await supabase.rpc('get_random_words', {
+    level: level,
+    count: 10,
+  });
+
+  if (error) {
+    console.error(`[ERROR] SELECT Quiz: ${error}`);
+    throw error;
+  }
+
+  if (!allWords || allWords.length < 1) {
+    return NextResponse.json(
+      { error: '퀴즈로 출제할 단어가 없습니다.' },
+      { status: 400 }
+    );
+  }
 
   // db에서 단어 정보 가져와서 openai api 호출 시 사용
   // level, word, pinyin, meaning, index
-
-  const questionType = getQuestionType(index);
-  const userPrompt = buildPrompt(questionType, word, pinyin, meaning);
-
-  const systemPrompt = `당신은 전문적인 HSK 중국어 학습 문제 출제자입니다. 
-    학습자의 수준에 맞는 효과적인 문제를 제작하며, 항상 JSON 형식으로 응답합니다.`;
-
   try {
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-        'Accept-Encoding': 'identity',
-      },
-      body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-        temperature: 0.7,
-      }),
-    });
+    // OpenAI 응답 본문 파싱 (Response 객체가 아닌 실제 내용 확인)
+    const questions = [];
 
-    const result = await res.json();
-    const content = result?.choices[0]?.message?.content;
+    for (const [index, word] of allWords.entries()) {
+      const questionType = getQuestionType(index);
+      const userPrompt = buildPrompt(
+        questionType,
+        word.word,
+        word.pinyin,
+        word.meaning
+      );
 
-    const parsedContent = JSON.parse(content);
-    return NextResponse.json(parsedContent);
+      const systemPrompt = `당신은 전문적인 HSK 중국어 학습 문제 출제자입니다.
+        학습자의 수준에 맞는 효과적인 문제를 제작하며, 항상 JSON 형식으로 응답합니다.`;
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+          'Accept-Encoding': 'identity',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          response_format: { type: 'json_object' },
+          temperature: 0.7,
+        }),
+      });
+
+      const result = await res.json();
+      const parsedContent = JSON.parse(result.choices[0].message.content);
+
+      questions.push({
+        word_id: word.id,
+        question: parsedContent.question_text,
+        options: parsedContent.options,
+        correct_answer: parsedContent.correct_answer,
+      });
+    }
+
+    
+    console.log('questions-', questions);
+
+    // 파싱된 JSON을 그대로 반환하여 결과를 확인할 수 있게 함
+    return NextResponse.json(questions ?? { error: '모델 응답 없음' });
   } catch (error) {
     return NextResponse.json({ error: '문제 생성 실패' }, { status: 500 });
   }
