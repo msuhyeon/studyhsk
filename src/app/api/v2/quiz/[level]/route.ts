@@ -45,32 +45,42 @@ function buildPrompt(
     sentence: `단어: ${word}, 병음: ${pinyin}, 의미: ${meaning}
 
     문장 속에서 단어의 의미를 파악하는 문제를 JSON 형식으로 만들어주세요:
-    - 주어진 단어가 포함된 자연스러운 중국어 문장 작성 (10-15자)
+    - 주어진 단어가 정확히 1회 포함된 자연스러운 중국어 문장 작성 (10-15자)
     - 일상생활 상황의 문장
     - 정답: 주어진 단어의 의미
     - 오답 3개: 문맥상 헷갈릴 수 있는 비슷한 의미의 단어들
-    - 반드시 주어진 단어 "${word}"가 포함된 중국어 문장을 만드세요
+    - 하이라이트 표기는 문자열 내에 대괄호로 감싼 형태로 고정합니다: [${word}]
+    - "sentence_raw": 하이라이트 없이 원문 문장
+    - "marked_sentence": 타겟 단어만 정확히 한 번 [${word}]로 감싼 문장 (기타 마크업 금지)
     **중요**: options 배열에서 정답의 위치를 랜덤하게 배치해주세요.
 
     응답 형식:
     {
-      "question_text": "다음 문장에서 밑줄 친 단어의 의미는?",
-      "sentence": "중국어 문장 (밑줄 친 단어는 **${word}** 형태로 강조 표시)",
+      "question_text": "다음 문장에서 대괄호로 표시된 단어의 의미는?",
+      "sentence_raw": "중국어 문장에 ${word} 포함",
+      "marked_sentence": "중국어 문장에 [${word}] 포함",
+      "pinyin": "문장 병음(선택)",
       "options": ["정답", "오답1", "오답2", "오답3"],
       "correct_answer": "정답"
     }`,
     construction: `단어: ${word}, 병음: ${pinyin}, 의미: ${meaning}
 
-    단어 배열 문제를 JSON 형식으로 만들어주세요:
-    - 주어진 단어를 포함한 4-6개 단어로 자연스러운 중국어 문장 구성
-    - 일상적이면서 문법적으로 올바른 구조
-    - 배열할 단어들과 정답 문장 제시
-    **중요**: options 배열에서 정답의 위치를 랜덤하게 배치해주세요.
+    단어 순서 배열(드래그앤드롭) 문제를 JSON 형식으로 만들어주세요.
+    반드시 아래 요구사항과 응답 스키마를 정확히 지키세요:
+    - 주어진 단어 "${word}"가 반드시 포함된 자연스러운 중국어 문장을 만드세요 (4~6 토큰 권장)
+    - 각 토큰은 고유한 id를 가진 객체 형태로 제공합니다. 예: { "id": "t1", "text": "他" }
+    - 정답 순서를 correct_order(토큰 id 배열)로 제공합니다. 예: ["t1","t2","t3","t4"]
+    - initial_order에는 같은 토큰 id들을 무작위로 섞어 제공합니다(클라이언트 초기 배치용)
+    - correct_sentence(정답 문장)와 translation(한국어 번역)을 함께 제공합니다
+    - 응답에는 options, correct_answer 필드를 포함하지 마세요
 
-    응답 형식:
+    응답 형식(JSON 객체, 키 고정):
     {
+      "type": "ordering",
       "question_text": "다음 단어들을 올바른 순서로 배열하세요:",
-      "scrambled_words": ["단어1", "단어2", "단어3", "단어4"],
+      "tokens": [ { "id": "t1", "text": "단어1" }, { "id": "t2", "text": "단어2" }, { "id": "t3", "text": "단어3" }, { "id": "t4", "text": "단어4" } ],
+      "initial_order": ["t3", "t1", "t4", "t2"],
+      "correct_order": ["t1", "t2", "t3", "t4"],
       "correct_sentence": "올바른 문장",
       "translation": "한국어 번역"
     }`,
@@ -121,10 +131,9 @@ export async function GET(request: NextRequest, { params }: Props) {
   // db에서 단어 정보 가져와서 openai api 호출 시 사용
   // level, word, pinyin, meaning, index
   try {
-    // OpenAI 응답 본문 파싱 (Response 객체가 아닌 실제 내용 확인)
-    const questions = [];
+    const systemPrompt = `당신은 전문적인 HSK 중국어 학습 문제 출제자입니다.\n학습자의 수준에 맞는 효과적인 문제를 제작하며, 항상 JSON 형식으로만 응답합니다.`;
 
-    for (const [index, word] of allWords.entries()) {
+    async function generateOne(word: any, index: number) {
       const questionType = getQuestionType(index);
       const userPrompt = buildPrompt(
         questionType,
@@ -133,8 +142,6 @@ export async function GET(request: NextRequest, { params }: Props) {
         word.meaning
       );
 
-      const systemPrompt = `당신은 전문적인 HSK 중국어 학습 문제 출제자입니다.
-        학습자의 수준에 맞는 효과적인 문제를 제작하며, 항상 JSON 형식으로 응답합니다.`;
       const res = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -154,21 +161,50 @@ export async function GET(request: NextRequest, { params }: Props) {
       });
 
       const result = await res.json();
-      const parsedContent = JSON.parse(result.choices[0].message.content);
+      const content = result?.choices?.[0]?.message?.content;
+      if (!content) throw new Error('모델 응답 없음');
+      const parsedContent = JSON.parse(content);
 
-      questions.push({
+      if (questionType === 'construction') {
+        return {
+          word_id: word.id,
+          type: parsedContent.type ?? 'ordering',
+          question: parsedContent.question_text,
+          tokens: parsedContent.tokens,
+          initial_order: parsedContent.initial_order,
+          correct_order: parsedContent.correct_order,
+          correct_sentence: parsedContent.correct_sentence,
+          translation: parsedContent.translation,
+        };
+      }
+
+      return {
         word_id: word.id,
+        type: questionType,
         question: parsedContent.question_text,
         options: parsedContent.options,
         correct_answer: parsedContent.correct_answer,
-      });
+        pinyin: parsedContent.pinyin,
+        sentence: parsedContent.sentence ?? parsedContent.sentence_raw,
+        marked_sentence: parsedContent.marked_sentence,
+        situation: parsedContent.situation,
+        word_display: parsedContent.word_display,
+      };
     }
 
-    
-    console.log('questions-', questions);
+    const results = await Promise.allSettled(
+      allWords.map((word: any, idx: number) => generateOne(word, idx))
+    );
 
-    // 파싱된 JSON을 그대로 반환하여 결과를 확인할 수 있게 함
-    return NextResponse.json(questions ?? { error: '모델 응답 없음' });
+    const questions = results
+      .filter((r): r is PromiseFulfilledResult<any> => r.status === 'fulfilled')
+      .map((r) => r.value);
+
+    if (questions.length === 0) {
+      return NextResponse.json({ error: '문제 생성 실패' }, { status: 500 });
+    }
+
+    return NextResponse.json(questions);
   } catch (error) {
     return NextResponse.json({ error: '문제 생성 실패' }, { status: 500 });
   }
