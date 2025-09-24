@@ -3,16 +3,25 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 import {
   CheckCircle,
   Loader2Icon,
   RotateCcw,
   XCircle,
   Volume2,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 // import { toast } from 'sonner';
 // import QuizTimer from './QuizTimer';
+
+/**
+ * NOTE: 요구사항에 따라 기존 주석 코드는 그대로 유지했습니다. (아래 원문 주석 블록 보존)
+ */
 
 type Choice = {
   id: number;
@@ -34,7 +43,7 @@ type WordText = {
 
 type QuizData = {
   word_id: string;
-  type: string;
+  type: 'basic' | 'sentence' | 'ordering' | 'construction' | 'situation';
   question: string;
   options?: string[];
   correct_answer?: string;
@@ -68,7 +77,7 @@ type SelectedAnswerType = {
 const ClientQuizPage = ({ level }: Props) => {
   const router = useRouter();
   // const [quizData, setQuizData] = useState<QuizData | null>(null);
-  const [quizData, setQuizData] = useState<QuizData[] | null>(null);
+  const [quizData, setQuizData] = useState<QuizData[]>();
   const [loading, setLoading] = useState(true);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
@@ -77,6 +86,9 @@ const ClientQuizPage = ({ level }: Props) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [startTime, setStartTime] = useState<number | null>(null);
 
+  /**
+   * Demo 데이터 주입 (원문 유지)
+   */
   useEffect(() => {
     setQuizData([
       {
@@ -212,6 +224,7 @@ const ClientQuizPage = ({ level }: Props) => {
         word_display: undefined,
       },
     ]);
+    setLoading(false);
   }, []);
 
   // useEffect(() => {
@@ -369,59 +382,159 @@ const ClientQuizPage = ({ level }: Props) => {
   // }
 
   const [currentQuiz, setCurrentQuiz] = useState<string>('basic');
-  const [currentData, setCurrentData] = useState<QuizData | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
-  const [draggedTokens, setDraggedTokens] = useState([]);
+  const [draggedTokens, setDraggedTokens] = useState<WordText[]>([]);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
-  useEffect(() => {
-    setCurrentData(quizData[currentQuestionIndex]);
-  }, [quizData, currentQuestionIndex]);
+  // useEffect(() => {
+  //   if (quizData) {
+  //     setCurrentData(quizData[currentQuestionIndex]);
+  //   }
+  // }, [quizData, currentQuestionIndex]);
 
-  const handleDragStart = (e, id) => {};
-  const handleDragOver = (e, index) => {};
-  const handleDrop = (e, index) => {};
-  const handleAnswerSelect = (option) => {};
-  const clickNextButton = () => {
-    setCurrentQuestionIndex((prev) => prev + 1);
+  const currentData = useMemo(
+    () => quizData?.[currentQuestionIndex] ?? null,
+    [quizData, currentQuestionIndex]
+  );
+
+  const totalQuestions = quizData?.length ?? 0;
+  const progress = useMemo(
+    () =>
+      totalQuestions ? ((currentQuestionIndex + 1) / totalQuestions) * 100 : 0,
+    [currentQuestionIndex, totalQuestions]
+  );
+
+  const handleAnswerSelect = (option: string) => {
+    if (showResult) return;
+    setSelectedAnswer(option);
   };
 
+  useEffect(() => {
+    setSelectedAnswer(null);
+    setShowResult(false);
+    if (currentData?.type === 'ordering' && currentData.tokens) {
+      // 초기 토큰 셋업
+      const initial =
+        currentData.initial_order || currentData.tokens.map((t) => t.id);
+      const dict = new Map(currentData.tokens.map((t) => [t.id, t.text]));
+      setDraggedTokens(initial.map((id) => ({ id, text: dict.get(id) || '' })));
+    }
+  }, [currentQuestionIndex]);
+
+  // DnD: 단순 로컬 구현 (모바일 터치 고려 X)
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, id: string) => {
+    e.dataTransfer.setData('text/plain', id);
+  };
+  const handleDragOver = (
+    e: React.DragEvent<HTMLDivElement>,
+    index: number
+  ) => {
+    e.preventDefault();
+    setDragOverIndex(index);
+  };
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>, index: number) => {
+    e.preventDefault();
+    const id = e.dataTransfer.getData('text/plain');
+    const from = draggedTokens.findIndex((t) => t.id === id);
+    if (from === -1) return;
+    const next = [...draggedTokens];
+    const [moved] = next.splice(from, 1);
+    next.splice(index, 0, moved);
+    setDraggedTokens(next);
+    setDragOverIndex(null);
+  };
+
+  const checkOrderCorrect = () => {
+    if (!currentData?.correct_order) return false;
+    const cur = draggedTokens.map((t) => t.id);
+    return JSON.stringify(cur) === JSON.stringify(currentData.correct_order);
+  };
+
+  const revealResult = () => {
+    if (!currentData) return;
+    if (currentData.type === 'ordering') {
+      const ok = checkOrderCorrect();
+      setSelectedAnswer(ok ? 'correct' : 'incorrect');
+      setShowResult(true);
+      return;
+    }
+    if (!selectedAnswer) return;
+    setShowResult(true);
+  };
+
+  const goPrev = () => setCurrentQuestionIndex((i) => Math.max(0, i - 1));
+  const goNext = () =>
+    setCurrentQuestionIndex((i) => Math.min(totalQuestions - 1, i + 1));
+
+  /** UI 파트: 공통 카드 래퍼 */
+  const Card = ({
+    children,
+    className = '',
+  }: {
+    children: React.ReactNode;
+    className?: string;
+  }) => (
+    <div
+      className={[
+        'rounded-2xl border border-gray-200/60 bg-white/90 dark:bg-neutral-900/60 backdrop-blur',
+        'shadow-sm hover:shadow-md transition-shadow',
+        className,
+      ].join(' ')}
+    >
+      {children}
+    </div>
+  );
+
+  /** 개별 렌더러들 */
   const renderBasicQuiz = () => (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-3">
           {currentData?.question}
         </h2>
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-8 mb-6">
-          <div className="text-6xl font-bold text-gray-800 mb-3">
-            {currentData?.word_display}
-          </div>
-          <div className="flex items-center justify-center space-x-2 text-lg text-gray-600">
-            <span>{currentData?.pinyin}</span>
-            <button className="p-1 hover:bg-white rounded-full transition-colors">
-              <Volume2 size={18} />
-            </button>
-          </div>
-        </div>
+        <Card className="p-8">
+          <motion.div
+            initial={{ scale: 0.98, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.2 }}
+            className=""
+          >
+            <div className="text-4xl font-bold text-gray-900 dark:text-white mb-3">
+              {currentData?.word_display}
+            </div>
+            <div className="flex items-center justify-center gap-2 text-base text-gray-600 dark:text-gray-300">
+              <span>[{currentData?.pinyin}]</span>
+              <Button
+                className="h-8 w-8 p-0 rounded-full"
+                variant="ghost"
+                aria-label="음성 재생"
+              >
+                <Volume2 size={16} />
+              </Button>
+            </div>
+          </motion.div>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 gap-3">
-        {currentData?.options?.map((option, index) => (
-          <button
+        {/* 원문 주석 유지 */}
+        {/* {currentData?.options?.map((option, index) => (
+          <Button
             key={index}
             onClick={() => handleAnswerSelect(option)}
-            className={`p-4 text-left rounded-lg border-2 transition-all duration-300 ${
+            variant={'outline'}
+            className={`p-4 text-left rounded-lg border border-[#ff0000] transition-all duration-300 py-2 ${
               selectedAnswer === option
                 ? option === currentData?.correct_answer
                   ? 'bg-green-50 border-green-500 text-green-800'
                   : 'bg-red-50 border-red-500 text-red-800'
-                : 'bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                : 'hover:bg-neutral-500 hover:text-white'
             }`}
             disabled={showResult}
           >
             <div className="flex items-center justify-between">
-              <span className="font-medium">{option}</span>
+              <span className="">{option}</span>
               {showResult && option === currentData?.correct_answer && (
                 <CheckCircle className="text-green-600" size={20} />
               )}
@@ -431,8 +544,56 @@ const ClientQuizPage = ({ level }: Props) => {
                   <XCircle className="text-red-600" size={20} />
                 )}
             </div>
-          </button>
-        ))}
+          </Button>
+        ))} */}
+
+        {currentData?.options?.map((option, index) => {
+          const isSelected = selectedAnswer === option;
+          const isCorrect = option === currentData?.correct_answer;
+          const isWrong = isSelected && !isCorrect;
+          return (
+            <Button
+              key={index}
+              onClick={() => handleAnswerSelect(option)}
+              variant="outline"
+              disabled={showResult}
+              className={[
+                // base
+                'w-full rounded-xl px-4 py-3 text-left',
+                'border border-transparent bg-white/70 dark:bg-white/5',
+                'transition-all duration-200 ease-out',
+                'shadow-sm hover:shadow-md active:scale-[0.99]',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
+                'focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900',
+                // states
+                !showResult &&
+                  isSelected &&
+                  'border-blue-300 bg-blue-50 text-blue-800 dark:bg-blue-400/10 dark:text-blue-200',
+                showResult &&
+                  isCorrect &&
+                  'border-emerald-300 bg-emerald-50 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-200',
+                showResult &&
+                  isWrong &&
+                  'border-rose-300 bg-rose-50 text-rose-800 dark:bg-rose-500/10 dark:text-rose-200',
+                !isSelected &&
+                  !showResult &&
+                  'hover:bg-gray-50 dark:hover:bg-white/10',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-medium">{option}</span>
+                {showResult && isCorrect && (
+                  <CheckCircle className="text-emerald-600" size={18} />
+                )}
+                {showResult && isWrong && (
+                  <XCircle className="text-rose-600" size={18} />
+                )}
+              </div>
+            </Button>
+          );
+        })}
       </div>
     </div>
   );
@@ -440,11 +601,11 @@ const ClientQuizPage = ({ level }: Props) => {
   const renderSentenceQuiz = () => (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">
           {currentData?.question}
         </h2>
-        <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl p-6 mb-6">
-          <div className="text-2xl font-bold text-gray-800 mb-2">
+        <Card className="p-6">
+          <div className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
             {currentData?.marked_sentence &&
               currentData?.marked_sentence
                 .split(/(\[.*?\])/)
@@ -452,7 +613,7 @@ const ClientQuizPage = ({ level }: Props) => {
                   part.startsWith('[') && part.endsWith(']') ? (
                     <span
                       key={index}
-                      className="bg-yellow-300 px-2 py-1 rounded"
+                      className="bg-yellow-200/70 dark:bg-yellow-400/20 px-2 py-1 rounded"
                     >
                       {part.slice(1, -1)}
                     </span>
@@ -461,43 +622,62 @@ const ClientQuizPage = ({ level }: Props) => {
                   )
                 )}
           </div>
-          <div className="flex items-center justify-center space-x-2 text-gray-600">
+          <div className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-300">
             <span>{currentData?.pinyin}</span>
-            <button className="p-1 hover:bg-white rounded-full transition-colors">
+            <Button className="h-8 w-8 p-0 rounded-full" variant="ghost">
               <Volume2 size={16} />
-            </button>
+            </Button>
           </div>
-        </div>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 gap-3">
         {currentData?.options &&
-          currentData?.options.map((option, index) => (
-            <button
-              key={index}
-              onClick={() => handleAnswerSelect(option)}
-              className={`p-4 text-left rounded-lg border-2 transition-all duration-300 ${
-                selectedAnswer === option
-                  ? option === currentData?.correct_answer
-                    ? 'bg-green-50 border-green-500 text-green-800'
-                    : 'bg-red-50 border-red-500 text-red-800'
-                  : 'bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50'
-              }`}
-              disabled={showResult}
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-medium">{option}</span>
-                {showResult && option === currentData?.correct_answer && (
-                  <CheckCircle className="text-green-600" size={20} />
-                )}
-                {showResult &&
-                  selectedAnswer === option &&
-                  option !== currentData?.correct_answer && (
-                    <XCircle className="text-red-600" size={20} />
+          currentData?.options.map((option, index) => {
+            const isSelected = selectedAnswer === option;
+            const isCorrect = option === currentData?.correct_answer;
+            const isWrong = isSelected && !isCorrect;
+            return (
+              <Button
+                key={index}
+                onClick={() => handleAnswerSelect(option)}
+                variant="outline"
+                disabled={showResult}
+                className={[
+                  'w-full rounded-xl px-4 py-3 text-left',
+                  'border border-transparent bg-white/70 dark:bg-white/5',
+                  'transition-all duration-200 ease-out',
+                  'shadow-sm hover:shadow-md active:scale-[0.99]',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
+                  'focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900',
+                  !showResult &&
+                    isSelected &&
+                    'border-blue-300 bg-blue-50 text-blue-800 dark:bg-blue-400/10 dark:text-blue-200',
+                  showResult &&
+                    isCorrect &&
+                    'border-emerald-300 bg-emerald-50 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-200',
+                  showResult &&
+                    isWrong &&
+                    'border-rose-300 bg-rose-50 text-rose-800 dark:bg-rose-500/10 dark:text-rose-200',
+                  !isSelected &&
+                    !showResult &&
+                    'hover:bg-gray-50 dark:hover:bg-white/10',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">{option}</span>
+                  {showResult && isCorrect && (
+                    <CheckCircle className="text-emerald-600" size={18} />
                   )}
-              </div>
-            </button>
-          ))}
+                  {showResult && isWrong && (
+                    <XCircle className="text-rose-600" size={18} />
+                  )}
+                </div>
+              </Button>
+            );
+          })}
       </div>
     </div>
   );
@@ -505,15 +685,15 @@ const ClientQuizPage = ({ level }: Props) => {
   const renderConstructionQuiz = () => (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">
           {currentData?.question}
         </h2>
-        <div className="text-gray-600 mb-6">
+        <p className="text-gray-600 dark:text-gray-300 mb-6">
           단어를 드래그하여 올바른 문장을 만드세요
-        </div>
+        </p>
       </div>
 
-      <div className="bg-gray-50 rounded-xl p-6 min-h-[120px]">
+      <Card className="p-6 min-h-[120px]">
         <div className="flex flex-wrap gap-2 justify-center">
           {draggedTokens.map((token, index) => (
             <div
@@ -522,54 +702,43 @@ const ClientQuizPage = ({ level }: Props) => {
               onDragStart={(e) => handleDragStart(e, token.id)}
               onDragOver={(e) => handleDragOver(e, index)}
               onDrop={(e) => handleDrop(e, index)}
-              className={`bg-white border-2 rounded-lg p-3 cursor-move shadow-sm transition-all hover:shadow-md ${
+              className={`bg-white dark:bg-neutral-800 border-2 rounded-lg px-3 py-2 cursor-move shadow-sm transition-all hover:shadow-md ${
                 dragOverIndex === index ? 'border-blue-400' : 'border-gray-300'
               }`}
             >
-              <span className="text-xl font-medium text-gray-800">
+              <span className="text-lg font-medium text-gray-800 dark:text-gray-100">
                 {token.text}
               </span>
             </div>
           ))}
         </div>
-      </div>
-
-      <div className="text-center">
-        <button
-          onClick={() => {
-            const isCorrect = checkOrderCorrect();
-            setShowResult(true);
-            setSelectedAnswer(isCorrect ? 'correct' : 'incorrect');
-          }}
-          className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-        >
-          정답 확인
-        </button>
-      </div>
+      </Card>
 
       {showResult && (
-        <div
-          className={`text-center p-4 rounded-lg ${
+        <Card
+          className={`p-4 text-center ${
             selectedAnswer === 'correct'
-              ? 'bg-green-50 text-green-800'
-              : 'bg-red-50 text-red-800'
+              ? 'border-emerald-300/70'
+              : 'border-rose-300/70'
           }`}
         >
-          <div className="flex items-center justify-center space-x-2 mb-2">
+          <div className="flex items-center justify-center gap-2 mb-2">
             {selectedAnswer === 'correct' ? (
-              <CheckCircle className="text-green-600" size={24} />
+              <CheckCircle className="text-emerald-600" size={22} />
             ) : (
-              <XCircle className="text-red-600" size={24} />
+              <XCircle className="text-rose-600" size={22} />
             )}
-            <span className="font-bold">
+            <span className="font-semibold">
               {selectedAnswer === 'correct' ? '정답입니다!' : '틀렸습니다!'}
             </span>
           </div>
           <div className="text-lg font-medium mb-1">
             {currentData?.correct_sentence}
           </div>
-          <div className="text-sm">{currentData?.translation}</div>
-        </div>
+          <div className="text-sm text-gray-600 dark:text-gray-300">
+            {currentData?.translation}
+          </div>
+        </Card>
       )}
     </div>
   );
@@ -577,98 +746,185 @@ const ClientQuizPage = ({ level }: Props) => {
   const renderSituationQuiz = () => (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">
-          {currentData?.question_text}
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">
+          {currentData?.question}
         </h2>
-        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 mb-6">
-          <div className="text-lg font-medium text-gray-800">
+        <Card className="p-6">
+          <div className="text-base md:text-lg font-medium text-gray-800 dark:text-gray-100">
             {currentData?.situation}
           </div>
-        </div>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 gap-3">
-        {currentData?.options.map((option, index) => (
-          <button
-            key={index}
-            onClick={() => handleAnswerSelect(option)}
-            className={`p-4 text-left rounded-lg border-2 transition-all duration-300 ${
-              selectedAnswer === option
-                ? option === currentData?.correct_answer
-                  ? 'bg-green-50 border-green-500 text-green-800'
-                  : 'bg-red-50 border-red-500 text-red-800'
-                : 'bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50'
-            }`}
-            disabled={showResult}
-          >
-            <div className="flex items-center justify-between">
-              <span className="font-medium text-lg">{option}</span>
-              {showResult && option === currentData?.correct_answer && (
-                <CheckCircle className="text-green-600" size={20} />
-              )}
-              {showResult &&
-                selectedAnswer === option &&
-                option !== currentData?.correct_answer && (
-                  <XCircle className="text-red-600" size={20} />
-                )}
-            </div>
-          </button>
-        ))}
+        {currentData?.options &&
+          currentData?.options.map((option, index) => {
+            const isSelected = selectedAnswer === option;
+            const isCorrect = option === currentData?.correct_answer;
+            const isWrong = isSelected && !isCorrect;
+            return (
+              <Button
+                key={index}
+                onClick={() => handleAnswerSelect(option)}
+                variant="outline"
+                disabled={showResult}
+                className={[
+                  'w-full rounded-xl px-4 py-3 text-left',
+                  'border border-transparent bg-white/70 dark:bg-white/5',
+                  'transition-all duration-200 ease-out',
+                  'shadow-sm hover:shadow-md active:scale-[0.99]',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
+                  'focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900',
+                  !showResult &&
+                    isSelected &&
+                    'border-blue-300 bg-blue-50 text-blue-800 dark:bg-blue-400/10 dark:text-blue-200',
+                  showResult &&
+                    isCorrect &&
+                    'border-emerald-300 bg-emerald-50 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-200',
+                  showResult &&
+                    isWrong &&
+                    'border-rose-300 bg-rose-50 text-rose-800 dark:bg-rose-500/10 dark:text-rose-200',
+                  !isSelected &&
+                    !showResult &&
+                    'hover:bg-gray-50 dark:hover:bg-white/10',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-lg">{option}</span>
+                  {showResult && isCorrect && (
+                    <CheckCircle className="text-emerald-600" size={18} />
+                  )}
+                  {showResult && isWrong && (
+                    <XCircle className="text-rose-600" size={18} />
+                  )}
+                </div>
+              </Button>
+            );
+          })}
       </div>
     </div>
   );
 
   const renderQuiz = () => {
-    switch (currentQuiz) {
+    switch (currentData?.type) {
       case 'basic':
         return renderBasicQuiz();
       case 'sentence':
         return renderSentenceQuiz();
       case 'construction':
+      case 'ordering':
         return renderConstructionQuiz();
       case 'situation':
         return renderSituationQuiz();
       default:
-        return renderBasicQuiz();
+        return null;
     }
   };
 
-  return (
-    <div className="min-w-full lg:min-w-2xl max-w-2xl mx-auto p-6">
-      {/* 헤더 */}
-      <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold text-gray-800">HSK 퀴즈</h1>
-          <div className="flex items-center space-x-2">
-            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-              Level 3
-            </span>
-            <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-              <RotateCcw size={20} />
-            </button>
-          </div>
-        </div>
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <Loader2Icon className="animate-spin text-gray-400" />
+      </div>
+    );
+  }
 
-        {/* 퀴즈 내용 */}
-        {quizData && (
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            {renderQuiz()}
+  const isLast = currentQuestionIndex === totalQuestions - 1;
+  const isFirst = currentQuestionIndex === 0;
+  const isCorrectSelected =
+    selectedAnswer && selectedAnswer === currentData?.correct_answer;
+
+  return (
+    <div className="min-w-full lg:min-w-2xl max-w-3xl mx-auto p-4 sm:p-6">
+      <div className="sticky top-2 z-20">
+        <div className="rounded-2xl border border-gray-200/60 bg-white/90 dark:bg-neutral-900/70 backdrop-blur shadow-sm p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                HSK 퀴즈
+              </h1>
+              <Badge variant="secondary" className="ml-1">
+                Level {level || '3'}
+              </Badge>
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
+              문제 {Math.min(currentQuestionIndex + 1, totalQuestions)} /{' '}
+              {totalQuestions || '-'}
+            </div>
           </div>
-        )}
-        {/* <div className="flex items-center justify-between mb-6">
-        <h1 className="title">HSK {level}급 퀴즈</h1>
-        <QuizTimer startTime={startTime} />
-      </div>
-      <div className="mb-8">
-        <div className="flex justify-between text-sm text-gray-600 mb-2">
-          <span>
-            문제 {currentQuestionIndex + 1} / {quizData?.total_questions}
-          </span>
-          <span>{Math.ceil(progress)}%</span>
+          <div className="mt-3">
+            <div className="flex justify-between text-xs text-gray-500 mb-1">
+              <span>진행률</span>
+              <span>{Math.ceil(progress)}%</span>
+            </div>
+            <Progress value={progress} />
+          </div>
         </div>
-        <Progress value={progress} />
       </div>
-      <div className="bg-white rounded-lg shadow-lg p-8 mb-6">
+
+      <div className="mt-4">
+        {quizData && <Card className="p-4 sm:p-6">{renderQuiz()}</Card>}
+      </div>
+
+      <div className="sticky bottom-2 mt-6 z-20">
+        <div className="rounded-2xl border border-gray-200/60 bg-white/90 dark:bg-neutral-900/70 backdrop-blur shadow-sm p-3 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={goPrev}
+              disabled={isFirst}
+              className="gap-1"
+            >
+              <ChevronLeft className="size-4" /> 이전
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={goNext}
+              disabled={isLast}
+              className="gap-1"
+            >
+              다음 <ChevronRight className="size-4" />
+            </Button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {currentData?.type === 'ordering' ? (
+              <Button onClick={revealResult} className="px-4">
+                정답 확인
+              </Button>
+            ) : (
+              <Button
+                onClick={revealResult}
+                disabled={!selectedAnswer}
+                className="px-4"
+              >
+                정답 확인
+              </Button>
+            )}
+
+            {showResult && (
+              <Badge
+                className={[
+                  'text-sm',
+                  isCorrectSelected
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : 'bg-rose-100 text-rose-800',
+                ].join(' ')}
+              >
+                {isCorrectSelected ? '정답' : '오답'}
+              </Badge>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* 원문 구 버전(주석) UI 블록 보존 */}
+      {/*
+      <div className="bg-white rounded-2xl shadow-lg p-8 mb-6">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-gray-800 mb-2">
             {currentQuestion?.question}
@@ -716,8 +972,8 @@ const ClientQuizPage = ({ level }: Props) => {
             '다음 문제'
           )}
         </Button>
-      </div> */}
       </div>
+      */}
     </div>
   );
 };
