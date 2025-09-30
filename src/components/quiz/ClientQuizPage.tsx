@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
+
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
@@ -18,10 +19,6 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 // import { toast } from 'sonner';
 // import QuizTimer from './QuizTimer';
-
-/**
- * NOTE: 요구사항에 따라 기존 주석 코드는 그대로 유지했습니다. (아래 원문 주석 블록 보존)
- */
 
 type Choice = {
   id: number;
@@ -486,37 +483,33 @@ const ClientQuizPage = ({ level }: Props) => {
     </div>
   );
 
-  /** 개별 렌더러들 */
   const renderBasicQuiz = () => (
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-3">
           {currentData?.question}
         </h2>
-        <Card className="p-8">
-          <motion.div
-            initial={{ scale: 0.98, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.2 }}
-            className=""
-          >
-            <div className="text-4xl font-bold text-gray-900 dark:text-white mb-3">
-              {currentData?.word_display}
-            </div>
-            <div className="flex items-center justify-center gap-2 text-base text-gray-600 dark:text-gray-300">
-              <span>[{currentData?.pinyin}]</span>
-              <Button
-                className="h-8 w-8 p-0 rounded-full"
-                variant="ghost"
-                aria-label="음성 재생"
-              >
-                <Volume2 size={16} />
-              </Button>
-            </div>
-          </motion.div>
-        </Card>
+        <motion.div
+          initial={{ scale: 0.98, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.2 }}
+          className="p-8"
+        >
+          <div className="text-4xl font-bold text-gray-900 dark:text-white mb-3">
+            {currentData?.word_display}
+          </div>
+          <div className="flex items-center justify-center gap-2 text-base text-gray-600 dark:text-gray-300">
+            <span>[{currentData?.pinyin}]</span>
+            <Button
+              className="h-8 w-8 p-0 rounded-full"
+              variant="ghost"
+              aria-label="음성 재생"
+            >
+              <Volume2 size={16} />
+            </Button>
+          </div>
+        </motion.div>
       </div>
-
       <div className="grid grid-cols-1 gap-3">
         {/* 원문 주석 유지 */}
         {/* {currentData?.options?.map((option, index) => (
@@ -559,12 +552,9 @@ const ClientQuizPage = ({ level }: Props) => {
               disabled={showResult}
               className={[
                 // base
-                'w-full rounded-xl px-4 py-3 text-left',
-                'border border-transparent bg-white/70 dark:bg-white/5',
+                'w-full p-5 text-left',
+                'hover:bg-gray-50',
                 'transition-all duration-200 ease-out',
-                'shadow-sm hover:shadow-md active:scale-[0.99]',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
-                'focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900',
                 // states
                 !showResult &&
                   isSelected &&
@@ -577,7 +567,7 @@ const ClientQuizPage = ({ level }: Props) => {
                   'border-rose-300 bg-rose-50 text-rose-800 dark:bg-rose-500/10 dark:text-rose-200',
                 !isSelected &&
                   !showResult &&
-                  'hover:bg-gray-50 dark:hover:bg-white/10',
+                  'hover:bg-blue-50 hover:text-blue-800 dark:bg-blue-400/10 dark:text-blue-200',
               ]
                 .filter(Boolean)
                 .join(' ')}
@@ -692,8 +682,7 @@ const ClientQuizPage = ({ level }: Props) => {
           단어를 드래그하여 올바른 문장을 만드세요
         </p>
       </div>
-
-      <Card className="p-6 min-h-[120px]">
+      <div className="p-6 min-h-[120px]">
         <div className="flex flex-wrap gap-2 justify-center">
           {draggedTokens.map((token, index) => (
             <div
@@ -702,7 +691,7 @@ const ClientQuizPage = ({ level }: Props) => {
               onDragStart={(e) => handleDragStart(e, token.id)}
               onDragOver={(e) => handleDragOver(e, index)}
               onDrop={(e) => handleDrop(e, index)}
-              className={`bg-white dark:bg-neutral-800 border-2 rounded-lg px-3 py-2 cursor-move shadow-sm transition-all hover:shadow-md ${
+              className={`bg-white dark:bg-neutral-800 border-2 rounded-lg px-3 py-2 cursor-move transition-all hover:shadow-md ${
                 dragOverIndex === index ? 'border-blue-400' : 'border-gray-300'
               }`}
             >
@@ -712,7 +701,7 @@ const ClientQuizPage = ({ level }: Props) => {
             </div>
           ))}
         </div>
-      </Card>
+      </div>
 
       {showResult && (
         <Card
@@ -893,17 +882,25 @@ const ClientQuizPage = ({ level }: Props) => {
 
           <div className="flex items-center gap-2">
             {currentData?.type === 'ordering' ? (
-              <Button onClick={revealResult} className="px-4">
-                정답 확인
-              </Button>
+              <>
+                {!showResult && (
+                  <Button onClick={revealResult} className="px-4">
+                    정답 확인
+                  </Button>
+                )}
+              </>
             ) : (
-              <Button
-                onClick={revealResult}
-                disabled={!selectedAnswer}
-                className="px-4"
-              >
-                정답 확인
-              </Button>
+              <>
+                {!showResult && (
+                  <Button
+                    onClick={revealResult}
+                    disabled={!selectedAnswer}
+                    className="px-4"
+                  >
+                    정답 확인
+                  </Button>
+                )}
+              </>
             )}
 
             {showResult && (
