@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
@@ -17,7 +16,8 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-// import { toast } from 'sonner';
+import { toast } from 'sonner';
+import { Card } from '../ui/card';
 // import QuizTimer from './QuizTimer';
 
 type Choice = {
@@ -58,8 +58,23 @@ type QuizData = {
 
 type UserAnswer = {
   question_word_id: string;
-  user_choice_id: string;
+  question_type: QuizData['type'];
+  question: string;
+  user_answer: string | null;
+  user_answer_order?: string[];
+  user_answer_order_text?: string[];
+  correct_answer?: string | null;
+  correct_order?: string[];
+  correct_sentence?: string;
+  translation?: string;
+  pinyin?: string;
+  sentence?: string;
+  marked_sentence?: string;
+  situation?: string;
+  word_display?: string;
+  options?: string[];
   is_correct: boolean;
+  answered_at: string;
 };
 
 type Props = {
@@ -83,9 +98,7 @@ const ClientQuizPage = ({ level }: Props) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [startTime, setStartTime] = useState<number | null>(null);
 
-  /**
-   * Demo 데이터 주입 (원문 유지)
-   */
+  // dummy data
   useEffect(() => {
     setQuizData([
       {
@@ -224,6 +237,59 @@ const ClientQuizPage = ({ level }: Props) => {
     setLoading(false);
   }, []);
 
+  const handleSubmit = useCallback(async () => {
+    // if (!quizData) return;
+    // setIsSubmitting(true);
+    // const finalAnswers = userAnswers;
+    // try {
+    //   const correctCount = finalAnswers.filter(
+    //     (answer) => answer.is_correct
+    //   ).length;
+    //   const score = Math.round((correctCount / quizData.total_questions) * 100);
+    //   const duration = startTime
+    //     ? Math.floor((Date.now() - startTime) / 1000)
+    //     : 0;
+    //   const quizResult = {
+    //     correct_count: correctCount,
+    //     score,
+    //     duration,
+    //     ...quizData,
+    //     questions: userAnswers,
+    //   };
+    //   const response = await fetch('/api/v1/quiz/submit', {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify(quizResult),
+    //   });
+    //   if (!response.ok) {
+    //     throw new Error('퀴즈 제출에 실패했습니다.');
+    //   }
+    //   const result = await response.json();
+    //   router.push(`/quiz/result/${result.inputedQuiz.id}`);
+    // } catch (error) {
+    //   console.error('[ERROR] Quiz submit:', error);
+    //   toast.error('퀴즈 제출에 실패했습니다.');
+    // } finally {
+    //   setIsSubmitting(false);
+    // }
+
+    if (!userAnswers) return;
+
+    setIsSubmitting(true);
+
+    try {
+      
+    } catch (error) {
+      console.error('[ERROR] Quiz submit:', error);
+      toast.error('퀴즈 제출에 실패했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, []);
+  // }, [quizData, userAnswers, startTime, router]);
+
   // useEffect(() => {
   //   const fetchQuizData = async () => {
   //     try {
@@ -361,21 +427,21 @@ const ClientQuizPage = ({ level }: Props) => {
   //     </div>
   //   );
   // } else {
-  //   if (quizData.questions.length < 1) {
-  //     return (
-  //       <div className="flex flex-col justify-center items-center min-h-screen gap-4">
-  //         <div className="text-xl">
-  //           {level}급 퀴즈를 준비 중 이에요. 조금만 기다려주세요😅
-  //         </div>
-  //         <button
-  //           onClick={() => router.back()}
-  //           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-  //         >
-  //           돌아가기
-  //         </button>
+  // if (quizData.questions.length < 1) {
+  //   return (
+  //     <div className="flex flex-col justify-center items-center min-h-screen gap-4">
+  //       <div className="text-xl">
+  //         {level}급 퀴즈를 준비 중 이에요. 조금만 기다려주세요😅
   //       </div>
-  //     );
-  //   }
+  //       <button
+  //         onClick={() => router.back()}
+  //         className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+  //       >
+  //         돌아가기
+  //       </button>
+  //     </div>
+  //   );
+  // }
   // }
 
   const [currentQuiz, setCurrentQuiz] = useState<string>('basic');
@@ -457,31 +523,17 @@ const ClientQuizPage = ({ level }: Props) => {
       return;
     }
     if (!selectedAnswer) return;
+
+    // TODO:디비에 넘기기 위해 정답 고른 데이터를 객체에 저장해야됨.
+
     setShowResult(true);
   };
 
   const goPrev = () => setCurrentQuestionIndex((i) => Math.max(0, i - 1));
-  const goNext = () =>
+  const goNext = (answer: UserAnswer) => {
     setCurrentQuestionIndex((i) => Math.min(totalQuestions - 1, i + 1));
-
-  /** UI 파트: 공통 카드 래퍼 */
-  const Card = ({
-    children,
-    className = '',
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => (
-    <div
-      className={[
-        'rounded-2xl border border-gray-200/60 bg-white/90 dark:bg-neutral-900/60 backdrop-blur',
-        'shadow-sm hover:shadow-md transition-shadow',
-        className,
-      ].join(' ')}
-    >
-      {children}
-    </div>
-  );
+    setUserAnswers((prev) => [prev, ...answer]);
+  };
 
   const renderBasicQuiz = () => (
     <div className="space-y-6">
@@ -511,35 +563,6 @@ const ClientQuizPage = ({ level }: Props) => {
         </motion.div>
       </div>
       <div className="grid grid-cols-1 gap-3">
-        {/* 원문 주석 유지 */}
-        {/* {currentData?.options?.map((option, index) => (
-          <Button
-            key={index}
-            onClick={() => handleAnswerSelect(option)}
-            variant={'outline'}
-            className={`p-4 text-left rounded-lg border border-[#ff0000] transition-all duration-300 py-2 ${
-              selectedAnswer === option
-                ? option === currentData?.correct_answer
-                  ? 'bg-green-50 border-green-500 text-green-800'
-                  : 'bg-red-50 border-red-500 text-red-800'
-                : 'hover:bg-neutral-500 hover:text-white'
-            }`}
-            disabled={showResult}
-          >
-            <div className="flex items-center justify-between">
-              <span className="">{option}</span>
-              {showResult && option === currentData?.correct_answer && (
-                <CheckCircle className="text-green-600" size={20} />
-              )}
-              {showResult &&
-                selectedAnswer === option &&
-                option !== currentData?.correct_answer && (
-                  <XCircle className="text-red-600" size={20} />
-                )}
-            </div>
-          </Button>
-        ))} */}
-
         {currentData?.options?.map((option, index) => {
           const isSelected = selectedAnswer === option;
           const isCorrect = option === currentData?.correct_answer;
@@ -685,6 +708,7 @@ const ClientQuizPage = ({ level }: Props) => {
       <div className="p-6 min-h-[120px]">
         <div className="flex flex-wrap gap-2 justify-center">
           {draggedTokens.map((token, index) => (
+            // TODO: 모바일 기기에서 사용 할 수 있게 dnd 라이브러리로 수정
             <div
               key={token.id}
               draggable
@@ -702,7 +726,6 @@ const ClientQuizPage = ({ level }: Props) => {
           ))}
         </div>
       </div>
-
       {showResult && (
         <Card
           className={`p-4 text-center ${
@@ -824,153 +847,96 @@ const ClientQuizPage = ({ level }: Props) => {
   const isFirst = currentQuestionIndex === 0;
   const isCorrectSelected =
     selectedAnswer && selectedAnswer === currentData?.correct_answer;
+  const isOrdering = currentData?.type === 'ordering';
+
+  const revealButton =
+    currentData?.type === 'ordering' ? (
+      <>
+        {!showResult && (
+          <Button
+            onClick={revealResult}
+            className="px-4 cursor-pointer w-30 py-5 font-semibold"
+          >
+            정답 확인
+          </Button>
+        )}
+      </>
+    ) : (
+      <>
+        {!showResult && (
+          <Button
+            onClick={revealResult}
+            disabled={!selectedAnswer}
+            className="px-4 cursor-pointer w-30 py-5 font-semibold"
+          >
+            정답 확인
+          </Button>
+        )}
+      </>
+    );
+
+  const nextButton =
+    showResult && !isLast ? (
+      <Button
+        className="px-4 cursor-pointer w-30 py-5 font-semibold"
+        onClick={() => goNext(userAnswer)}
+      >
+        다음 퀴즈
+      </Button>
+    ) : null;
+
+  const submitButton =
+    showResult && isLast ? (
+      <Button
+        className="px-4 cursor-pointer w-30 py-5 font-semibold"
+        onClick={handleSubmit}
+      >
+        퀴즈 제출
+      </Button>
+    ) : null;
 
   return (
     <div className="min-w-full lg:min-w-2xl max-w-3xl mx-auto p-4 sm:p-6">
       <div className="sticky top-2 z-20">
-        <div className="rounded-2xl border border-gray-200/60 bg-white/90 dark:bg-neutral-900/70 backdrop-blur shadow-sm p-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                HSK 퀴즈
-              </h1>
-              <Badge variant="secondary" className="ml-1">
-                Level {level || '3'}
-              </Badge>
-            </div>
-            <div className="text-sm text-gray-600 dark:text-gray-300">
-              문제 {Math.min(currentQuestionIndex + 1, totalQuestions)} /{' '}
-              {totalQuestions || '-'}
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="flex justify-between text-xs text-gray-500 mb-1">
-              <span>진행률</span>
-              <span>{Math.ceil(progress)}%</span>
-            </div>
-            <Progress value={progress} />
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-4">
-        {quizData && <Card className="p-4 sm:p-6">{renderQuiz()}</Card>}
-      </div>
-
-      <div className="sticky bottom-2 mt-6 z-20">
-        <div className="rounded-2xl border border-gray-200/60 bg-white/90 dark:bg-neutral-900/70 backdrop-blur shadow-sm p-3 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={goPrev}
-              disabled={isFirst}
-              className="gap-1"
-            >
-              <ChevronLeft className="size-4" /> 이전
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={goNext}
-              disabled={isLast}
-              className="gap-1"
-            >
-              다음 <ChevronRight className="size-4" />
-            </Button>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {currentData?.type === 'ordering' ? (
-              <>
-                {!showResult && (
-                  <Button onClick={revealResult} className="px-4">
-                    정답 확인
-                  </Button>
-                )}
-              </>
-            ) : (
-              <>
-                {!showResult && (
-                  <Button
-                    onClick={revealResult}
-                    disabled={!selectedAnswer}
-                    className="px-4"
-                  >
-                    정답 확인
-                  </Button>
-                )}
-              </>
-            )}
-
-            {showResult && (
-              <Badge
-                className={[
-                  'text-sm',
-                  isCorrectSelected
-                    ? 'bg-emerald-100 text-emerald-800'
-                    : 'bg-rose-100 text-rose-800',
-                ].join(' ')}
-              >
-                {isCorrectSelected ? '정답' : '오답'}
-              </Badge>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* 원문 구 버전(주석) UI 블록 보존 */}
-      {/*
-      <div className="bg-white rounded-2xl shadow-lg p-8 mb-6">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">
-            {currentQuestion?.question}
-          </h2>
-          <p className="text-lg text-gray-600 mb-1">
-            [{currentQuestion?.pinyin}]
-          </p>
-        </div>
-        <div className="space-y-3">
-          {currentQuestion?.choices.map((answer, index) => (
-            <button
-              key={answer.id}
-              onClick={() => handleChoiceSelect(answer.id, answer.text)}
-              className={`w-full p-4 text-left rounded-lg border-2 transition-all cursor-pointer ${
-                selectedChoice?.id === answer.id
-                  ? 'bg-blue-100'
-                  : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              <span className="font-medium text-gray-700">
-                {String.fromCharCode(65 + index)}. {answer.text}
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className="flex justify-end">
-        <Button
-          onClick={handleNextQuestion}
-          disabled={!selectedChoice?.id || isSubmitting}
-          className={`px-6 py-3 rounded-lg font-medium flex items-center ${
-            selectedChoice?.id && !isSubmitting
-              ? 'bg-blue-600 text-white hover:bg-blue-700'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-          }`}
-        >
-          {isSubmitting ? (
-            <p>제출 중...</p>
-          ) : currentQuestionIndex === (quizData?.total_questions || 0) - 1 ? (
-            <>
-              <CheckCircle className="w-4 h-4 mr-2" />
-              퀴즈 완료
-            </>
-          ) : (
-            '다음 문제'
+        <div className="mt-4">
+          {quizData && (
+            <Card className="p-4 sm:p-6">
+              <div className="mb-10">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                      HSK 퀴즈
+                    </h1>
+                    <Badge variant="secondary" className="ml-1">
+                      Level {level || '3'}
+                    </Badge>
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">
+                    문제 {Math.min(currentQuestionIndex + 1, totalQuestions)} /{' '}
+                    {totalQuestions || '-'}
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <div className="flex justify-between text-xs text-gray-500 mb-1">
+                    <span>진행률</span>
+                    <span>{Math.ceil(progress)}%</span>
+                  </div>
+                  <Progress value={progress} />
+                </div>
+              </div>
+              {renderQuiz()}
+              <div>
+                <hr className="flex-1 mt-5 mb-10 border-t border-gray-200" />
+                <div className="text-right">
+                  {revealButton}
+                  {nextButton}
+                  {submitButton}
+                </div>
+              </div>
+            </Card>
           )}
-        </Button>
+        </div>
       </div>
-      */}
     </div>
   );
 };
