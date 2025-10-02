@@ -7,23 +7,14 @@ import { Badge } from '@/components/ui/badge';
 import {
   CheckCircle,
   Loader2Icon,
-  RotateCcw,
   XCircle,
   Volume2,
-  ChevronLeft,
-  ChevronRight,
-  Sparkles,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { Card } from '../ui/card';
 // import QuizTimer from './QuizTimer';
-
-type Choice = {
-  id: number;
-  text: string;
-};
 
 // type QuizData = {
 //   level: string;
@@ -74,16 +65,10 @@ type UserAnswer = {
   word_display?: string;
   options?: string[];
   is_correct: boolean;
-  answered_at: string;
 };
 
 type Props = {
   level: string;
-};
-
-type SelectedAnswerType = {
-  id: string;
-  meaning: string;
 };
 
 const ClientQuizPage = ({ level }: Props) => {
@@ -93,13 +78,13 @@ const ClientQuizPage = ({ level }: Props) => {
   const [loading, setLoading] = useState(true);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
-  const [selectedChoice, setSelectedChoice] =
-    useState<SelectedAnswerType | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [startTime, setStartTime] = useState<number | null>(null);
 
   // dummy data
   useEffect(() => {
+    // TODO: 퀴즈를 불러 올 때 시간 체크
+    setStartTime(Date.now());
     setQuizData([
       {
         word_id: 'a47c63b0-aef6-4a63-ba63-289e04f27524',
@@ -238,223 +223,78 @@ const ClientQuizPage = ({ level }: Props) => {
   }, []);
 
   const handleSubmit = useCallback(async () => {
-    // if (!quizData) return;
-    // setIsSubmitting(true);
-    // const finalAnswers = userAnswers;
-    // try {
-    //   const correctCount = finalAnswers.filter(
-    //     (answer) => answer.is_correct
-    //   ).length;
-    //   const score = Math.round((correctCount / quizData.total_questions) * 100);
-    //   const duration = startTime
-    //     ? Math.floor((Date.now() - startTime) / 1000)
-    //     : 0;
-    //   const quizResult = {
-    //     correct_count: correctCount,
-    //     score,
-    //     duration,
-    //     ...quizData,
-    //     questions: userAnswers,
-    //   };
-    //   const response = await fetch('/api/v1/quiz/submit', {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify(quizResult),
-    //   });
-    //   if (!response.ok) {
-    //     throw new Error('퀴즈 제출에 실패했습니다.');
-    //   }
-    //   const result = await response.json();
-    //   router.push(`/quiz/result/${result.inputedQuiz.id}`);
-    // } catch (error) {
-    //   console.error('[ERROR] Quiz submit:', error);
-    //   toast.error('퀴즈 제출에 실패했습니다.');
-    // } finally {
-    //   setIsSubmitting(false);
-    // }
-
-    if (!userAnswers) return;
+    if (!quizData || quizData.length === 0) return;
 
     setIsSubmitting(true);
 
     try {
-      
+      const duration = startTime
+        ? Math.floor((Date.now() - startTime) / 1000)
+        : 0;
+      const correctCount = userAnswers.filter((item) => item.is_correct).length;
+      const score = Math.round((correctCount / quizData.length) * 100);
+      const quizResult = {
+        correct_count: correctCount,
+        score,
+        duration,
+        questions: userAnswers,
+        quiz: quizData,
+      };
+
+      const response = await fetch('/api/v2/quiz/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(quizResult),
+      });
+
+      if (!response.ok) {
+        throw new Error('퀴즈 제출에 실패했습니다.');
+      }
+
+      const result = await response.json();
+
+      router.push(`/quiz/result/${result.inputedQuiz.id}`);
     } catch (error) {
       console.error('[ERROR] Quiz submit:', error);
       toast.error('퀴즈 제출에 실패했습니다.');
     } finally {
       setIsSubmitting(false);
     }
-  }, []);
-  // }, [quizData, userAnswers, startTime, router]);
+  }, [quizData, router, startTime, userAnswers]);
 
-  // useEffect(() => {
-  //   const fetchQuizData = async () => {
-  //     try {
-  //       const response = await fetch(`/api/v2/quiz/${level}`);
-  //       const data = await response.json();
+  useEffect(() => {
+    const fetchQuizData = async () => {
+      try {
+        const response = await fetch(`/api/v2/quiz/${level}`);
+        const data = await response.json();
 
-  //       if (!response.ok) {
-  //         throw new Error(data.error || '퀴즈를 불러오는데 실패했습니다.');
-  //       }
+        if (!response.ok) {
+          throw new Error(data.error || '퀴즈를 불러오는데 실패했습니다.');
+        }
 
-  //       setQuizData(data);
-  //       setStartTime(Date.now());
-  //     } catch (error) {
-  //       console.error('[ERROR] Quiz fetch:', error);
-  //       toast.error(
-  //         error instanceof Error
-  //           ? error.message
-  //           : '퀴즈를 불러오는데 실패했습니다.'
-  //       );
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
+        setQuizData(data);
+        setStartTime(Date.now());
+      } catch (error) {
+        console.error('[ERROR] Quiz fetch:', error);
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : '퀴즈를 불러오는데 실패했습니다.'
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  //   fetchQuizData();
-  // }, [level]);
+    fetchQuizData();
+  }, [level]);
 
-  // const handleChoiceSelect = (choiceId: string, text: string) => {
-  //   setSelectedChoice({ id: choiceId, meaning: text });
-  // };
-  // const currentQuestion = quizData?.questions[currentQuestionIndex];
-  // const progress = useMemo(
-  //   () =>
-  //     quizData
-  //       ? ((currentQuestionIndex + 1) / quizData.total_questions) * 100
-  //       : 0,
-  //   [currentQuestionIndex, quizData]
-  // );
-
-  // const handleNextQuestion = () => {
-  //   if (!selectedChoice || !quizData) return;
-
-  //   const currentQuestion = quizData.questions[currentQuestionIndex];
-  //   const isCorrect = selectedChoice.id === currentQuestion.word_id;
-  //   const userAnswer: UserAnswer = {
-  //     user_choice_id: selectedChoice.id,
-  //     // selected_meaning: selectedChoice.meaning,
-  //     question_word_id: currentQuestion.word_id,
-  //     is_correct: isCorrect,
-  //   };
-
-  //   setUserAnswers((data) => [...data, userAnswer]);
-  //   setSelectedChoice(null);
-
-  //   if (currentQuestionIndex < quizData.questions.length - 1) {
-  //     setCurrentQuestionIndex((data) => data + 1);
-  //   }
-  // };
-
-  // const handleQuizComplete = useCallback(async () => {
-  //   if (!quizData) return;
-
-  //   setIsSubmitting(true);
-
-  //   const finalAnswers = userAnswers;
-
-  //   try {
-  //     const correctCount = finalAnswers.filter(
-  //       (answer) => answer.is_correct
-  //     ).length;
-  //     const score = Math.round((correctCount / quizData.total_questions) * 100);
-  //     const duration = startTime
-  //       ? Math.floor((Date.now() - startTime) / 1000)
-  //       : 0;
-  //     const quizResult = {
-  //       correct_count: correctCount,
-  //       score,
-  //       duration,
-  //       ...quizData,
-  //       questions: userAnswers,
-  //     };
-
-  //     const response = await fetch('/api/v1/quiz/submit', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify(quizResult),
-  //     });
-
-  //     if (!response.ok) {
-  //       throw new Error('퀴즈 제출에 실패했습니다.');
-  //     }
-
-  //     const result = await response.json();
-
-  //     router.push(`/quiz/result/${result.inputedQuiz.id}`);
-  //   } catch (error) {
-  //     console.error('[ERROR] Quiz submit:', error);
-  //     toast.error('퀴즈 제출에 실패했습니다.');
-  //   } finally {
-  //     setIsSubmitting(false);
-  //   }
-  // }, [quizData, userAnswers, startTime, router]);
-
-  // userAnswers가 업데이트될 때마다 퀴즈 완료 여부 체크
-  // useEffect(() => {
-  //   if (quizData && userAnswers.length === quizData.total_questions) {
-  //     handleQuizComplete();
-  //   }
-  // }, [userAnswers, quizData, handleQuizComplete]);
-
-  // // 스켈레톤 UI 적용 필요
-  // if (loading) {
-  //   return (
-  //     <div className="flex justify-center items-center min-h-screen">
-  //       <Loader2Icon className="animate-spin" />
-  //     </div>
-  //   );
-  // }
-
-  // // 퀴즈가 없는 경우
-  // if (!quizData) {
-  //   return (
-  //     <div className="flex justify-center items-center min-h-screen">
-  //       <div className="text-center">
-  //         <div className="text-xl mb-4">퀴즈를 불러올 수 없습니다🫢</div>
-  //         <button
-  //           onClick={() => router.back()}
-  //           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-  //         >
-  //           돌아가기
-  //         </button>
-  //       </div>
-  //     </div>
-  //   );
-  // } else {
-  // if (quizData.questions.length < 1) {
-  //   return (
-  //     <div className="flex flex-col justify-center items-center min-h-screen gap-4">
-  //       <div className="text-xl">
-  //         {level}급 퀴즈를 준비 중 이에요. 조금만 기다려주세요😅
-  //       </div>
-  //       <button
-  //         onClick={() => router.back()}
-  //         className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-  //       >
-  //         돌아가기
-  //       </button>
-  //     </div>
-  //   );
-  // }
-  // }
-
-  const [currentQuiz, setCurrentQuiz] = useState<string>('basic');
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [draggedTokens, setDraggedTokens] = useState<WordText[]>([]);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
-
-  // useEffect(() => {
-  //   if (quizData) {
-  //     setCurrentData(quizData[currentQuestionIndex]);
-  //   }
-  // }, [quizData, currentQuestionIndex]);
 
   const currentData = useMemo(
     () => quizData?.[currentQuestionIndex] ?? null,
@@ -473,17 +313,45 @@ const ClientQuizPage = ({ level }: Props) => {
     setSelectedAnswer(option);
   };
 
+  const upsertUserAnswer = useCallback((answer: UserAnswer) => {
+    setUserAnswers((prev) => {
+      const filtered = prev.filter(
+        (item) => item.question_word_id !== answer.question_word_id
+      );
+      return [...filtered, answer];
+    });
+  }, []);
+
+  const buildOrderingTokens = useCallback(() => {
+    if (!currentData || currentData.type !== 'ordering' || !currentData.tokens) {
+      setDraggedTokens([]);
+      return;
+    }
+
+    const tokens = currentData.tokens;
+    const initial =
+      currentData.initial_order && currentData.initial_order.length
+        ? currentData.initial_order
+        : tokens.map((token) => token.id);
+
+    setDraggedTokens(
+      initial.map((tokenId, index) => {
+        const tokenById = tokens.find((token) => token.id === tokenId);
+        const tokenByText = tokens.find((token) => token.text === tokenId);
+        const fallbackToken = tokens[index];
+        const sourceToken =
+          tokenById ?? tokenByText ?? fallbackToken ?? { id: tokenId, text: String(tokenId) };
+
+        return { id: sourceToken.id, text: sourceToken.text };
+      })
+    );
+  }, [currentData]);
+
   useEffect(() => {
     setSelectedAnswer(null);
     setShowResult(false);
-    if (currentData?.type === 'ordering' && currentData.tokens) {
-      // 초기 토큰 셋업
-      const initial =
-        currentData.initial_order || currentData.tokens.map((t) => t.id);
-      const dict = new Map(currentData.tokens.map((t) => [t.id, t.text]));
-      setDraggedTokens(initial.map((id) => ({ id, text: dict.get(id) || '' })));
-    }
-  }, [currentQuestionIndex]);
+    buildOrderingTokens();
+  }, [buildOrderingTokens, currentQuestionIndex]);
 
   // DnD: 단순 로컬 구현 (모바일 터치 고려 X)
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, id: string) => {
@@ -511,28 +379,67 @@ const ClientQuizPage = ({ level }: Props) => {
   const checkOrderCorrect = () => {
     if (!currentData?.correct_order) return false;
     const cur = draggedTokens.map((t) => t.id);
+
     return JSON.stringify(cur) === JSON.stringify(currentData.correct_order);
   };
 
   const revealResult = () => {
+    // is_correct: BOOLEAN  : 정답 여부 (맞음/틀림)
+    // user_answer: TEXT    : 사용자가 실제로 선택/입력한 답
+    // correct_answer: TEXT : 정답이 무엇이었는지
     if (!currentData) return;
+
+    // TODO:디비에 넘기기 위해 정답 고른 데이터를 객체에 저장해야됨.
+    const baseAnswer = {
+      question_word_id: currentData.word_id,
+      question_type: currentData.type,
+      question: currentData.question,
+      correct_answer: currentData.correct_answer ?? null,
+      correct_order: currentData.correct_order,
+      correct_sentence: currentData.correct_sentence,
+      translation: currentData.translation ?? currentData.sentence,
+      pinyin: currentData.pinyin,
+      sentence: currentData.sentence,
+      marked_sentence: currentData.marked_sentence,
+      situation: currentData.situation,
+      word_display: currentData.word_display,
+      options: currentData.options,
+    };
+
     if (currentData.type === 'ordering') {
-      const ok = checkOrderCorrect();
-      setSelectedAnswer(ok ? 'correct' : 'incorrect');
+      const isCorrect = checkOrderCorrect();
+      setSelectedAnswer(isCorrect ? 'correct' : 'incorrect');
+
+      const userOrderIds = draggedTokens.map((token) => token.id);
+      const userOrderTexts = draggedTokens.map((token) => token.text);
+
+      upsertUserAnswer({
+        ...baseAnswer,
+        user_answer: null,
+        user_answer_order: userOrderIds,
+        user_answer_order_text: userOrderTexts,
+        is_correct: isCorrect,
+      });
+
       setShowResult(true);
       return;
     }
+
     if (!selectedAnswer) return;
 
-    // TODO:디비에 넘기기 위해 정답 고른 데이터를 객체에 저장해야됨.
+    const isCorrect = currentData.correct_answer === selectedAnswer;
+
+    upsertUserAnswer({
+      ...baseAnswer,
+      user_answer: selectedAnswer,
+      is_correct: isCorrect,
+    });
 
     setShowResult(true);
   };
 
-  const goPrev = () => setCurrentQuestionIndex((i) => Math.max(0, i - 1));
-  const goNext = (answer: UserAnswer) => {
+  const goNext = () => {
     setCurrentQuestionIndex((i) => Math.min(totalQuestions - 1, i + 1));
-    setUserAnswers((prev) => [prev, ...answer]);
   };
 
   const renderBasicQuiz = () => (
@@ -567,6 +474,7 @@ const ClientQuizPage = ({ level }: Props) => {
           const isSelected = selectedAnswer === option;
           const isCorrect = option === currentData?.correct_answer;
           const isWrong = isSelected && !isCorrect;
+
           return (
             <Button
               key={index}
@@ -844,42 +752,23 @@ const ClientQuizPage = ({ level }: Props) => {
   }
 
   const isLast = currentQuestionIndex === totalQuestions - 1;
-  const isFirst = currentQuestionIndex === 0;
-  const isCorrectSelected =
-    selectedAnswer && selectedAnswer === currentData?.correct_answer;
   const isOrdering = currentData?.type === 'ordering';
 
-  const revealButton =
-    currentData?.type === 'ordering' ? (
-      <>
-        {!showResult && (
-          <Button
-            onClick={revealResult}
-            className="px-4 cursor-pointer w-30 py-5 font-semibold"
-          >
-            정답 확인
-          </Button>
-        )}
-      </>
-    ) : (
-      <>
-        {!showResult && (
-          <Button
-            onClick={revealResult}
-            disabled={!selectedAnswer}
-            className="px-4 cursor-pointer w-30 py-5 font-semibold"
-          >
-            정답 확인
-          </Button>
-        )}
-      </>
-    );
+  const revealButton = !showResult ? (
+    <Button
+      onClick={revealResult}
+      disabled={!isOrdering && !selectedAnswer}
+      className="px-4 cursor-pointer w-30 py-5 font-semibold"
+    >
+      정답 확인
+    </Button>
+  ) : null;
 
   const nextButton =
     showResult && !isLast ? (
       <Button
         className="px-4 cursor-pointer w-30 py-5 font-semibold"
-        onClick={() => goNext(userAnswer)}
+        onClick={goNext}
       >
         다음 퀴즈
       </Button>
@@ -890,8 +779,9 @@ const ClientQuizPage = ({ level }: Props) => {
       <Button
         className="px-4 cursor-pointer w-30 py-5 font-semibold"
         onClick={handleSubmit}
+        disabled={isSubmitting}
       >
-        퀴즈 제출
+        {isSubmitting ? '제출 중…' : '퀴즈 제출'}
       </Button>
     ) : null;
 

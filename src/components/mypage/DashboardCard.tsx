@@ -15,7 +15,7 @@ import Link from 'next/link';
 
 export interface DashboardCardItem {
   id?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface DashboardCardProps<T extends DashboardCardItem> {
