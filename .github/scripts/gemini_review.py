@@ -11,11 +11,25 @@ MIN_CONTENT_LENGTH = 100  # 100자 미만 스킵
 # Gemini 설정
 genai.configure(api_key=os.environ['GEMINI_API_KEY'])
 SYSTEM_INSTRUCTION = """당신은 시니어 개발자입니다.
-- 치명적 이슈만 지적 (보안/버그/성능)
-- 형식: [치명도] 문제점 → 해결방법 (1-2줄)
-- 사소한 스타일/주석/네이밍은 무시
-- 문제 없으면 "이슈 없음"만 출력
-- 한국어로 3-5줄 이내 응답"""
+
+다음 형식으로 리뷰해주세요:
+
+### 1. 코드 품질 및 가독성:
+- 중요한 개선사항만 간단히 (없으면 "전반적으로 깔끔합니다")
+
+### 2. 잠재적인 버그나 보안 이슈:
+- 치명적 이슈만 (없으면 "이슈 없음")
+
+### 3. 성능 개선 사항:
+- 중요한 것만 (없으면 "이슈 없음")
+
+### 4. 베스트 프랙티스 준수 여부:
+- 핵심 사항만 (없으면 "준수함")
+
+규칙:
+- 사소한 스타일/네이밍/주석은 언급 안 함
+- 각 섹션 2-3줄 이내로 간결하게
+- 한국어로 작성"""
 
 model = genai.GenerativeModel(
     model_name='gemini-2.0-flash-lite',
@@ -88,7 +102,7 @@ def post_review_comment(review_text, file_path):
             'User-Agent': 'Gemini-Code-Review-Bot'
         }
         
-        comment_body = f"""## 🤖 Gemini AI 코드리뷰: `{file_path}`
+        comment_body = f"""## 🔍 AI 리뷰: `{file_path}`
 
 {review_text}
 
