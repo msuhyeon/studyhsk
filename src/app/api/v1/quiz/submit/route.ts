@@ -41,6 +41,7 @@ export async function POST(request: NextRequest) {
         user_id: user.id,
         level: submission.level,
         total_score: submission.score,
+        duration: submission.duration,
       })
       .select('id')
       .single();

@@ -6,6 +6,7 @@ type UserAnswer = {
   user_choice_id: string;
   is_correct: boolean;
   quiz_type: string;
+  user_answer: string;
 };
 
 type QuizSubmission = {
@@ -17,6 +18,7 @@ type QuizSubmission = {
   questions: UserAnswer[];
   quiz_type: string;
   correct_count: number;
+  user_answer: string;
 };
 
 export async function POST(request: NextRequest) {
@@ -27,8 +29,6 @@ export async function POST(request: NextRequest) {
       data: { user },
       error: userError,
     } = await supabase.auth.getUser();
-
-    console.log('submission: ', submission);
 
     if (userError || !user) {
       return NextResponse.json(
@@ -60,9 +60,9 @@ export async function POST(request: NextRequest) {
     const insertData = submission.questions.map((quiz) => ({
       session_id: inputedQuiz.id,
       word_id: quiz.question_word_id,
-      quiz_type: submission.quiz_type, 
+      quiz_type: submission.quiz_type,
       is_correct: quiz.is_correct, // 정답 여부 (맞음/틀림)
-      user_answer: quiz.user_choice_id, // 사용자가 실제로 입력한 답
+      user_answer: quiz.user_answer, // 사용자가 실제로 입력한 답
       correct_answer: quiz.question_word_id, // 정답이 뭐였는지
       user_id: user.id,
     }));

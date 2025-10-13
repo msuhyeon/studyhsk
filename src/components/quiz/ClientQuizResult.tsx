@@ -49,6 +49,7 @@ type WrongAnswer = {
   example?: string;
   word_id: string;
   words: WordType;
+  user_answer: string;
 };
 
 type QuizResultData = {
@@ -69,7 +70,7 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
   useEffect(() => {
     const fetchResult = async () => {
       try {
-        const response = await fetch(`/api/v1/quiz/result/${quizId}`);
+        const response = await fetch(`/api/v2/quiz/result/${quizId}`);
         const data = await response.json();
 
         if (!response.ok) {
@@ -226,7 +227,8 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
                                 </span>
                               </div>
                               <div className="text-lg font-semibold text-red-800">
-                                {question.user_word.meaning}
+                                {question.user_answer}
+                                {/* {question.user_word.meaning} */}
                               </div>
                             </div>
                           </div>

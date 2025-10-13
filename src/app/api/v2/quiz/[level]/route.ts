@@ -120,7 +120,7 @@ function buildPrompt(
 
     응답 형식:
     {
-      "question_text": "다음 문장에서 대괄호로 표시된 단어의 의미는?",
+      "question_text": "다음 문장에서 하이라이트된 단어의 의미는?",
       "sentence_raw": "중국어 문장에 ${word} 포함",
       "marked_sentence": "중국어 문장에 [${word}] 포함",
       "pinyin": "문장 병음(선택)",
@@ -200,7 +200,10 @@ export async function GET(request: NextRequest, { params }: Props) {
   try {
     const systemPrompt = `당신은 전문적인 HSK 중국어 학습 문제 출제자입니다.\n학습자의 수준에 맞는 효과적인 문제를 제작하며, 항상 JSON 형식으로만 응답합니다.`;
 
-    async function generateOne(word: WordRecord, index: number): Promise<GeneratedQuestion> {
+    async function generateOne(
+      word: WordRecord,
+      index: number
+    ): Promise<GeneratedQuestion> {
       const questionType = getQuestionType(index);
       const userPrompt = buildPrompt(
         questionType,

@@ -14,7 +14,7 @@ export async function GET(request: NextRequest, { params }: Props) {
     const supabase = await createClient();
 
     const { data: quizData, error: quizError } = await supabase
-      .from('quiz_sessions')
+      .from('user_quiz_sessions')
       .select('level, score, duration')
       .eq('id', id)
       .single();
@@ -29,11 +29,7 @@ export async function GET(request: NextRequest, { params }: Props) {
       .select(
         `
       word_id,
-      user_word:words!user_answer (
-        word,
-        pinyin,
-        meaning
-      ),
+      user_answer,
       correct_word:words!correct_answer (
         word,
         pinyin,
