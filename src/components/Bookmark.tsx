@@ -15,14 +15,14 @@ const Bookmark = ({ id, isBookmarked = false }: BookmarkProps) => {
     setMarked(!marked);
 
     if (marked) {
-      await fetch(`/api/bookmark`, {
+      await fetch(`/api/v1/bookmark`, {
         method: 'DELETE',
         body: JSON.stringify({
           wordId: id,
         }),
       });
     } else {
-      await fetch(`/api/bookmark`, {
+      await fetch(`/api/v1/bookmark`, {
         method: 'POST',
         body: JSON.stringify({
           wordId: id,

@@ -207,7 +207,7 @@ const ClientWordDetail = ({ wordId }: WordDetailProps) => {
   }, [wordId]);
 
   const generateAIData = async (word: string): Promise<AIGeneratedType> => {
-    const res = await fetch(`/api/word/${word}`);
+    const res = await fetch(`/api/v1/word/${word}`);
     const aiGenerated = await res.json();
     return aiGenerated;
   };

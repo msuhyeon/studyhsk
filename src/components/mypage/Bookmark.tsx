@@ -18,7 +18,7 @@ type BookmarkType = {
 
 // API 호출 함수 (React Query에서 사용할 fetcher)
 async function fetchBookmarks(limit: number) {
-  const response = await fetch(`/api/bookmark?limit=${limit}`, {
+  const response = await fetch(`/api/v1/bookmark?limit=${limit}`, {
     method: 'GET',
   });
 

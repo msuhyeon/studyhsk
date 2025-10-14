@@ -6,6 +6,7 @@ type UserAnswer = {
   user_choice_id: string;
   is_correct: boolean;
   quiz_type: string;
+  user_answer: string;
 };
 
 type QuizSubmission = {
@@ -17,6 +18,7 @@ type QuizSubmission = {
   questions: UserAnswer[];
   quiz_type: string;
   correct_count: number;
+  user_answer: string;
 };
 
 export async function POST(request: NextRequest) {
@@ -35,32 +37,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: inputedQuiz, error: attemptsError } = await supabase
-      .from('quiz_sessions')
+    const { data: inputedQuiz, error: insertQuizSessionError } = await supabase
+      .from('user_quiz_sessions')
       .insert({
         user_id: user.id,
         level: submission.level,
         duration: submission.duration,
         score: submission.score,
-        quiz_type: 'meaning',
         total_questions: submission.total_questions,
         correct_count: submission.correct_count,
       })
       .select('id')
       .single();
 
-    if (attemptsError) {
-      console.error(`[ERROR]: INSERT user_quiz_answers ${attemptsError}`);
-      throw attemptsError;
+    if (insertQuizSessionError) {
+      console.error(
+        `[ERROR]: INSERT user_quiz_answers ${insertQuizSessionError}`
+      );
+      throw insertQuizSessionError;
     }
 
     const insertData = submission.questions.map((quiz) => ({
       session_id: inputedQuiz.id,
       word_id: quiz.question_word_id,
-      quiz_type: submission.quiz_type || null, // TODO: 문제마다 다르게 갈지 퀴즈를 따라갈지 고민 필요
-      user_answer: quiz.user_choice_id,
-      correct_answer: quiz.question_word_id,
-      is_correct: quiz.is_correct,
+      quiz_type: submission.quiz_type,
+      is_correct: quiz.is_correct, // 정답 여부 (맞음/틀림)
+      user_answer: quiz.user_answer, // 사용자가 실제로 입력한 답
+      correct_answer: quiz.question_word_id, // 정답이 뭐였는지
       user_id: user.id,
     }));
 
