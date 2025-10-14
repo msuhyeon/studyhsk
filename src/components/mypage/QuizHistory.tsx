@@ -2,10 +2,10 @@
 
 import { Trophy, Award, Star } from 'lucide-react';
 import { formatDuration, formatDate } from '@/lib/utils';
-import DashboardCard from './DashboardCard';
+import DashboardCard, { DashboardCardItem } from './DashboardCard';
 import { useQuery } from '@tanstack/react-query';
 
-interface QuizType {
+interface QuizType extends DashboardCardItem {
   id: string;
   level: number;
   total_questions: number;
@@ -15,7 +15,7 @@ interface QuizType {
 }
 
 async function fetchQuizHistorys(limit: number) {
-  const response = await fetch(`/api/v1/quiz/history?limit=${limit}`, {
+  const response = await fetch(`/api/v2/quiz/history?limit=${limit}`, {
     method: 'GET',
   });
 
@@ -70,6 +70,8 @@ const QuizHistory = ({ limit = 3 }: { limit?: number }) => {
       </div>
     </div>
   );
+
+  console.log('==>', quizHistory);
 
   return (
     <DashboardCard

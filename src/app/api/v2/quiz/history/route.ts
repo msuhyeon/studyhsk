@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     }
 
     const { data: quizHistoryData, error: quizHistoryError } = await supabase
-      .from('quiz_sessions')
+      .from('user_quiz_sessions')
       .select(
         `
             id,
