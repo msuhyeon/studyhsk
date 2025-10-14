@@ -1,5 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase/client';
+
+type Props = {
+  params: Promise<{
+    level: string;
+  }>;
+};
 
 type QuestionType = 'basic' | 'sentence' | 'ordering' | 'situation';
 
@@ -156,12 +162,9 @@ function buildPrompt(
   return templates[type];
 }
 
-export async function GET(
-  _req: Request,
-  context: { params: { level: string } }
-) {
-  const { level } = context.params;
-
+export async function GET(request: NextRequest, { params }: Props) {
+  // Next.js 15부터 params가 Promise로 변경됨!!
+  const { level } = await params;
   const { data: rawWords, error: wordsError } = await supabase.rpc(
     'get_random_words',
     { level, count: 10 }
