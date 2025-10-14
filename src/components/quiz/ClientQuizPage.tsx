@@ -4,12 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import {
-  CheckCircle,
-  Loader2Icon,
-  XCircle,
-  Volume2,
-} from 'lucide-react';
+import { CheckCircle, Loader2Icon, XCircle, Volume2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -73,196 +68,16 @@ type Props = {
 
 const ClientQuizPage = ({ level }: Props) => {
   const router = useRouter();
-  // const [quizData, setQuizData] = useState<QuizData | null>(null);
   const [quizData, setQuizData] = useState<QuizData[]>();
   const [loading, setLoading] = useState(true);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [startTime, setStartTime] = useState<number | null>(null);
-
-  // dummy data
-  useEffect(() => {
-    // TODO: 퀴즈를 불러 올 때 시간 체크
-    setStartTime(Date.now());
-    setQuizData([
-      {
-        word_id: 'a47c63b0-aef6-4a63-ba63-289e04f27524',
-        type: 'basic',
-        question: '다음 한자의 의미는?',
-        options: ['기실 사실', '사실상', '진실', '사실적인'],
-        correct_answer: '기실 사실',
-        pinyin: 'qíshí',
-        sentence: undefined,
-        marked_sentence: undefined,
-        situation: undefined,
-        word_display: '其实',
-      },
-      {
-        word_id: 'ac0091e2-fa75-415e-99aa-addcbc99074d',
-        type: 'basic',
-        question: '다음 한자의 의미는?',
-        options: ['이모', '어머니', '아주머니', '할머니'],
-        correct_answer: '아주머니',
-        pinyin: 'āyí',
-        sentence: undefined,
-        marked_sentence: undefined,
-        situation: undefined,
-        word_display: '阿姨',
-      },
-      {
-        word_id: '0a8ed132-53b2-41b9-98f8-52450dcdb511',
-        type: 'basic',
-        question: '다음 한자의 의미는?',
-        options: ['비행하다', '도착하다', '이륙하다', '착륙하다'],
-        correct_answer: '이륙하다',
-        pinyin: 'qǐfēi',
-        sentence: undefined,
-        marked_sentence: undefined,
-        situation: undefined,
-        word_display: '起飞',
-      },
-      {
-        word_id: '81b87119-c154-491d-a49f-010bfa2484c0',
-        type: 'sentence',
-        question: '다음 문장에서 대괄호로 표시된 단어의 의미는?',
-        options: ['나무 수목', '꽃', '草', '灌木'],
-        correct_answer: '나무 수목',
-        pinyin: 'gōngyuán lǐ yǒu hěnduō gāodà de shù.',
-        sentence: '公园里有很多高大的树。',
-        marked_sentence: '公园里有很多高大的 [树]。',
-        situation: undefined,
-        word_display: undefined,
-      },
-      {
-        word_id: 'c4461165-a6f5-49d1-8823-d5e8417b8e8d',
-        type: 'sentence',
-        question: '다음 문장에서 대괄호로 표시된 단어의 의미는?',
-        options: ['늘 언제나', '자주', '가끔', '때때로'],
-        correct_answer: '늘 언제나',
-        pinyin: 'Wǒ [zǒngshì] zài túshūguǎn xuéxí zhōngwén.',
-        sentence: '我[总是]在图书馆学习中文。',
-        marked_sentence: '我[总是]在图书馆学习中文。',
-        situation: undefined,
-        word_display: undefined,
-      },
-      {
-        word_id: '8cdad292-d3ab-4b92-943a-76d05ba92fe9',
-        type: 'sentence',
-        question: '다음 문장에서 대괄호로 표시된 단어의 의미는?',
-        options: ['케이크', '과자', '빵', '쿠키'],
-        correct_answer: '케이크',
-        pinyin: 'jīntiān shì wǒ de shēngrì, wǒ xiǎng yào yīgè [dàngāo]。',
-        sentence: '今天是我的生日，我想要一个[蛋糕]。',
-        marked_sentence: '今天是我的生日，我想要一个[蛋糕]。',
-        situation: undefined,
-        word_display: undefined,
-      },
-      {
-        word_id: 'd95bfb82-75fe-4bd7-947c-7359aa716ba9',
-        type: 'sentence',
-        question: '다음 문장에서 대괄호로 표시된 단어의 의미는?',
-        options: ['아마', '확실히', '반드시', '절대로'],
-        correct_answer: '아마',
-        pinyin: 'Míngtiān [kěnéng] huì xià yǔ.',
-        sentence: '明天[可能]会下雨。',
-        marked_sentence: '明天[可能]会下雨。',
-        situation: undefined,
-        word_display: undefined,
-      },
-      {
-        word_id: '349d6f80-201f-44ff-b7a0-45b7e4488956',
-        type: 'ordering',
-        question: '다음 단어들을 올바른 순서로 배열하세요:',
-        tokens: [
-          { id: 't1', text: '단어1' },
-          { id: 't2', text: '단어2' },
-          { id: 't3', text: '단어3' },
-          { id: 't4', text: '단어4' },
-        ],
-        initial_order: ['t2', 't4', 't1', 't3'],
-        correct_order: ['t1', 't2', 't3', 't4'],
-        correct_sentence: '我决定去旅行',
-        translation: '나는 여행을 가기로 결정했다',
-      },
-      {
-        word_id: 'e1fe7dc6-5ece-4661-af1e-9f00d8819315',
-        type: 'ordering',
-        question: '다음 단어들을 올바른 순서로 배열하세요:',
-        tokens: [
-          { id: 't1', text: '단어1' },
-          { id: 't2', text: '단어2' },
-          { id: 't3', text: '단어3' },
-          { id: 't4', text: '단어4' },
-        ],
-        initial_order: ['t3', 't1', 't4', 't2'],
-        correct_order: ['t1', 't2', 't3', 't4'],
-        correct_sentence: '我喜欢玩游戏。',
-        translation: '나는 게임을 하는 것을 좋아한다.',
-      },
-      {
-        word_id: 'f86562a7-1e29-4724-ab6f-06676d242ab9',
-        type: 'situation',
-        question: '다음 상황에서 가장 자연스러운 표현은?',
-        options: [
-          '学生们进教室了。',
-          '我进了教室的门。',
-          '老师进教室的时候。',
-          '他们进教室很快。',
-        ],
-        correct_answer: '学生们进教室了。',
-        pinyin: undefined,
-        sentence: undefined,
-        marked_sentence: undefined,
-        situation:
-          '학교에서 수업이 시작되기 전에 학생들이 교실 안으로 들어오고 있습니다.',
-        word_display: undefined,
-      },
-    ]);
-    setLoading(false);
-  }, []);
-
-  const handleSubmit = useCallback(async () => {
-    if (!quizData || quizData.length === 0) return;
-
-    setIsSubmitting(true);
-
-    try {
-      const duration = startTime
-        ? Math.floor((Date.now() - startTime) / 1000)
-        : 0;
-      const correctCount = userAnswers.filter((item) => item.is_correct).length;
-      const score = Math.round((correctCount / quizData.length) * 100);
-      const quizResult = {
-        correct_count: correctCount,
-        score,
-        duration,
-        questions: userAnswers,
-        quiz: quizData,
-      };
-
-      const response = await fetch('/api/v2/quiz/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(quizResult),
-      });
-
-      if (!response.ok) {
-        throw new Error('퀴즈 제출에 실패했습니다.');
-      }
-
-      const result = await response.json();
-
-      router.push(`/quiz/result/${result.inputedQuiz.id}`);
-    } catch (error) {
-      console.error('[ERROR] Quiz submit:', error);
-      toast.error('퀴즈 제출에 실패했습니다.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [quizData, router, startTime, userAnswers]);
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [showResult, setShowResult] = useState(false);
+  const [draggedTokens, setDraggedTokens] = useState<WordText[]>([]);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchQuizData = async () => {
@@ -291,10 +106,49 @@ const ClientQuizPage = ({ level }: Props) => {
     fetchQuizData();
   }, [level]);
 
-  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
-  const [showResult, setShowResult] = useState(false);
-  const [draggedTokens, setDraggedTokens] = useState<WordText[]>([]);
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const handleSubmit = useCallback(async () => {
+    if (!quizData || quizData.length === 0) return;
+
+    setIsSubmitting(true);
+
+    try {
+      const duration = startTime
+        ? Math.floor((Date.now() - startTime) / 1000)
+        : 0;
+      const correctCount = userAnswers.filter((item) => item.is_correct).length;
+      const score = Math.round((correctCount / quizData.length) * 100);
+      const quizResult = {
+        correct_count: correctCount,
+        score,
+        duration,
+        questions: userAnswers,
+        level,
+      };
+
+      console.log('quizResult?', quizResult);
+
+      const response = await fetch('/api/v2/quiz/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(quizResult),
+      });
+
+      if (!response.ok) {
+        throw new Error('퀴즈 제출에 실패했습니다.');
+      }
+
+      const result = await response.json();
+
+      router.push(`/quiz/result/${result.inputedQuiz.id}`);
+    } catch (error) {
+      console.error('[ERROR] Quiz submit:', error);
+      toast.error('퀴즈 제출에 실패했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [quizData, router, startTime, userAnswers]);
 
   const currentData = useMemo(
     () => quizData?.[currentQuestionIndex] ?? null,
@@ -322,13 +176,21 @@ const ClientQuizPage = ({ level }: Props) => {
     });
   }, []);
 
+  console.log('currentData-', currentData);
+
   const buildOrderingTokens = useCallback(() => {
-    if (!currentData || currentData.type !== 'ordering' || !currentData.tokens) {
+    if (
+      !currentData ||
+      currentData.type !== 'ordering' ||
+      !currentData.tokens
+    ) {
       setDraggedTokens([]);
       return;
     }
 
     const tokens = currentData.tokens;
+
+    // 초기값
     const initial =
       currentData.initial_order && currentData.initial_order.length
         ? currentData.initial_order
@@ -339,8 +201,9 @@ const ClientQuizPage = ({ level }: Props) => {
         const tokenById = tokens.find((token) => token.id === tokenId);
         const tokenByText = tokens.find((token) => token.text === tokenId);
         const fallbackToken = tokens[index];
-        const sourceToken =
-          tokenById ?? tokenByText ?? fallbackToken ?? { id: tokenId, text: String(tokenId) };
+        const sourceToken = tokenById ??
+          tokenByText ??
+          fallbackToken ?? { id: tokenId, text: String(tokenId) };
 
         return { id: sourceToken.id, text: sourceToken.text };
       })
@@ -357,6 +220,7 @@ const ClientQuizPage = ({ level }: Props) => {
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, id: string) => {
     e.dataTransfer.setData('text/plain', id);
   };
+
   const handleDragOver = (
     e: React.DragEvent<HTMLDivElement>,
     index: number
@@ -364,13 +228,18 @@ const ClientQuizPage = ({ level }: Props) => {
     e.preventDefault();
     setDragOverIndex(index);
   };
+
   const handleDrop = (e: React.DragEvent<HTMLDivElement>, index: number) => {
     e.preventDefault();
+
     const id = e.dataTransfer.getData('text/plain');
     const from = draggedTokens.findIndex((t) => t.id === id);
+
     if (from === -1) return;
+
     const next = [...draggedTokens];
     const [moved] = next.splice(from, 1);
+
     next.splice(index, 0, moved);
     setDraggedTokens(next);
     setDragOverIndex(null);
@@ -408,11 +277,10 @@ const ClientQuizPage = ({ level }: Props) => {
 
     if (currentData.type === 'ordering') {
       const isCorrect = checkOrderCorrect();
-      setSelectedAnswer(isCorrect ? 'correct' : 'incorrect');
-
       const userOrderIds = draggedTokens.map((token) => token.id);
       const userOrderTexts = draggedTokens.map((token) => token.text);
 
+      setSelectedAnswer(isCorrect ? 'correct' : 'incorrect');
       upsertUserAnswer({
         ...baseAnswer,
         user_answer: null,
@@ -551,7 +419,6 @@ const ClientQuizPage = ({ level }: Props) => {
           </div>
         </Card>
       </div>
-
       <div className="grid grid-cols-1 gap-3">
         {currentData?.options &&
           currentData?.options.map((option, index) => {

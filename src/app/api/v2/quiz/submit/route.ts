@@ -5,7 +5,7 @@ type UserAnswer = {
   question_word_id: string;
   user_choice_id: string;
   is_correct: boolean;
-  quiz_type: string;
+  question_type: string;
   user_answer: string;
 };
 
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
         level: submission.level,
         duration: submission.duration,
         score: submission.score,
-        total_questions: submission.total_questions,
+        total_questions: submission.questions.length,
         correct_count: submission.correct_count,
       })
       .select('id')
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     const insertData = submission.questions.map((quiz) => ({
       session_id: inputedQuiz.id,
       word_id: quiz.question_word_id,
-      quiz_type: submission.quiz_type,
+      quiz_type: quiz.question_type,
       is_correct: quiz.is_correct, // 정답 여부 (맞음/틀림)
       user_answer: quiz.user_answer, // 사용자가 실제로 입력한 답
       correct_answer: quiz.question_word_id, // 정답이 뭐였는지

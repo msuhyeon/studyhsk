@@ -67,6 +67,10 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
   const [loading, setLoading] = useState(true);
   // const [openItems, setOpenItems] = useState(new Set());
 
+  // TODO: 수정 해야 할 사항
+  // 1. 틀린 문제 표시 할 때 문제에 문제가 아닌 단어만 표기됨 -> 문제가 표기되도록 수정 필요
+  // 2. 순서 정렬 문제는 내가 선택한 답이 빈 값으로 나옴 -> 내가 정렬한 문장이 표기되도록 수정 필요
+
   useEffect(() => {
     const fetchResult = async () => {
       try {
