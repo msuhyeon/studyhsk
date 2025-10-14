@@ -1,15 +1,16 @@
 import { supabase } from './client';
-import { useUserStore } from '@/store/user';
+import type { User } from '@supabase/supabase-js';
 
-// localStorage의 저장된 세션을 읽어옴, 미로그인 상태에선 null 리턴
-export const getUser = async () => {
+// TanStack Query에서 사용할 fetcher 함수
+export const fetchCurrentUser = async (): Promise<User | null> => {
   const { data, error } = await supabase.auth.getUser();
 
   if (error) {
     console.error(`[ERROR] SELECT User data: ${error}`);
+    throw error;
   }
 
-  useUserStore.getState().setUser(data.user ?? null);
+  return data.user;
 };
 
 export const logout = async () => {
@@ -17,8 +18,6 @@ export const logout = async () => {
 
   if (error) {
     console.error(`[ERROR] failed logout: ${error}`);
-  } else {
-    const { clearUser } = useUserStore.getState();
-    clearUser();
+    throw error;
   }
 };
