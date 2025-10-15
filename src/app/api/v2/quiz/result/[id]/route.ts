@@ -30,6 +30,7 @@ export async function GET(request: NextRequest, { params }: Props) {
         `
       word_id,
       user_answer,
+      quiz_type,
       correct_word:words!correct_answer (
         word,
         pinyin,

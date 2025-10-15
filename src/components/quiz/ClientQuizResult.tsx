@@ -69,7 +69,7 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
 
   // TODO: 수정 해야 할 사항
   // 1. 틀린 문제 표시 할 때 문제에 문제가 아닌 단어만 표기됨 -> 문제가 표기되도록 수정 필요
-  // 2. 순서 정렬 문제는 내가 선택한 답이 빈 값으로 나옴 -> 내가 정렬한 문장이 표기되도록 수정 필요
+  // question, sentence 타입이면: marked_sentence 아니면 그냥 sentence, pinyin
 
   useEffect(() => {
     const fetchResult = async () => {
@@ -195,7 +195,8 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
                           </span>
                           <div>
                             <span className="text-2xl font-bold mr-3">
-                              {question.correct_word.word}
+                              {/* {question} */}
+                              {/* {question.correct_word.word} */}
                             </span>
                             <span className="text-gray-600">
                               [{question.correct_word.pinyin}]
