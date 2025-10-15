@@ -30,7 +30,7 @@ type QuizData = {
   question: string;
   options?: string[];
   correct_answer?: string;
-  pinyin?: string | undefined; // undefined가 아니라 '' 이어야할듯해..
+  pinyin?: string | '';
   sentence?: string | undefined;
   marked_sentence?: string | undefined;
   situation?: string | undefined;
@@ -48,7 +48,6 @@ type UserAnswer = {
   question: string;
   user_answer: string | null;
   user_answer_order?: string[];
-  user_answer_order_text?: string[];
   correct_answer?: string | null;
   correct_order?: string[];
   correct_sentence?: string;
@@ -80,6 +79,7 @@ const ClientQuizPage = ({ level }: Props) => {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   useEffect(() => {
+    // TODO: 이게 왜 두번이..?
     const fetchQuizData = async () => {
       try {
         const response = await fetch(`/api/v2/quiz/${level}`);
@@ -124,8 +124,6 @@ const ClientQuizPage = ({ level }: Props) => {
         questions: userAnswers,
         level,
       };
-
-      console.log('quizResult?', quizResult);
 
       const response = await fetch('/api/v2/quiz/submit', {
         method: 'POST',
@@ -175,8 +173,6 @@ const ClientQuizPage = ({ level }: Props) => {
       return [...filtered, answer];
     });
   }, []);
-
-  console.log('currentData-', currentData);
 
   const buildOrderingTokens = useCallback(() => {
     if (
@@ -283,9 +279,8 @@ const ClientQuizPage = ({ level }: Props) => {
       setSelectedAnswer(isCorrect ? 'correct' : 'incorrect');
       upsertUserAnswer({
         ...baseAnswer,
-        user_answer: null,
+        user_answer: userOrderTexts.join(''),
         user_answer_order: userOrderIds,
-        user_answer_order_text: userOrderTexts,
         is_correct: isCorrect,
       });
 
