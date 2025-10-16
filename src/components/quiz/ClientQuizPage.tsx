@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { Card } from '../ui/card';
+import { QuizData, UserAnswer } from '@/types/quiz';
 // import QuizTimer from './QuizTimer';
 
 // type QuizData = {
@@ -18,48 +19,6 @@ import { Card } from '../ui/card';
 //   session_id: string;
 //   questions: Question[];
 // };
-
-type WordText = {
-  id: string;
-  text: string;
-};
-
-type QuizData = {
-  word_id: string;
-  type: 'basic' | 'sentence' | 'ordering' | 'construction' | 'situation';
-  question: string;
-  options?: string[];
-  correct_answer?: string;
-  pinyin?: string | '';
-  sentence?: string | undefined;
-  marked_sentence?: string | undefined;
-  situation?: string | undefined;
-  word_display?: string | undefined;
-  tokens?: WordText[];
-  initial_order?: string[];
-  correct_order?: string[];
-  correct_sentence?: string;
-  translation?: string;
-};
-
-type UserAnswer = {
-  question_word_id: string;
-  question_type: QuizData['type'];
-  question: string;
-  user_answer: string | null;
-  user_answer_order?: string[];
-  correct_answer?: string | null;
-  correct_order?: string[];
-  correct_sentence?: string;
-  translation?: string;
-  pinyin?: string;
-  sentence?: string;
-  marked_sentence?: string;
-  situation?: string;
-  word_display?: string;
-  options?: string[];
-  is_correct: boolean;
-};
 
 type Props = {
   level: string;
@@ -79,7 +38,6 @@ const ClientQuizPage = ({ level }: Props) => {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   useEffect(() => {
-    // TODO: 이게 왜 두번이..?
     const fetchQuizData = async () => {
       try {
         const response = await fetch(`/api/v2/quiz/${level}`);
@@ -283,7 +241,6 @@ const ClientQuizPage = ({ level }: Props) => {
         user_answer_order: userOrderIds,
         is_correct: isCorrect,
       });
-
       setShowResult(true);
       return;
     }
