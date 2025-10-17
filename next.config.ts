@@ -7,6 +7,7 @@ const withBundleAnalyzer = bundleAnalyzer({
 });
 
 const nextConfig: NextConfig = {
+  reactStrictMode: false,
   images: {
     // 외부 이미지 허용
     domains: ['lh3.googleusercontent.com'],
