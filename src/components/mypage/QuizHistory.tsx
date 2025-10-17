@@ -44,8 +44,6 @@ const QuizHistory = ({ limit = 3 }: { limit?: number }) => {
 
   const { quizHistory = [], totalCount = 0 } = data || {};
 
-  console.log('data: ', data);
-
   const renderQuizItem = (quiz: QuizType, index: number) => (
     <div
       className="flex items-center justify-between p-3 bg-gray-50 rounded-lg h-[72px]"

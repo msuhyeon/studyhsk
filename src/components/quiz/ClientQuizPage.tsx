@@ -9,7 +9,9 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { Card } from '../ui/card';
-import { QuizData, UserAnswer } from '@/types/quiz';
+import { QuizData, UserAnswer, ClientUserAnswer } from '@/types/quiz';
+import { WordText } from '@/types/word';
+
 // import QuizTimer from './QuizTimer';
 
 // type QuizData = {
@@ -29,7 +31,7 @@ const ClientQuizPage = ({ level }: Props) => {
   const [quizData, setQuizData] = useState<QuizData[]>();
   const [loading, setLoading] = useState(true);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
+  const [userAnswers, setUserAnswers] = useState<ClientUserAnswer[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [startTime, setStartTime] = useState<number | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -123,11 +125,9 @@ const ClientQuizPage = ({ level }: Props) => {
     setSelectedAnswer(option);
   };
 
-  const upsertUserAnswer = useCallback((answer: UserAnswer) => {
+  const upsertUserAnswer = useCallback((answer: ClientUserAnswer) => {
     setUserAnswers((prev) => {
-      const filtered = prev.filter(
-        (item) => item.question_word_id !== answer.question_word_id
-      );
+      const filtered = prev.filter((item) => item.word_id !== answer.word_id);
       return [...filtered, answer];
     });
   }, []);
@@ -135,7 +135,7 @@ const ClientQuizPage = ({ level }: Props) => {
   const buildOrderingTokens = useCallback(() => {
     if (
       !currentData ||
-      currentData.type !== 'ordering' ||
+      currentData.question_type !== 'ordering' ||
       !currentData.tokens
     ) {
       setDraggedTokens([]);
@@ -214,22 +214,22 @@ const ClientQuizPage = ({ level }: Props) => {
 
     // TODO:디비에 넘기기 위해 정답 고른 데이터를 객체에 저장해야됨.
     const baseAnswer = {
-      question_word_id: currentData.word_id,
-      question_type: currentData.type,
-      question: currentData.question,
+      word_id: currentData.word_id ?? '',
+      question_type: currentData.question_type ?? '',
+      question: currentData.question ?? '',
       correct_answer: currentData.correct_answer ?? null,
-      correct_order: currentData.correct_order,
-      correct_sentence: currentData.correct_sentence,
+      correct_order: currentData.correct_order ?? [],
+      correct_sentence: currentData.correct_sentence ?? '',
       translation: currentData.translation ?? currentData.sentence,
-      pinyin: currentData.pinyin,
-      sentence: currentData.sentence,
-      marked_sentence: currentData.marked_sentence,
-      situation: currentData.situation,
-      word_display: currentData.word_display,
-      options: currentData.options,
+      pinyin: currentData.pinyin ?? '',
+      sentence: currentData.sentence ?? '',
+      marked_sentence: currentData.marked_sentence ?? '',
+      situation: currentData.situation ?? '',
+      word_display: currentData.word_display ?? '',
+      options: currentData.options ?? [],
     };
 
-    if (currentData.type === 'ordering') {
+    if (currentData.question_type === 'ordering') {
       const isCorrect = checkOrderCorrect();
       const userOrderIds = draggedTokens.map((token) => token.id);
       const userOrderTexts = draggedTokens.map((token) => token.text);
@@ -240,7 +240,7 @@ const ClientQuizPage = ({ level }: Props) => {
         user_answer: userOrderTexts.join(''),
         user_answer_order: userOrderIds,
         is_correct: isCorrect,
-      });
+      } as unknown as UserAnswer);
       setShowResult(true);
       return;
     }
@@ -253,7 +253,7 @@ const ClientQuizPage = ({ level }: Props) => {
       ...baseAnswer,
       user_answer: selectedAnswer,
       is_correct: isCorrect,
-    });
+    } as unknown as UserAnswer);
 
     setShowResult(true);
   };
@@ -547,12 +547,11 @@ const ClientQuizPage = ({ level }: Props) => {
   );
 
   const renderQuiz = () => {
-    switch (currentData?.type) {
+    switch (currentData?.question_type) {
       case 'basic':
         return renderBasicQuiz();
       case 'sentence':
         return renderSentenceQuiz();
-      case 'construction':
       case 'ordering':
         return renderConstructionQuiz();
       case 'situation':
@@ -571,7 +570,7 @@ const ClientQuizPage = ({ level }: Props) => {
   }
 
   const isLast = currentQuestionIndex === totalQuestions - 1;
-  const isOrdering = currentData?.type === 'ordering';
+  const isOrdering = currentData?.question_type === 'ordering';
 
   const revealButton = !showResult ? (
     <Button

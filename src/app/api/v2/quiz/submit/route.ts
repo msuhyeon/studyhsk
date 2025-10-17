@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { QuizSubmission } from '@/types/quiz';
+import { QuizSubmission, UserAnswer, QuestionData } from '@/types/quiz';
+import { SupabaseClient, User } from '@supabase/supabase-js';
 
-const handleInsertSession = async (supabase, user, submission) => {
+const handleInsertSession = async (
+  supabase: SupabaseClient,
+  user: User,
+  submission: QuizSubmission
+) => {
   const { data: inputedQuiz, error } = await supabase
     .from('user_quiz_sessions')
     .insert({
@@ -19,16 +24,22 @@ const handleInsertSession = async (supabase, user, submission) => {
   return { inputedQuiz, error };
 };
 
-const handleInsertAnswer = async (supabase, insertData) => {
-  const { error: insertAnswerError } = await supabase
+const handleInsertAnswer = async (
+  supabase: SupabaseClient,
+  insertData: UserAnswer[]
+) => {
+  const { error } = await supabase
     .from('user_quiz_answers')
     .insert(insertData)
     .select('id');
 
-  return insertAnswerError;
+  return error;
 };
 
-const handleInsertQuestion = async (supabase, insertQuestionData) => {
+const handleInsertQuestion = async (
+  supabase: SupabaseClient,
+  insertQuestionData: QuestionData[]
+) => {
   const { error } = await supabase
     .from('quiz_questions')
     .insert(insertQuestionData)
@@ -41,6 +52,7 @@ export async function POST(request: NextRequest) {
   try {
     const submission: QuizSubmission = await request.json();
     const supabase = await createClient();
+
     const {
       data: { user },
       error: userError,
@@ -60,36 +72,53 @@ export async function POST(request: NextRequest) {
     );
 
     if (error) {
-      console.error(`[ERROR]: INSERT user_quiz_answers ${error}`);
+      console.error(`[ERROR]: INSERT user_quiz_sessions ${error.message}`);
       throw error;
     }
 
-    const insertData = submission.questions.map((quiz) => ({
-      session_id: inputedQuiz.id,
-      word_id: quiz.question_word_id,
-      quiz_type: quiz.question_type,
-      is_correct: quiz.is_correct, // 정답 여부 (맞음/틀림)
-      user_answer: quiz.user_answer, // 사용자가 실제로 입력한 답
-      correct_answer: quiz.question_word_id, // 정답이 뭐였는지
+    const insertData: UserAnswer[] = submission.questions.map((quiz) => ({
+      session_id: inputedQuiz?.id || '',
+      word_id: quiz.word_id,
+      question_type: quiz.question_type,
+      question: quiz.question,
+      options: quiz.options,
+      correct_answer: quiz.correct_answer,
+      is_correct: quiz.is_correct,
+      user_answer: quiz.user_answer,
+      user_answer_order: quiz.user_answer_order,
+      pinyin: quiz.pinyin,
+      translation: quiz.translation,
       user_id: user.id,
     }));
 
-    const { insertAnswerError } = await handleInsertAnswer(
-      supabase,
-      insertData
-    );
-    const insertQuestionData = submission.questions.map((quiz) => ({
-      word_id: quiz.question_word_id,
-      question_type: quiz.question_type,
-      question_text: quiz.question,
-      options: quiz.options,
-      correct_answer: quiz.correct_answer,
-      tokens: quiz.correct_order,
-      pinyin: quiz.pinyin,
-      meaning: quiz.translation,
-    }));
+    const insertAnswerError = await handleInsertAnswer(supabase, insertData);
 
-    const { insertQuestionError } = await handleInsertQuestion(
+    // const insertQuestionData: QuestionData[] = submission.questions.map(
+    //   (quiz) => ({
+    //     word_id: quiz.word_id,
+    //     question_type: quiz.question_type,
+    //     question_text: quiz.question,
+    //     options: quiz.options,
+    //     correct_answer: quiz.correct_answer,
+    //     tokens: quiz.correct_order,
+    //     pinyin: quiz.pinyin,
+    //     meaning: quiz.translation,
+    //   })
+    // );
+    const insertQuestionData: QuestionData[] = submission.questions.map(
+      (quiz) => ({
+        word_id: quiz.word_id,
+        question_type: quiz.question_type,
+        question_text: quiz.question ?? '',
+        options: quiz.options ?? [],
+        correct_answer: quiz.correct_answer ?? '',
+        tokens: quiz.tokens ?? [],
+        pinyin: quiz.pinyin ?? '',
+        meaning: quiz.translation ?? '',
+      })
+    );
+
+    const insertQuestionError = await handleInsertQuestion(
       supabase,
       insertQuestionData
     );

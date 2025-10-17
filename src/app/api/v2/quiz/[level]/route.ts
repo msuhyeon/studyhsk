@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase/client';
+import { QuestionType } from '@/types/quiz';
 
 type Props = {
   params: Promise<{
     level: string;
   }>;
 };
-
-type QuestionType = 'basic' | 'sentence' | 'ordering' | 'situation';
 
 interface WordRecord {
   id: string;
@@ -23,7 +22,7 @@ interface OrderingToken {
 
 interface OrderingQuestion {
   word_id: string;
-  type: 'ordering' | 'ordering';
+  question_type: 'ordering' | 'ordering';
   question: string;
   tokens: OrderingToken[];
   initial_order: string[];
@@ -35,7 +34,7 @@ interface OrderingQuestion {
 
 interface ChoiceQuestion {
   word_id: string;
-  type: 'basic' | 'sentence' | 'situation';
+  question_type: 'basic' | 'sentence' | 'situation';
   question: string;
   options?: string[];
   correct_answer?: string;
@@ -58,17 +57,17 @@ interface OpenAIResponse {
 interface ParsedContent {
   question_text?: string;
   question?: string;
-  // ordering 용
+  // ordering
   type?: string;
   tokens?: OrderingToken[];
   initial_order?: string[];
   correct_order?: string[];
   correct_sentence?: string;
   translation?: string;
-  // choice 용
+  // choice
   options?: string[];
   correct_answer?: string;
-  // sentence/situation 용
+  // sentence/situation
   pinyin?: string;
   sentence?: string;
   sentence_raw?: string;
@@ -137,7 +136,7 @@ function buildPrompt(
 
               응답 형식(JSON 객체, 키 고정):
               {
-                "type": "ordering",
+                "question_type": "ordering",
                 "question_text": "다음 단어들을 올바른 순서로 배열하세요:",
                 "tokens": [ { "id": "t1", "text": "단어1" }, { "id": "t2", "text": "단어2" }, { "id": "t3", "text": "단어3" }, { "id": "t4", "text": "단어4" } ],
                 "initial_order": ["t3", "t1", "t4", "t2"],
@@ -242,7 +241,7 @@ export async function GET(request: NextRequest, { params }: Props) {
       if (questionType === 'ordering') {
         return {
           word_id: word.id,
-          type: 'ordering',
+          question_type: 'ordering',
           question: questionText,
           tokens: parsed.tokens ?? [],
           initial_order: parsed.initial_order ?? [],
@@ -256,7 +255,7 @@ export async function GET(request: NextRequest, { params }: Props) {
       // choice
       return {
         word_id: word.id,
-        type: questionType,
+        question_type: questionType,
         question: questionText,
         options: parsed.options ?? [],
         correct_answer: parsed.correct_answer ?? undefined,

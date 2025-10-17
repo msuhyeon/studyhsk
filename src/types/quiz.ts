@@ -1,9 +1,11 @@
 import { WordText } from './word';
 
-export type QuizData = {
+export type QuestionType = 'basic' | 'sentence' | 'ordering' | 'situation';
+
+export interface QuizData {
   word_id: string;
-  type: 'basic' | 'sentence' | 'ordering' | 'construction' | 'situation';
-  question: string;
+  question_type: QuestionType;
+  question?: string;
   options?: string[];
   correct_answer?: string;
   pinyin?: string | '';
@@ -16,28 +18,20 @@ export type QuizData = {
   correct_order?: string[];
   correct_sentence?: string;
   translation?: string;
-};
+}
 
-export type UserAnswer = {
-  question_word_id: string;
-  question_type: QuizData['type'];
-  question: string;
+export interface ClientUserAnswer extends QuizData {
   user_answer: string | null;
   user_answer_order?: string[];
-  correct_answer?: string | null;
-  correct_order?: string[];
-  correct_sentence?: string;
-  translation?: string;
-  pinyin?: string;
-  sentence?: string;
-  marked_sentence?: string;
-  situation?: string;
-  word_display?: string;
-  options?: string[];
   is_correct: boolean;
-};
+}
 
-export type QuizSubmission = {
+export interface UserAnswer extends ClientUserAnswer {
+  session_id: string;
+  user_id: string;
+}
+
+export interface QuizSubmission {
   level: string;
   total_questions: number;
   correct_answers: number;
@@ -47,4 +41,9 @@ export type QuizSubmission = {
   quiz_type: string;
   correct_count: number;
   user_answer: string;
-};
+}
+
+export interface QuestionData extends QuizData {
+  question_text: QuizData['question'];
+  meaning: QuizData['translation'];
+}
