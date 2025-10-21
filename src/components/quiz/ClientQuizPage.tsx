@@ -84,7 +84,6 @@ const ClientQuizPage = ({ level }: Props) => {
         questions: userAnswers,
         level,
       };
-
       const response = await fetch('/api/v2/quiz/submit', {
         method: 'POST',
         headers: {
@@ -207,18 +206,13 @@ const ClientQuizPage = ({ level }: Props) => {
   };
 
   const revealResult = () => {
-    // is_correct: BOOLEAN  : 정답 여부 (맞음/틀림)
-    // user_answer: TEXT    : 사용자가 실제로 선택/입력한 답
-    // correct_answer: TEXT : 정답이 무엇이었는지
     if (!currentData) return;
 
-    // TODO:디비에 넘기기 위해 정답 고른 데이터를 객체에 저장해야됨.
     const baseAnswer = {
       word_id: currentData.word_id ?? '',
       question_type: currentData.question_type ?? '',
       question: currentData.question ?? '',
-      correct_answer: currentData.correct_answer ?? null,
-      correct_order: currentData.correct_order ?? [],
+      correct_answer: currentData.correct_answer ?? currentData.correct_order,
       correct_sentence: currentData.correct_sentence ?? '',
       translation: currentData.translation ?? currentData.sentence,
       pinyin: currentData.pinyin ?? '',
