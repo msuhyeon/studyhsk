@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient as createServerClient } from '@/lib/supabase/server';
 import { QuizSubmission, UserAnswer, QuestionData } from '@/types/quiz';
 import { SupabaseClient, User, createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase/client';
 // import { createClient } from '@supabase/supabase-js';
 
 const handleInsertSession = async (
@@ -37,13 +38,8 @@ const handleInsertAnswer = async (
   return error;
 };
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 const handleInsertQuestion = async (insertQuestionData: QuestionData[]) => {
-  const { error } = await supabaseAdmin
+  const { error } = await supabase
     .from('quiz_questions')
     .insert(insertQuestionData)
     .select('id');
@@ -82,7 +78,7 @@ export async function POST(request: NextRequest) {
     const insertData: UserAnswer[] = submission.questions.map((quiz) => ({
       session_id: inputedQuiz?.id || '',
       word_id: quiz.word_id,
-      quiz_type: quiz.question_type,
+      question_type: quiz.question_type,
       // question: quiz.question,
       // options: quiz.options,
       correct_answer: quiz.correct_answer,
@@ -93,8 +89,6 @@ export async function POST(request: NextRequest) {
       // translation: quiz.translation ?? null,
       user_id: user.id,
     }));
-
-    // console.log('insertData-', insertData);
 
     const insertAnswerError = await handleInsertAnswer(supabase, insertData);
 
