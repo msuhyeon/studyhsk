@@ -102,10 +102,10 @@ const BookmarksPage = () => {
   };
 
   return (
-    <div className="grid grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {bookmarks.map((item) => {
         return (
-          <Card className="w-full max-w-sm h-sm" key={item.id}>
+          <Card className="w-full max-w-sm h-sm gap-1 md:gap-3" key={item.id}>
             <CardHeader>
               <CardTitle className="text-xl">
                 {item.word} <span>[{item.pinyin}]</span>
@@ -118,7 +118,7 @@ const BookmarksPage = () => {
               <span className="font-semibold mr-3">{item.meaning}</span>
               <span className="text-zinc-400">{item.part_of_speech}</span>
             </CardContent>
-            <CardFooter className="flex gap-2 justify-end">
+            <CardFooter className="flex gap-2 justify-end flex-row">
               <Button variant="outline" onClick={() => handleDelete(item.id)}>
                 삭제
               </Button>

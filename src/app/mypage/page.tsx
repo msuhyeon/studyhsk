@@ -25,10 +25,10 @@ import {
 
 const MyPage = () => {
   return (
-    <div className="min-h-screen to-blue-50 p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <div className="min-h-screen to-blue-50 md:p-6">
+      <div className="max-w-6xl mx-auto space-y-4 md:space-y-6">
         <div className="flex justify-between items-end">
-          <h1 className="title">마이페이지</h1>
+          <h1 className="title mb-3">마이페이지</h1>
           {/* TODO: 계정 정보 뭘 수정할지 확인 */}
           {/* <Button
             variant="outline"
@@ -76,7 +76,7 @@ const MyPage = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="text-center">
-            <CardContent className="p-6 relative">
+            <CardContent className="md:p-6 relative">
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 <BookOpen className="w-6 h-6 text-blue-600" />
               </div>
@@ -94,7 +94,7 @@ const MyPage = () => {
             </CardContent>
           </Card>
           <Card className="text-center">
-            <CardContent className="p-6 relative">
+            <CardContent className="md:p-6 relative">
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Trophy className="w-6 h-6 text-green-600" />
               </div>
@@ -112,7 +112,7 @@ const MyPage = () => {
             </CardContent>
           </Card>
           <Card className="text-center">
-            <CardContent className="p-6 relative">
+            <CardContent className="md:p-6 relative">
               <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 <TrendingUp className="w-6 h-6 text-purple-600" />
               </div>
@@ -130,7 +130,7 @@ const MyPage = () => {
             </CardContent>
           </Card>
           <Card className="text-center">
-            <CardContent className="p-6 relative">
+            <CardContent className="md:p-6 relative">
               <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 {/* <Heart className="w-6 h-6 text-red-600" /> */}
                 <Star className="w-6 h-6 text-[#facc15]" />
