@@ -15,5 +15,7 @@ export const useLearningProgress = () => {
     queryKey: ['learningProgress'],
     queryFn: fetchLearningProgress,
     staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
+    retry: 1,
   });
 };
