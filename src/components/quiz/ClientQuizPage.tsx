@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useUser } from '@/hooks/useUser';
-import { supabase } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
@@ -10,9 +9,10 @@ import { CheckCircle, Loader2Icon, XCircle, Volume2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { Card } from '../ui/card';
+import { Card } from '@/components/ui/card';
 import { QuizData, UserAnswer, ClientUserAnswer } from '@/types/quiz';
 import { WordText } from '@/types/word';
+import RequireLogin from '../RequireLogin';
 
 // import QuizTimer from './QuizTimer';
 
@@ -56,7 +56,6 @@ const ClientQuizPage = ({ level }: Props) => {
         setStartTime(Date.now());
       } catch (error) {
         console.error('[ERROR] Quiz fetch:', error);
-        console.log('캐치');
         toast.error(
           error instanceof Error
             ? error.message
@@ -573,44 +572,9 @@ const ClientQuizPage = ({ level }: Props) => {
     );
   }
 
-  const handleLogin = () => {
-    try {
-      supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: process.env.NEXT_PUBLIC_BASE_URL,
-        },
-      });
-
-      // 로그인 완료 후 home으로 이동함
-    } catch (error) {
-      console.error(`[ERROR] Failed login: ${error}`);
-      toast.error('로그인 실패. 다시 시도해주세요.');
-    }
-  };
-
   if (!user) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[70vh] text-center space-y-6">
-        <Card className="p-10 max-w-sm border-none">
-          <div className="flex flex-col items-center space-y-3">
-            <div className="text-3xl">🚨</div>
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-              로그인해주세요.
-            </h2>
-            <p className="text-gray-600 dark:text-gray-300 text-sm mb-10">
-              계정이 없으시다면 회원가입 후 이용 가능합니다.
-            </p>
-            <Button
-              onClick={handleLogin}
-              className="w-full font-semibold py-5 mt-2"
-            >
-              로그인하기
-            </Button>
-          </div>
-        </Card>
-      </div>
-    );
+    console.log('여기안오냥..');
+    return <RequireLogin />;
   }
 
   const isLast = currentQuestionIndex === totalQuestions - 1;
