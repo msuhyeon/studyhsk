@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient as createServerClient } from '@/lib/supabase/server';
 import { QuizSubmission, UserAnswer, QuestionData } from '@/types/quiz';
-import { SupabaseClient, User, createClient } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase/client';
-// import { createClient } from '@supabase/supabase-js';
+import { SupabaseClient, User } from '@supabase/supabase-js';
 
+// 1. 퀴즈 세션(한 세션의 퀴즈 결과) 저장
 const handleInsertSession = async (
   supabase: SupabaseClient,
   user: User,
@@ -26,6 +25,20 @@ const handleInsertSession = async (
   return { inputedQuiz, error };
 };
 
+// 2. quiz_questions (문제들) 저장
+const handleInsertQuestion = async (
+  supabase: SupabaseClient,
+  insertQuestionData: QuestionData[]
+) => {
+  const { data, error } = await supabase
+    .from('quiz_questions')
+    .insert(insertQuestionData)
+    .select('id, word_id'); // 새로 생성된 question id와 word_id를 같이 가져옴
+
+  return { data, error };
+};
+
+// 3. user_quiz_answers (사용자의 답변들) 저장
 const handleInsertAnswer = async (
   supabase: SupabaseClient,
   insertData: UserAnswer[]
@@ -33,15 +46,6 @@ const handleInsertAnswer = async (
   const { error } = await supabase
     .from('user_quiz_answers')
     .insert(insertData)
-    .select('id');
-
-  return error;
-};
-
-const handleInsertQuestion = async (insertQuestionData: QuestionData[]) => {
-  const { error } = await supabase
-    .from('quiz_questions')
-    .insert(insertQuestionData)
     .select('id');
 
   return error;
@@ -64,34 +68,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { inputedQuiz, error } = await handleInsertSession(
+    // user_quiz_sessions 저장
+    const { inputedQuiz, error: sessionError } = await handleInsertSession(
       supabase,
       user,
       submission
     );
+    if (sessionError) throw sessionError;
 
-    if (error) {
-      console.error(`[ERROR]: INSERT user_quiz_sessions ${error.message}`);
-      throw error;
-    }
-
-    const insertData: UserAnswer[] = submission.questions.map((quiz) => ({
-      session_id: inputedQuiz?.id || '',
-      word_id: quiz.word_id,
-      question_type: quiz.question_type,
-      // question: quiz.question,
-      // options: quiz.options,
-      correct_answer: quiz.correct_answer,
-      is_correct: quiz.is_correct,
-      user_answer: (quiz.user_answer || quiz.user_answer_order) ?? null,
-      // user_answer_order: quiz.user_answer_order ?? null,
-      // pinyin: quiz.pinyin,
-      // translation: quiz.translation ?? null,
-      user_id: user.id,
-    }));
-
-    const insertAnswerError = await handleInsertAnswer(supabase, insertData);
-
+    // quiz_questions 먼저 저장
     const insertQuestionData: QuestionData[] = submission.questions.map(
       (quiz) => ({
         word_id: quiz.word_id,
@@ -105,19 +90,31 @@ export async function POST(request: NextRequest) {
       })
     );
 
-    const insertQuestionError = await handleInsertQuestion(
-      supabase,
-      insertQuestionData
+    const { data: insertedQuestions, error: insertQuestionError } =
+      await handleInsertQuestion(supabase, insertQuestionData);
+
+    if (insertQuestionError) throw insertQuestionError;
+
+    // word_id 기준으로 quiz_question.id 매핑 테이블 생성
+    const questionIdMap = Object.fromEntries(
+      insertedQuestions.map((q) => [q.word_id, q.id])
     );
 
-    if (insertQuestionError || insertAnswerError) {
-      console.error('[ERROR] Submit quiz failed:', {
-        insertQuestionError: insertQuestionError?.message || null,
-        insertAnswerError: insertAnswerError?.message || null,
-      });
+    // user_quiz_answers 데이터 생성 (question_id 매핑 포함)
+    const insertData: UserAnswer[] = submission.questions.map((quiz) => ({
+      session_id: inputedQuiz?.id || '',
+      question_id: questionIdMap[quiz.word_id], // FK 연결
+      word_id: quiz.word_id,
+      question_type: quiz.question_type,
+      correct_answer: quiz.correct_answer,
+      is_correct: quiz.is_correct,
+      user_answer: (quiz.user_answer || quiz.user_answer_order) ?? null,
+      user_id: user.id,
+    }));
 
-      throw insertQuestionError || insertAnswerError;
-    }
+    const insertAnswerError = await handleInsertAnswer(supabase, insertData);
+
+    if (insertAnswerError) throw insertAnswerError;
 
     return NextResponse.json({
       success: true,
@@ -127,10 +124,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('[ERROR] Quiz submit:', error);
     return NextResponse.json(
-      {
-        success: false,
-        error: '퀴즈 제출에 실패했습니다.',
-      },
+      { success: false, error: '퀴즈 제출에 실패했습니다.' },
       { status: 500 }
     );
   }
