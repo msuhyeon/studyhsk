@@ -27,6 +27,8 @@ const ClientMyPage = () => {
   if (!user) {
     toast.error('로그인이 필요합니다');
     return <RequireLogin />;
+  } else if (getUserError) {
+    toast.error(getUserError.message);
   }
 
   return (

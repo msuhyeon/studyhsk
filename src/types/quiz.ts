@@ -29,6 +29,7 @@ export interface ClientUserAnswer extends QuizData {
 export interface UserAnswer extends ClientUserAnswer {
   session_id: string;
   user_id: string;
+  question_id?: string;
 }
 
 export interface QuizSubmission {
@@ -40,7 +41,7 @@ export interface QuizSubmission {
   questions: UserAnswer[];
   quiz_type: string;
   correct_count: number;
-  user_answer: string;
+  user_answer: string | string[] | null;
 }
 
 export interface QuestionData extends QuizData {

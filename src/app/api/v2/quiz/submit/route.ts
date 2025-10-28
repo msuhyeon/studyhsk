@@ -97,7 +97,8 @@ export async function POST(request: NextRequest) {
 
     // word_id 기준으로 quiz_question.id 매핑 테이블 생성
     const questionIdMap = Object.fromEntries(
-      insertedQuestions.map((q) => [q.word_id, q.id])
+      (insertedQuestions ?? []).map((q) => [q.word_id, q.id])
+      // (insertedQuestions ?? []):  윗줄에서 검증을 하기 때문에 insertedQuestions는 null일 수가 없다.
     );
 
     // user_quiz_answers 데이터 생성 (question_id 매핑 포함)
@@ -108,7 +109,7 @@ export async function POST(request: NextRequest) {
       question_type: quiz.question_type,
       correct_answer: quiz.correct_answer,
       is_correct: quiz.is_correct,
-      user_answer: (quiz.user_answer || quiz.user_answer_order) ?? null,
+      user_answer: quiz.user_answer,
       user_id: user.id,
     }));
 

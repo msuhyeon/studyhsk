@@ -66,14 +66,14 @@ const ClientQuizPage = ({ level }: Props) => {
       }
     };
 
-    if (!user) {
-      setLoading(false);
-      toast.error('로그인이 필요합니다');
-      return;
-    } else {
-      fetchQuizData();
-    }
+    if (!user) return;
+
+    fetchQuizData();
   }, [level, user]);
+
+  if (getUserError) {
+    toast.error(getUserError.message);
+  }
 
   const handleSubmit = useCallback(async () => {
     if (!quizData || quizData.length === 0) return;
@@ -221,7 +221,8 @@ const ClientQuizPage = ({ level }: Props) => {
       word_id: currentData.word_id ?? '',
       question_type: currentData.question_type ?? '',
       question: currentData.question ?? '',
-      correct_answer: currentData.correct_answer ?? currentData.correct_order,
+      correct_answer:
+        currentData.correct_answer ?? currentData.correct_sentence,
       correct_sentence: currentData.correct_sentence ?? '',
       translation: currentData.translation ?? currentData.sentence,
       pinyin: currentData.pinyin ?? '',
@@ -573,7 +574,6 @@ const ClientQuizPage = ({ level }: Props) => {
   }
 
   if (!user) {
-    console.log('여기안오냥..');
     return <RequireLogin />;
   }
 
