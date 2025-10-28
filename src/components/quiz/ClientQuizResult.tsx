@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/accordion';
 
 import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
 
 type QuizResult = {
   id: string;
@@ -50,6 +51,10 @@ type WrongAnswer = {
   word_id: string;
   words: WordType;
   user_answer: string;
+  quiz_questions: {
+    question_text: string;
+    question_type: string;
+  };
 };
 
 type QuizResultData = {
@@ -135,6 +140,8 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
 
   const { quiz, wrongAnswers } = quizResult;
 
+  console.log('wrongAnswers-', wrongAnswers);
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="max-w-4xl mx-auto p-6 space-y-6">
@@ -183,7 +190,7 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
             <div className="p-6">
               <div className="space-y-4">
                 <Accordion type="single" collapsible className="w-full">
-                  {wrongAnswers.map((question, index) => (
+                  {wrongAnswers.map((answer, index) => (
                     <AccordionItem
                       value={`item-${Number(index) + 1}`}
                       key={index}
@@ -194,13 +201,14 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
                             문제
                           </span>
                           <div>
-                            <span className="text-2xl font-bold mr-3">
-                              {/* {question} */}
-                              {/* {question.correct_word.word} */}
+                            <span className="text-gray-600 mr-3 text-lg">
+                              {answer.quiz_questions.question_text}
+                              {/* [{question?.correct_word?.pinyin}] */}
                             </span>
-                            <span className="text-gray-600">
-                              [{question.correct_word.pinyin}]
+                            <span className="text-xl font-bold">
+                              [{answer.words.word}]
                             </span>
+                            <Badge>{answer.question_type}</Badge>
                           </div>
                         </div>
                       </AccordionTrigger>
@@ -217,8 +225,11 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
                                   정답
                                 </span>
                               </div>
-                              <div className="text-lg font-semibold text-green-800">
-                                {question.correct_word.meaning}
+                              <div
+                                // variant="outline"
+                                className="text-lg font-semibold text-green-800"
+                              >
+                                {answer?.correct_answer}
                               </div>
                             </div>
                             <div className="border border-red-200 bg-red-50 rounded-lg p-4">
@@ -232,19 +243,17 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
                                 </span>
                               </div>
                               <div className="text-lg font-semibold text-red-800">
-                                {question.user_answer}
+                                {answer?.user_answer}
                                 {/* {question.user_word.meaning} */}
                               </div>
                             </div>
                           </div>
-                          {question?.example && (
+                          {answer?.example && (
                             <div className="border border-blue-200 bg-blue-50 rounded-lg p-4">
                               <h4 className="font-medium text-blue-700 mb-2 flex items-center">
                                 📖 예문
                               </h4>
-                              <p className="text-blue-800">
-                                {question.example}
-                              </p>
+                              <p className="text-blue-800">{answer.example}</p>
                             </div>
                           )}
                         </div>
