@@ -26,10 +26,13 @@ async function fetchQuizHistorys(limit: number) {
     );
   }
 
-  const { quizHistory } = await response.json();
+  const { quizHistory, totalCount } = await response.json();
 
-  return { quizHistory } as {
+  console.log('totalCount-', totalCount);
+
+  return { quizHistory, totalCount } as {
     quizHistory: QuizType[];
+    totalCount: number;
   };
 }
 const QuizHistory = ({ limit = 3 }: { limit?: number }) => {
@@ -39,9 +42,10 @@ const QuizHistory = ({ limit = 3 }: { limit?: number }) => {
     staleTime: 1000 * 60,
     gcTime: 1000 * 60 * 5,
     retry: 2,
+    refetchInterval: 1000 * 60,
   });
 
-  const { quizHistory = [] } = data || {};
+  const { quizHistory = [], totalCount = 0 } = data || {};
 
   const renderQuizItem = (quiz: QuizType, index: number) => (
     <div
@@ -78,7 +82,7 @@ const QuizHistory = ({ limit = 3 }: { limit?: number }) => {
       data={quizHistory}
       isLoading={isLoading}
       error={error?.message || null}
-      totalCount={quizHistory.length}
+      totalCount={totalCount}
       renderItem={renderQuizItem}
       emptyState={{
         icon: <Star className="w-6 h-6 text-gray-400" />,
@@ -88,7 +92,7 @@ const QuizHistory = ({ limit = 3 }: { limit?: number }) => {
         href: '/mypage/quizzes',
         label: '전체 보기',
       }}
-      countLabel={`총 ${quizHistory.length}회 응시`}
+      countLabel={`총 ${totalCount}회 응시`}
       displayLimit={3}
     />
   );

@@ -139,12 +139,11 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
 
   const { quiz, wrongAnswers } = quizResult;
 
-  console.log('wrongAnswers-', wrongAnswers);
-  console.log('quiz-', quiz);
+  // TODO: 로그인 세션 만료 시 에 대한 예외처리 필요
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="max-w-4xl mx-auto p-6 space-y-6">
+    <div className="max-w-4xl mx-auto md:p-6">
+      <div className="max-w-4xl mx-auto md:p-6 space-y-3 md:space-y-6">
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border p-6">
           <h1 className="text-2xl font-bold text-center mb-3">
             🎉 퀴즈 풀이 완료!
@@ -177,9 +176,9 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
           </div>
         </div>
         {wrongAnswers.length > 0 ? (
-          <div className="bg-white rounded-lg border">
-            <div className="p-6 border-b">
-              <h2 className="text-xl font-semibold flex items-center">
+          <div className="bg-white rounded-lg border mb-10">
+            <div className="p-4 md:p-6 border-b">
+              <h2 className="md:text-xl font-semibold flex items-center">
                 <XCircle className="text-red-500 mr-2" size={24} />
                 틀린 문제
                 <span className="ml-2 bg-red-500 text-white text-sm px-2 py-1 rounded">
@@ -187,8 +186,8 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
                 </span>
               </h2>
             </div>
-            <div className="p-6">
-              <div className="space-y-4">
+            <div className="p-4 md:p-6">
+              <div className="space-y-2 md:space-y-4">
                 <Accordion type="single" collapsible className="w-full ">
                   {wrongAnswers.map((answer, index) => (
                     <AccordionItem
@@ -199,15 +198,13 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
                         <div className="w-full flex items-center space-x-4 cursor-pointer">
                           <Badge>{answer.question_type}</Badge>
                           <div>
-                            <span className="text-gray-600 mr-3 text-lg">
+                            <span className="text-gray-600 mr-1 md:text-lg">
                               {answer.quiz_questions.question_text}
-                              {/* [{question?.correct_word?.pinyin}] */}
                             </span>
-                            <span className="text-xl font-bold">
+                            <span className="md:text-xl font-bold">
                               [ {answer.words.word} ]
                             </span>
                           </div>
-                          {/* <Badge>{answer.question_type}</Badge> */}
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="flex flex-col gap-4 text-balance">
@@ -223,10 +220,7 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
                                   정답
                                 </span>
                               </div>
-                              <div
-                                // variant="outline"
-                                className="text-lg font-semibold text-green-800"
-                              >
+                              <div className="md:text-lg font-semibold text-green-800">
                                 {answer?.correct_answer}
                               </div>
                             </div>
@@ -240,7 +234,7 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
                                   내가 선택한 답
                                 </span>
                               </div>
-                              <div className="text-lg font-semibold text-red-800">
+                              <div className="md:text-lg font-semibold text-red-800">
                                 {answer?.user_answer}
                                 {/* {question.user_word.meaning} */}
                               </div>
@@ -282,7 +276,7 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
         <div className="flex justify-center">
           <Link
             href={`/quiz/${quiz.level}`}
-            className="bg-blue-500 hover:bg-blue-600 text-white py-3 px-12 rounded-lg font-medium transition-colors"
+            className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-6 md:py-3 md:px-12 rounded-lg font-medium transition-colors"
           >
             다음 퀴즈 도전
           </Link>
