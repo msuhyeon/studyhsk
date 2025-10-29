@@ -17,24 +17,11 @@ export async function GET(request: NextRequest, { params }: Props) {
       .from('user_quiz_sessions')
       .select('level, score, duration')
       .eq('id', id)
-      .maybeSingle();
+      .single();
 
     if (quizError) {
       throw quizError;
     }
-
-    // 틀린 문제만 가져오기
-    // const { data: wrongAnswers, error: wrongError } = await supabase
-    //   .from('user_quiz_answers')
-    //   .select(
-    //     `
-    //     word_id,
-    //     user_answer,
-    //     quiz_type,
-    //   `
-    //   )
-    //   .eq('session_id', id)
-    //   .eq('is_correct', false);
 
     const { data: wrongAnswers, error: wrongError } = await supabase
       .from('user_quiz_answers')
@@ -51,11 +38,6 @@ export async function GET(request: NextRequest, { params }: Props) {
       .eq('session_id', id)
       .eq('is_correct', false);
 
-    // correct_word:words!correct_answer (
-    //   word,
-    //   pinyin,
-    //   meaning
-    // )
     // TODO: 예문 모두 셋팅되면 그때 사용
     // example:examples!word_id (
     //   sentence,

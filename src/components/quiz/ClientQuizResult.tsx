@@ -47,14 +47,13 @@ type CorrectWordType = {
 type WrongAnswer = {
   user_word: WordType;
   correct_word: CorrectWordType;
+  correct_answer?: string;
   example?: string;
   word_id: string;
   words: WordType;
   user_answer: string;
-  quiz_questions: {
-    question_text: string;
-    question_type: string;
-  };
+  question_type: string;
+  quiz_questions: { question_text: string };
 };
 
 type QuizResultData = {
@@ -141,6 +140,7 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
   const { quiz, wrongAnswers } = quizResult;
 
   console.log('wrongAnswers-', wrongAnswers);
+  console.log('quiz-', quiz);
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -189,27 +189,25 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
             </div>
             <div className="p-6">
               <div className="space-y-4">
-                <Accordion type="single" collapsible className="w-full">
+                <Accordion type="single" collapsible className="w-full ">
                   {wrongAnswers.map((answer, index) => (
                     <AccordionItem
                       value={`item-${Number(index) + 1}`}
                       key={index}
                     >
                       <AccordionTrigger>
-                        <div className="flex items-center space-x-4">
-                          <span className="bg-red-500 text-white text-sm px-2 py-1 rounded">
-                            문제
-                          </span>
+                        <div className="w-full flex items-center space-x-4 cursor-pointer">
+                          <Badge>{answer.question_type}</Badge>
                           <div>
                             <span className="text-gray-600 mr-3 text-lg">
                               {answer.quiz_questions.question_text}
                               {/* [{question?.correct_word?.pinyin}] */}
                             </span>
                             <span className="text-xl font-bold">
-                              [{answer.words.word}]
+                              [ {answer.words.word} ]
                             </span>
-                            <Badge>{answer.question_type}</Badge>
                           </div>
+                          {/* <Badge>{answer.question_type}</Badge> */}
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="flex flex-col gap-4 text-balance">

@@ -114,7 +114,7 @@ const ClientQuizPage = ({ level }: Props) => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [quizData, router, startTime, userAnswers]);
+  }, [level, quizData, router, startTime, userAnswers]);
 
   const currentData = useMemo(
     () => quizData?.[currentQuestionIndex] ?? null,
