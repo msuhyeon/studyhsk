@@ -23,19 +23,17 @@ export async function GET(request: NextRequest, { params }: Props) {
       throw quizError;
     }
 
-    // 틀린 문제만 가져오기
     const { data: wrongAnswers, error: wrongError } = await supabase
       .from('user_quiz_answers')
       .select(
         `
-      word_id,
-      user_answer,
-      correct_word:words!correct_answer (
-        word,
-        pinyin,
-        meaning
-      )
-      `
+          user_answer,
+          correct_answer,
+          is_correct,
+          question_type,
+          words!word_id(word,pinyin,meaning),
+          quiz_questions!question_id(question_text)
+        `
       )
       .eq('session_id', id)
       .eq('is_correct', false);

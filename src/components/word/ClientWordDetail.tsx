@@ -95,7 +95,8 @@ const ClientWordDetail = ({ wordId }: WordDetailProps) => {
         setAudioUrl(audioRes.url);
       } catch (error) {
         console.error('API 호출 에러:', error);
-        toast.info('현재 발음을 들을 수 없어요. 잠시 후 다시 시도해주세요.🙇');
+        // TODO: audio file이 404 일 경우엔 openAI tts 서비스를 이용해서 생성 할 수 있도록 수정 예정.(pinyin을 넘겨줘야함)
+        // toast.info('현재 발음을 들을 수 없어요. 잠시 후 다시 시도해주세요.🙇');
       }
     };
 
@@ -316,17 +317,17 @@ const ClientWordDetail = ({ wordId }: WordDetailProps) => {
       <Tabs defaultValue="examples" className="w-full">
         <TabsList className="w-full h-15">
           <TabsTrigger value="examples">
-            <BookOpen className="w-4 h-4 inline mr-2" />
+            <BookOpen className="w-4 h-3 md:h-4 inline mr-2" />
             예문 활용
           </TabsTrigger>
           <TabsTrigger value="related">
-            <Link className="w-4 h-4 inline mr-2" />
+            <Link className="w-4 h-3 md:h-4 inline mr-2" />
             연관 단어
           </TabsTrigger>
         </TabsList>
         <TabsContent value="examples">
           <div className="p-4">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">
+            <h3 className="text-lg md:text-xl font-semibold text-gray-800 mb-4">
               예문으로 학습하기
             </h3>
             {/* TODO: 예문의 병음을 알 수 있는 기능을 추가 고민 */}
@@ -361,18 +362,20 @@ const ClientWordDetail = ({ wordId }: WordDetailProps) => {
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
-                      <div className="text-lg font-medium text-gray-900 mb-2">
+                      <div className="md:text-lg font-medium text-gray-900 mb-2">
                         {example.sentence}
                       </div>
-                      <div className="text-gray-600 mb-2">{example.pinyin}</div>
-                      <div className="text-gray-800 font-medium">
+                      <div className="text-sm md:text-md text-gray-600 mb-2">
+                        {example.pinyin}
+                      </div>
+                      <div className="text-sm md:text-md text-gray-800">
                         {example.meaning}
                       </div>
                     </div>
                     {/* TODO: 예문 발음 듣기 시 TTS 필요*/}
                     {/* <PlayAudioButton audioUrl={audioUrl} /> */}
                   </div>
-                  <div className="text-sm text-blue-600 bg-blue-50 px-3 py-1 rounded-full inline-block">
+                  <div className="text-xs md:text-sm text-blue-600 bg-blue-50 px-2 py-1 md:px-3 md:py-1 rounded-full inline-block">
                     💡 {example.context}
                   </div>
                 </div>
@@ -402,7 +405,7 @@ const ClientWordDetail = ({ wordId }: WordDetailProps) => {
               <>
                 {/* 동의어/유의어 */}
                 <div className="mb-8">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-4">
+                  <h3 className="text-lg md:text-xl font-semibold text-gray-800 mb-4">
                     동의어/유의어
                   </h3>
                   {synonyms.length > 0 ? (
@@ -410,20 +413,18 @@ const ClientWordDetail = ({ wordId }: WordDetailProps) => {
                       {synonyms.map((word, index) => (
                         <div
                           key={index}
-                          className="bg-green-50 rounded-lg p-4 hover:bg-green-100 transition-colors cursor-pointer"
+                          className="bg-sky-50 rounded-lg p-4 hover:bg-sky-100 transition-colors cursor-pointer"
                         >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <div className="text-lg font-medium text-gray-900">
-                                {word.word}
-                              </div>
-                              <div className="text-gray-600 text-sm">
-                                [{word.pinyin}]
-                              </div>
-                              <div className="text-gray-800 font-medium">
-                                {word.meaning}
-                              </div>
-                            </div>
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-xl font-bold text-gray-800">
+                              {word.word}
+                            </span>
+                            <span className="text-sm text-gray-500">
+                              [{word.pinyin}]
+                            </span>
+                          </div>
+                          <div className="mt-1 text-base font-medium text-gray-800">
+                            {word.meaning}
                           </div>
                         </div>
                       ))}
@@ -460,7 +461,7 @@ const ClientWordDetail = ({ wordId }: WordDetailProps) => {
                       {antonyms.map((word, index) => (
                         <div
                           key={index}
-                          className="bg-red-50 rounded-lg p-4 hover:bg-red-100 transition-colors cursor-pointer"
+                          className="bg-amber-50 rounded-lg p-4 hover:bg-amber-100 transition-colors cursor-pointer"
                         >
                           <div className="flex items-center justify-between">
                             <div>

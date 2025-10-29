@@ -27,7 +27,6 @@ const getWords = () => {
         words.push({ id: data.id, word: data.word });
       })
       .on('end', () => {
-        console.log('words 파일 읽기 완료');
         resolve(words);
       })
       .on('error', (err) => {
@@ -48,7 +47,6 @@ const getCharacters = () => {
         characters.push({ id: data.id, character: data.character });
       })
       .on('end', () => {
-        console.log('읽기 끝!!');
         resolve(characters);
       })
       .on('error', (err) => {
@@ -96,5 +94,4 @@ function saveWordCharacters() {
   const characters = await getCharacters();
   generateWordCharacters(words, characters);
   await saveWordCharacters();
-  console.log('word_characters.csv 생성 완료');
 })();

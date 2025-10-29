@@ -28,6 +28,8 @@ async function fetchQuizHistorys(limit: number) {
 
   const { quizHistory, totalCount } = await response.json();
 
+  console.log('totalCount-', totalCount);
+
   return { quizHistory, totalCount } as {
     quizHistory: QuizType[];
     totalCount: number;
@@ -40,6 +42,7 @@ const QuizHistory = ({ limit = 3 }: { limit?: number }) => {
     staleTime: 1000 * 60,
     gcTime: 1000 * 60 * 5,
     retry: 2,
+    refetchInterval: 1000 * 60,
   });
 
   const { quizHistory = [], totalCount = 0 } = data || {};
@@ -70,8 +73,6 @@ const QuizHistory = ({ limit = 3 }: { limit?: number }) => {
       </div>
     </div>
   );
-
-  console.log('==>', quizHistory);
 
   return (
     <DashboardCard

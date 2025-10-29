@@ -11,7 +11,7 @@ const WordDetailPage = async ({ params }: Props) => {
   const { id } = await params;
 
   return (
-    <section className="w-full p-6 bg-white">
+    <section className="w-full p-0 md:p-6 bg-white">
       <ClientWordDetail wordId={id} />
     </section>
   );

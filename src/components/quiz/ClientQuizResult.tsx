@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/accordion';
 
 import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
 
 type QuizResult = {
   id: string;
@@ -46,10 +47,13 @@ type CorrectWordType = {
 type WrongAnswer = {
   user_word: WordType;
   correct_word: CorrectWordType;
+  correct_answer?: string;
   example?: string;
   word_id: string;
   words: WordType;
   user_answer: string;
+  question_type: string;
+  quiz_questions: { question_text: string };
 };
 
 type QuizResultData = {
@@ -66,6 +70,10 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
   const [quizResult, setQuizResult] = useState<QuizResultData | null>(null);
   const [loading, setLoading] = useState(true);
   // const [openItems, setOpenItems] = useState(new Set());
+
+  // TODO: 수정 해야 할 사항
+  // 1. 틀린 문제 표시 할 때 문제에 문제가 아닌 단어만 표기됨 -> 문제가 표기되도록 수정 필요
+  // question, sentence 타입이면: marked_sentence 아니면 그냥 sentence, pinyin
 
   useEffect(() => {
     const fetchResult = async () => {
@@ -131,9 +139,11 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
 
   const { quiz, wrongAnswers } = quizResult;
 
+  // TODO: 로그인 세션 만료 시 에 대한 예외처리 필요
+
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="max-w-4xl mx-auto p-6 space-y-6">
+    <div className="max-w-4xl mx-auto md:p-6">
+      <div className="max-w-4xl mx-auto md:p-6 space-y-3 md:space-y-6">
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border p-6">
           <h1 className="text-2xl font-bold text-center mb-3">
             🎉 퀴즈 풀이 완료!
@@ -166,9 +176,9 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
           </div>
         </div>
         {wrongAnswers.length > 0 ? (
-          <div className="bg-white rounded-lg border">
-            <div className="p-6 border-b">
-              <h2 className="text-xl font-semibold flex items-center">
+          <div className="bg-white rounded-lg border mb-10">
+            <div className="p-4 md:p-6 border-b">
+              <h2 className="md:text-xl font-semibold flex items-center">
                 <XCircle className="text-red-500 mr-2" size={24} />
                 틀린 문제
                 <span className="ml-2 bg-red-500 text-white text-sm px-2 py-1 rounded">
@@ -176,25 +186,23 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
                 </span>
               </h2>
             </div>
-            <div className="p-6">
-              <div className="space-y-4">
-                <Accordion type="single" collapsible className="w-full">
-                  {wrongAnswers.map((question, index) => (
+            <div className="p-4 md:p-6">
+              <div className="space-y-2 md:space-y-4">
+                <Accordion type="single" collapsible className="w-full ">
+                  {wrongAnswers.map((answer, index) => (
                     <AccordionItem
                       value={`item-${Number(index) + 1}`}
                       key={index}
                     >
                       <AccordionTrigger>
-                        <div className="flex items-center space-x-4">
-                          <span className="bg-red-500 text-white text-sm px-2 py-1 rounded">
-                            문제
-                          </span>
+                        <div className="w-full flex items-center space-x-4 cursor-pointer">
+                          <Badge>{answer.question_type}</Badge>
                           <div>
-                            <span className="text-2xl font-bold mr-3">
-                              {question.correct_word.word}
+                            <span className="text-gray-600 mr-1 md:text-lg">
+                              {answer.quiz_questions.question_text}
                             </span>
-                            <span className="text-gray-600">
-                              [{question.correct_word.pinyin}]
+                            <span className="md:text-xl font-bold">
+                              [ {answer.words.word} ]
                             </span>
                           </div>
                         </div>
@@ -212,8 +220,8 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
                                   정답
                                 </span>
                               </div>
-                              <div className="text-lg font-semibold text-green-800">
-                                {question.correct_word.meaning}
+                              <div className="md:text-lg font-semibold text-green-800">
+                                {answer?.correct_answer}
                               </div>
                             </div>
                             <div className="border border-red-200 bg-red-50 rounded-lg p-4">
@@ -226,20 +234,18 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
                                   내가 선택한 답
                                 </span>
                               </div>
-                              <div className="text-lg font-semibold text-red-800">
-                                {question.user_answer}
+                              <div className="md:text-lg font-semibold text-red-800">
+                                {answer?.user_answer}
                                 {/* {question.user_word.meaning} */}
                               </div>
                             </div>
                           </div>
-                          {question?.example && (
+                          {answer?.example && (
                             <div className="border border-blue-200 bg-blue-50 rounded-lg p-4">
                               <h4 className="font-medium text-blue-700 mb-2 flex items-center">
                                 📖 예문
                               </h4>
-                              <p className="text-blue-800">
-                                {question.example}
-                              </p>
+                              <p className="text-blue-800">{answer.example}</p>
                             </div>
                           )}
                         </div>
@@ -270,7 +276,7 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
         <div className="flex justify-center">
           <Link
             href={`/quiz/${quiz.level}`}
-            className="bg-blue-500 hover:bg-blue-600 text-white py-3 px-12 rounded-lg font-medium transition-colors"
+            className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-6 md:py-3 md:px-12 rounded-lg font-medium transition-colors"
           >
             다음 퀴즈 도전
           </Link>

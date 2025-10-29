@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase/client';
+import { QuestionType } from '@/types/quiz';
 
 type Props = {
   params: Promise<{
     level: string;
   }>;
 };
-
-type QuestionType = 'basic' | 'sentence' | 'ordering' | 'situation';
 
 interface WordRecord {
   id: string;
@@ -23,18 +22,19 @@ interface OrderingToken {
 
 interface OrderingQuestion {
   word_id: string;
-  type: 'ordering' | 'ordering';
+  question_type: 'ordering' | 'ordering';
   question: string;
   tokens: OrderingToken[];
   initial_order: string[];
   correct_order: string[];
   correct_sentence?: string;
   translation?: string;
+  level: string;
 }
 
 interface ChoiceQuestion {
   word_id: string;
-  type: 'basic' | 'sentence' | 'situation';
+  question_type: 'basic' | 'sentence' | 'situation';
   question: string;
   options?: string[];
   correct_answer?: string;
@@ -43,6 +43,7 @@ interface ChoiceQuestion {
   marked_sentence?: string;
   situation?: string;
   word_display?: string;
+  level: string;
 }
 
 type GeneratedQuestion = OrderingQuestion | ChoiceQuestion;
@@ -56,17 +57,17 @@ interface OpenAIResponse {
 interface ParsedContent {
   question_text?: string;
   question?: string;
-  // ordering 용
+  // ordering
   type?: string;
   tokens?: OrderingToken[];
   initial_order?: string[];
   correct_order?: string[];
   correct_sentence?: string;
   translation?: string;
-  // choice 용
+  // choice
   options?: string[];
   correct_answer?: string;
-  // sentence/situation 용
+  // sentence/situation
   pinyin?: string;
   sentence?: string;
   sentence_raw?: string;
@@ -91,8 +92,8 @@ function buildPrompt(
   const templates = {
     basic: `단어: ${word}, 병음: ${pinyin}, 의미: ${meaning}
           한자를 보고 뜻을 맞히는 기초 문제를 JSON 형식으로 만들어주세요:
-          - 정답: 주어진 단어의 의미
-          - 오답 3개: 비슷한 품사이지만 다른 의미의 한국어 단어들
+          - 정답: 주어진 단어의 한국어 의미 (한자, 중국어, 영어 절대 금지)
+          - 오답 3개: 같은 품사이지만 의미가 다른 한국어 단어들
           **중요**: options 배열에서 정답의 위치를 랜덤하게 배치해주세요.
 
           응답 형식:
@@ -107,8 +108,8 @@ function buildPrompt(
               문장 속에서 단어의 의미를 파악하는 문제를 JSON 형식으로 만들어주세요:
               - 주어진 단어가 정확히 1회 포함된 자연스러운 중국어 문장 작성 (10-15자)
               - 일상생활 상황의 문장
-              - 정답: 주어진 단어의 의미
-              - 오답 3개: 문맥상 헷갈릴 수 있는 비슷한 의미의 단어들
+              - 정답: 주어진 단어의 한국어 의미
+              - 오답 3개: 문맥상 헷갈릴 수 있는 한국어 단어들 (한자, 중국어, 영어 절대 금지)
               - 하이라이트 표기는 문자열 내에 대괄호로 감싼 형태로 고정합니다: [${word}]
               - "sentence_raw": 하이라이트 없이 원문 문장
               - "marked_sentence": 타겟 단어만 정확히 한 번 [${word}]로 감싼 문장 (기타 마크업 금지)
@@ -135,7 +136,7 @@ function buildPrompt(
 
               응답 형식(JSON 객체, 키 고정):
               {
-                "type": "ordering",
+                "question_type": "ordering",
                 "question_text": "다음 단어들을 올바른 순서로 배열하세요:",
                 "tokens": [ { "id": "t1", "text": "단어1" }, { "id": "t2", "text": "단어2" }, { "id": "t3", "text": "단어3" }, { "id": "t4", "text": "단어4" } ],
                 "initial_order": ["t3", "t1", "t4", "t2"],
@@ -147,7 +148,7 @@ function buildPrompt(
                 상황별 표현 선택 문제를 JSON 형식으로 만들어주세요:
                 - 구체적인 상황 설명 (일상생활, 학교, 직장 등)
                 - 주어진 단어가 포함된 자연스러운 표현을 정답으로 설정
-                - 오답 3개: 문법적으로 가능하지만 상황에 부자연스러운 표현들
+                - 오답 3개: 문법적으로 가능하지만 상황에 부자연스러운 중국어 문장들
                 **중요**: options 배열에서 정답의 위치를 랜덤하게 배치해주세요.
 
                 응답 형식:
@@ -240,20 +241,21 @@ export async function GET(request: NextRequest, { params }: Props) {
       if (questionType === 'ordering') {
         return {
           word_id: word.id,
-          type: 'ordering',
+          question_type: 'ordering',
           question: questionText,
           tokens: parsed.tokens ?? [],
           initial_order: parsed.initial_order ?? [],
           correct_order: parsed.correct_order ?? [],
           correct_sentence: parsed.correct_sentence,
           translation: parsed.translation,
+          level: level,
         };
       }
 
       // choice
       return {
         word_id: word.id,
-        type: questionType,
+        question_type: questionType,
         question: questionText,
         options: parsed.options ?? [],
         correct_answer: parsed.correct_answer ?? undefined,
@@ -262,6 +264,7 @@ export async function GET(request: NextRequest, { params }: Props) {
         marked_sentence: parsed.marked_sentence ?? undefined,
         situation: parsed.situation ?? undefined,
         word_display: parsed.word_display ?? undefined,
+        level: level,
       };
     }
 

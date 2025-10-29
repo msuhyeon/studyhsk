@@ -88,13 +88,13 @@ const Login = () => {
             <Avatar className="rounded-lg">
               <AvatarImage
                 className="mr-3 rounded-full"
-                src={user.user_metadata.avatar_url}
+                src={user?.user_metadata?.avatar_url}
                 alt="profile image"
                 width="50"
                 height="50"
               />
               <AvatarFallback className="rounded-full bg-zinc-600 text-white text-sm">
-                {user.user_metadata.name.charAt(0)}
+                {user?.user_metadata.name.charAt(0)}
               </AvatarFallback>
             </Avatar>
           </Button>
