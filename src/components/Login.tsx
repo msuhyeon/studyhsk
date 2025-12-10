@@ -9,7 +9,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { logout } from '@/lib/supabase/userApi';
 import { LogInIcon } from 'lucide-react';
@@ -17,10 +16,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/hooks/useUser';
 import { useQueryClient } from '@tanstack/react-query';
+import { useModal } from '@/hooks/useMoal';
 
+// Google Icon
 const GoogleIcon = () => (
   <svg
-    version="1.1"
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 48 48"
     className="w-5 h-5"
@@ -41,7 +41,6 @@ const GoogleIcon = () => (
       fill="#34A853"
       d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
     />
-    <path fill="none" d="M0 0h48v48H0z" />
   </svg>
 );
 
@@ -49,6 +48,7 @@ const Login = () => {
   const { data: user } = useUser();
   const queryClient = useQueryClient();
   const router = useRouter();
+  const { loginOpen, openLoginModal, closeLoginModal } = useModal();
 
   const handleLogin = () => {
     try {
@@ -90,48 +90,60 @@ const Login = () => {
                 className="mr-3 rounded-full"
                 src={user?.user_metadata?.avatar_url}
                 alt="profile image"
-                width="50"
-                height="50"
               />
               <AvatarFallback className="rounded-full bg-zinc-600 text-white text-sm">
                 {user?.user_metadata.name.charAt(0)}
               </AvatarFallback>
             </Avatar>
           </Button>
-          <Button variant={'outline'} onClick={handleLogout}>
+
+          <Button variant="outline" onClick={handleLogout}>
             로그아웃
           </Button>
         </div>
       ) : (
-        <Dialog>
+        <>
+          {/* 기존 DialogTrigger에서 사용하던 주석 */}
           {/* asChild: 중첩된 DOM 태그를 없애고 자식 컴포넌트를 그대로 트리거로 사용 */}
-          <DialogTrigger asChild>
-            <Button
-              className="flex justify-center items-center gap-2"
-              variant="outline"
-            >
-              <LogInIcon />
-              <span>로그인</span>
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle className="">로그인</DialogTitle>
-              <DialogDescription className="py-10 flex justify-center">
-                <Button
-                  onClick={handleLogin}
-                  variant="outline"
-                  className="w-full p-6 gap-3 flex items-center justify-center"
-                >
-                  <GoogleIcon />
-                  <span className="text-sm text-gray-700">
-                    구글 계정으로 로그인
-                  </span>
-                </Button>
-              </DialogDescription>
-            </DialogHeader>
-          </DialogContent>
-        </Dialog>
+          {/* 지금은 trigger를 상태 기반으로 제어하므로 asChild는 사용되지 않음 */}
+
+          {/* 트리거 버튼 */}
+          <Button
+            className="flex justify-center items-center gap-2"
+            variant="outline"
+            onClick={openLoginModal}
+          >
+            <LogInIcon />
+            <span>로그인</span>
+          </Button>
+
+          {/* 로그인 모달 */}
+          <Dialog
+            open={loginOpen}
+            onOpenChange={(open) => {
+              if (!open) closeLoginModal();
+            }}
+          >
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>로그인</DialogTitle>
+
+                <DialogDescription className="py-10 flex justify-center">
+                  <Button
+                    onClick={handleLogin}
+                    variant="outline"
+                    className="w-full p-6 gap-3 flex items-center justify-center"
+                  >
+                    <GoogleIcon />
+                    <span className="text-sm text-gray-700">
+                      구글 계정으로 로그인
+                    </span>
+                  </Button>
+                </DialogDescription>
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
+        </>
       )}
     </>
   );

@@ -97,18 +97,20 @@ const ClientWordList = ({
           {showNewOnly && `(${newWords.length}개)`}
         </Label>
       </div> */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
         {/* {(showNewOnly ? newWords : allWords).map((word, index) => ( */}
         {allWords.map((word, index) => (
           <Link key={`${word.id}${index}`} href={`/word/${level}/${word.id}`}>
             <Card className="hover:bg-sky-100">
-              <CardHeader className="text-center">
-                <CardTitle className="text-4xl">{word.word}</CardTitle>
+              <CardHeader className="text-center px-0">
+                <CardTitle className="text-3xl md:text-4xl">
+                  {word.word}
+                </CardTitle>
                 <CardDescription className="text-xl">
                   [{word.pinyin}]
                 </CardDescription>
               </CardHeader>
-              <CardContent className="text-center">
+              <CardContent className="text-center text-sm font-semibold">
                 {word.meaning}
                 <span className="text-blue-400 ml-1">
                   ({word.part_of_speech})
