@@ -1,10 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient as createServerClient } from '@/lib/supabase/server';
+import { SupabaseClient, User } from '@supabase/supabase-js';
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ hanzi: string }> }
 ) {
   const { hanzi } = await params;
+  const supabase = await createServerClient();
+  const { data, error } = await supabase
+    .from('words')
+    .select(
+      `
+    id,
+    hanzi,
+    pinyin,
+    meaning,
+    examples:examples (
+      id,
+      cn,
+      pinyin,
+      kr
+    )
+  `
+    )
+    .eq('hanzi', hanzi)
+    .single();
+
+  if (error) return Response.json({ error }, { status: 500 });
+
   const systemPrompt =
     '너는 중국어 교육 플랫폼의 콘텐츠 생성 도우미야. 입력된 한자 단어를 바탕으로 예문과 한국어로 해석된 문장을 만들어줘.';
   const userPrompt = `

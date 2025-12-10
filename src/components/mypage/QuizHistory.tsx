@@ -28,8 +28,6 @@ async function fetchQuizHistorys(limit: number) {
 
   const { quizHistory, totalCount } = await response.json();
 
-  console.log('totalCount-', totalCount);
-
   return { quizHistory, totalCount } as {
     quizHistory: QuizType[];
     totalCount: number;

@@ -296,7 +296,7 @@ const ClientWordDetail = ({ wordId }: WordDetailProps) => {
           {wordData.meaning} ({wordData.part_of_speech})
           <Tooltip>
             <TooltipTrigger className="text-sm font-medium text-gray-600">
-              <Info width={18} />
+              <Info width={18} className="hidden md:block" />
             </TooltipTrigger>
             <TooltipContent>
               {partOfSpeechMap[wordData.part_of_speech]}
@@ -409,7 +409,7 @@ const ClientWordDetail = ({ wordId }: WordDetailProps) => {
                     동의어/유의어
                   </h3>
                   {synonyms.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 gap-4">
                       {synonyms.map((word, index) => (
                         <div
                           key={index}

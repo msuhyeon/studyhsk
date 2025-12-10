@@ -56,6 +56,7 @@ const ClientQuizPage = ({ level }: Props) => {
         setStartTime(Date.now());
       } catch (error) {
         console.error('[ERROR] Quiz fetch:', error);
+
         toast.error(
           error instanceof Error
             ? error.message
@@ -66,10 +67,12 @@ const ClientQuizPage = ({ level }: Props) => {
       }
     };
 
-    if (!user) return;
-
     fetchQuizData();
   }, [level, user]);
+
+  if (!user) {
+    return <RequireLogin />;
+  }
 
   if (getUserError) {
     toast.error(getUserError.message);
@@ -651,6 +654,7 @@ const ClientQuizPage = ({ level }: Props) => {
               </div>
             </Card>
           )}
+          여기오냐
         </div>
       </div>
     </div>
