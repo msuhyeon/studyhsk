@@ -12,7 +12,7 @@ import {
 import { toast } from 'sonner';
 import Bookmark from '@/components/Bookmark';
 import PlayAudioButton from '@/components/word/PlayAudioButton';
-import HanziWriter from '@/components/word/HanziWriter';
+// import HanziWriter from '@/components/word/HanziWriter';
 import WordDetailSkeleton from './WordDetailSkeleton';
 
 type ExampleType = {
@@ -208,7 +208,7 @@ const ClientWordDetail = ({ wordId }: WordDetailProps) => {
   }, [wordId]);
 
   const generateAIData = async (word: string): Promise<AIGeneratedType> => {
-    const res = await fetch(`/api/v1/word/${word}`);
+    const res = await fetch(`/api/v2/word/${word}`);
     const aiGenerated = await res.json();
     return aiGenerated;
   };

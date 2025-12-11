@@ -43,6 +43,11 @@ const ClientQuizPage = ({ level }: Props) => {
   const { data: user, error: getUserError } = useUser();
 
   useEffect(() => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
     const fetchQuizData = async () => {
       try {
         const response = await fetch(`/api/v2/quiz/${level}`);
@@ -69,10 +74,6 @@ const ClientQuizPage = ({ level }: Props) => {
 
     fetchQuizData();
   }, [level, user]);
-
-  if (!user) {
-    return <RequireLogin />;
-  }
 
   if (getUserError) {
     toast.error(getUserError.message);
@@ -576,10 +577,6 @@ const ClientQuizPage = ({ level }: Props) => {
     );
   }
 
-  if (!user) {
-    return <RequireLogin />;
-  }
-
   const isLast = currentQuestionIndex === totalQuestions - 1;
   const isOrdering = currentData?.question_type === 'ordering';
 
@@ -613,6 +610,10 @@ const ClientQuizPage = ({ level }: Props) => {
         {isSubmitting ? '제출 중…' : '퀴즈 제출'}
       </Button>
     ) : null;
+
+  if (user === null) {
+    return <RequireLogin />;
+  }
 
   return (
     <div className="min-w-full lg:min-w-2xl max-w-3xl mx-auto p-4 sm:p-6">
@@ -654,7 +655,6 @@ const ClientQuizPage = ({ level }: Props) => {
               </div>
             </Card>
           )}
-          여기오냐
         </div>
       </div>
     </div>
