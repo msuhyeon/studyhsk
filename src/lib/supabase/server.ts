@@ -15,9 +15,9 @@ export async function createClient() {
             cookiesToSet.forEach(({ name, value, options }) => {
               cookieStore.set(name, value, options);
             });
-          } catch (error) {
-            // 미들웨어가 처리함
-            console.error(error);
+            // 미들웨어가 처리함 - Server Component에서는 쿠키 set 불가하므로 무시
+          } catch {
+            // ignore
           }
         },
       },

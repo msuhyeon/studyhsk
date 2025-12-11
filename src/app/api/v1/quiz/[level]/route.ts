@@ -30,7 +30,6 @@ export async function GET(request: NextRequest, { params }: Props) {
     });
 
     if (error) {
-      console.error(`[ERROR] SELECT Quiz: ${error}`);
       throw error;
     }
 

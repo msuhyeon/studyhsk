@@ -10,7 +10,7 @@ export const fetchCurrentUser = async (): Promise<User | null> => {
       // 로그인 안 된 상태: 정상, null 반환
       return null;
     }
-    console.error(`[ERROR] SELECT User data: ${error}`);
+    console.error('[ERROR] SELECT User data:', error);
     throw error;
   }
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient as createServerClient } from '@/lib/supabase/server';
-import { SupabaseClient, User } from '@supabase/supabase-js';
+// import { SupabaseClient, User } from '@supabase/supabase-js';
 
 export async function GET(
   req: NextRequest,
@@ -26,6 +26,7 @@ export async function GET(
     )
     .eq('hanzi', hanzi)
     .single();
+
 
   if (error) return Response.json({ error }, { status: 500 });
 
