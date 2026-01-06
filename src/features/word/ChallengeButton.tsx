@@ -10,7 +10,7 @@ type ChallengeButtonProps = {
   level: string;
 };
 
-const ChallengeButton = ({ level }: ChallengeButtonProps) => {
+export default function ChallengeButton({ level }: ChallengeButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isStarted, setIsStarted] = useState(false);
   const { data: user } = useUser();
@@ -60,6 +60,4 @@ const ChallengeButton = ({ level }: ChallengeButtonProps) => {
         : `HSK${level}급 도전💪`}
     </Button>
   );
-};
-
-export default ChallengeButton;
+}

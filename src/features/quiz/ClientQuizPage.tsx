@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';
 import { QuizData, UserAnswer, ClientUserAnswer } from '@/types/quiz';
 import { WordText } from '@/types/word';
-import RequireLogin from '../RequireLogin';
+import RequireLogin from '@/components/RequireLogin';
 
 // import QuizTimer from './QuizTimer';
 
@@ -28,7 +28,7 @@ type Props = {
   level: string;
 };
 
-const ClientQuizPage = ({ level }: Props) => {
+export default function ClientQuizPage({ level }: Props) {
   const router = useRouter();
   const [quizData, setQuizData] = useState<QuizData[]>();
   const [loading, setLoading] = useState(true);
@@ -334,10 +334,10 @@ const ClientQuizPage = ({ level }: Props) => {
               <div className="flex items-center justify-between">
                 <span className="font-medium">{option}</span>
                 {showResult && isCorrect && (
-                  <CheckCircle className="text-emerald-600" size={18} />
+                  <CheckCircle className="text-emerald-600 ml-1" size={18} />
                 )}
                 {showResult && isWrong && (
-                  <XCircle className="text-rose-600" size={18} />
+                  <XCircle className="text-rose-600 ml-1" size={18} />
                 )}
               </div>
             </Button>
@@ -659,6 +659,4 @@ const ClientQuizPage = ({ level }: Props) => {
       </div>
     </div>
   );
-};
-
-export default ClientQuizPage;
+}

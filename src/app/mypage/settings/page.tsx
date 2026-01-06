@@ -1,5 +1,3 @@
-const SettingPage = () => {
+export default function SettingPage() {
   return <></>;
-};
-
-export default SettingPage;
+}

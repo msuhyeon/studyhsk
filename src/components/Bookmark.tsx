@@ -10,7 +10,7 @@ type BookmarkProps = {
   isBookmarked?: boolean;
 };
 
-const Bookmark = ({ id, isBookmarked = false }: BookmarkProps) => {
+export default function Bookmark({ id, isBookmarked = false }: BookmarkProps) {
   const [marked, setMarked] = useState(isBookmarked);
   const { data: user } = useUser();
   const { openLoginModal } = useModal();
@@ -41,6 +41,4 @@ const Bookmark = ({ id, isBookmarked = false }: BookmarkProps) => {
       />
     </button>
   );
-};
-
-export default Bookmark;
+}

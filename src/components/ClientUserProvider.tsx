@@ -10,7 +10,7 @@ import { useQueryClient } from '@tanstack/react-query';
 let hasShownLoginToast = false;
 
 // layout.tsx는 서버 컴포넌트이므로 클라이언트 전용 로직을 분리해 유저 정보 초기화
-const ClientUserProvider = () => {
+export default function ClientUserProvider() {
   const setAuthenticated = useAuthStore((state) => state.setAuthenticated);
   const queryClient = useQueryClient();
 
@@ -20,7 +20,7 @@ const ClientUserProvider = () => {
         data: { user },
         error,
       } = await supabase.auth.getUser();
-      
+
       if (!error && user) {
         setAuthenticated(true);
         // 사용자 데이터를 쿼리 캐시에 설정
@@ -75,6 +75,4 @@ const ClientUserProvider = () => {
   }, [setAuthenticated, queryClient]);
 
   return null;
-};
-
-export default ClientUserProvider;
+}

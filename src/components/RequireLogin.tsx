@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
-const RequireLogin = () => {
+export default function RequireLogin() {
   const handleLogin = () => {
     try {
       supabase.auth.signInWithOAuth({
@@ -31,6 +31,4 @@ const RequireLogin = () => {
       </Button>
     </div>
   );
-};
-
-export default RequireLogin;
+}

@@ -1,7 +1,5 @@
 'use client';
 
-const QuizzesPage = () => {
+export default function QuizzesPage() {
   return <div></div>;
-};
-
-export default QuizzesPage;
+}

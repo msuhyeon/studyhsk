@@ -27,7 +27,6 @@ export async function GET(
     .eq('hanzi', hanzi)
     .single();
 
-
   if (error) return Response.json({ error }, { status: 500 });
 
   const systemPrompt =

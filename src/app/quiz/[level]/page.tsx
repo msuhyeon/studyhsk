@@ -1,4 +1,4 @@
-import ClientQuizPage from '@/components/quiz/ClientQuizPage';
+import ClientQuizPage from '@/features/quiz/ClientQuizPage';
 import Link from 'next/link';
 
 type Props = {
@@ -7,7 +7,7 @@ type Props = {
   }>;
 };
 
-const QuizLevelPage = async ({ params }: Props) => {
+export default async function QuizLevelPage({ params }: Props) {
   const { level } = await params;
 
   // 4급, 5급, 6급은 아직 데이터가 없음
@@ -31,6 +31,4 @@ const QuizLevelPage = async ({ params }: Props) => {
   }
 
   return <ClientQuizPage level={level} />;
-};
-
-export default QuizLevelPage;
+}

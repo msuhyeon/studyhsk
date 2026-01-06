@@ -65,7 +65,7 @@ type ClientQuizResultProps = {
   quizId: string;
 };
 
-const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
+export default function ClientQuizResult({ quizId }: ClientQuizResultProps) {
   const router = useRouter();
   const [quizResult, setQuizResult] = useState<QuizResultData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -285,6 +285,4 @@ const ClientQuizResult = ({ quizId }: ClientQuizResultProps) => {
       </div>
     </div>
   );
-};
-
-export default ClientQuizResult;
+}

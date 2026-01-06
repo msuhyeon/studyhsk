@@ -1,4 +1,4 @@
-import ClientWordDetail from '@/components/word/ClientWordDetail';
+import ClientWordDetail from '@/features/word/ClientWordDetail';
 
 type Props = {
   params: Promise<{
@@ -7,7 +7,7 @@ type Props = {
 };
 
 // 서버 컴포넌트: 파라미터만 전달
-const WordDetailPage = async ({ params }: Props) => {
+export default async function WordDetailPage({ params }: Props) {
   const { id } = await params;
 
   return (
@@ -15,6 +15,4 @@ const WordDetailPage = async ({ params }: Props) => {
       <ClientWordDetail wordId={id} />
     </section>
   );
-};
-
-export default WordDetailPage;
+}

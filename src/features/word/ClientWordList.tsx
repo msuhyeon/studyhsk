@@ -27,13 +27,13 @@ interface WordType {
   antonyms: null;
 }
 
-const ClientWordList = ({
+export default function ClientWordList({
   wordList,
   level,
 }: {
   wordList: WordType[];
   level: number;
-}) => {
+}) {
   const [allWords, setAllWords] = useState<WordType[]>([...wordList]);
   // const [newWords, setNewWords] = useState<WordType[]>([]);
   // const [showNewOnly, setShowNewOnly] = useState(false);
@@ -69,7 +69,7 @@ const ClientWordList = ({
   //         .select('*')
   //         .eq('level', level)
   //         .range(0, 999);
-
+  //
   //       if (error) {
   //         console.error('신규 단어 조회 실패:', error);
   //         toast.error('신규 단어 조회 실패. 다시 시도해주세요.');
@@ -78,7 +78,7 @@ const ClientWordList = ({
   //         setHasLoadedNewWords(true);
   //       }
   //     };
-
+  //
   //     fetchNewWords();
   //   }
   // }, [showNewOnly, level, hasLoadedNewWords]);
@@ -122,6 +122,4 @@ const ClientWordList = ({
       </div>
     </>
   );
-};
-
-export default ClientWordList;
+}

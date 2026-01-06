@@ -1,9 +1,9 @@
-import ClientMyPage from '@/components/mypage/ClientMyPage';
+import ClientMyPage from '@/features/mypage/ClientMyPage';
 
 // 공식 예제들이 대부분 async function을 씀. 이유는 TypeScript 타입 추론과 displayName (디버깅 시 이름) 때문에.
 // const로 하면 스택트레이스에서 함수 이름이 익명으로 보이거나 최적화가 덜 되는 경우가 있었음.
 
-const MyPage = () => {
+export default function MyPage() {
   return (
     <div className="min-h-screen to-blue-50 md:p-6">
       <div className="max-w-6xl mx-auto space-y-4 md:space-y-6">
@@ -25,6 +25,4 @@ const MyPage = () => {
       </div>
     </div>
   );
-};
-
-export default MyPage;
+}

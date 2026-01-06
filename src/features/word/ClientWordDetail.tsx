@@ -11,8 +11,8 @@ import {
 } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import Bookmark from '@/components/Bookmark';
-import PlayAudioButton from '@/components/word/PlayAudioButton';
-// import HanziWriter from '@/components/word/HanziWriter';
+import PlayAudioButton from './PlayAudioButton';
+import HanziWriter from './HanziWriter';
 import WordDetailSkeleton from './WordDetailSkeleton';
 
 type ExampleType = {
@@ -53,7 +53,7 @@ type WordDetailProps = {
 };
 
 // 클라이언트 컴포넌트: 데이터 페칭 및 UI 렌더링
-const ClientWordDetail = ({ wordId }: WordDetailProps) => {
+export default function ClientWordDetail({ wordId }: WordDetailProps) {
   const [wordData, setWordData] = useState<WordData | null>(null);
   const [audioUrl, setAudioUrl] = useState<string>('');
   const [loading, setLoading] = useState(true);
@@ -106,6 +106,8 @@ const ClientWordDetail = ({ wordId }: WordDetailProps) => {
         const {
           data: { user },
         } = await supabase.auth.getUser();
+
+        console.log('user: ', user);
 
         const { data: wordInfo, error } = await supabase
           .from('words')
@@ -290,15 +292,20 @@ const ClientWordDetail = ({ wordId }: WordDetailProps) => {
 
   return (
     <>
-      <div>
-        <Tooltip>
-          <TooltipTrigger className="text-sm font-medium text-gray-600">
-            <Info width={18} className="hidden md:block" />
-          </TooltipTrigger>
-          <TooltipContent>
-            {partOfSpeechMap[wordData.part_of_speech]}
-          </TooltipContent>
-        </Tooltip>
+      <div className="text-center mb-8">
+        <HanziWriter characters={wordData.word.split('')} />
+        <div className="text-2xl text-gray-600 mb-2">[{wordData.pinyin}]</div>
+        <div className="text-xl text-gray-700 mb-4 flex justify-center items-center gap-2">
+          {wordData.meaning} ({wordData.part_of_speech})
+          <Tooltip>
+            <TooltipTrigger className="text-sm font-medium text-gray-600">
+              <Info width={18} className="hidden md:block" />
+            </TooltipTrigger>
+            <TooltipContent>
+              {partOfSpeechMap[wordData.part_of_speech]}
+            </TooltipContent>
+          </Tooltip>
+        </div>
 
         <div className="flex justify-center gap-4 mb-6">
           <Bookmark id={wordId} isBookmarked={wordData.is_bookmarked} />
@@ -504,6 +511,4 @@ const ClientWordDetail = ({ wordId }: WordDetailProps) => {
       </Tabs>
     </>
   );
-};
-
-export default ClientWordDetail;
+}

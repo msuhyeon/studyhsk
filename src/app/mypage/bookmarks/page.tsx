@@ -27,7 +27,7 @@ type BookmarkType = {
   id: string;
 };
 
-const BookmarksPage = () => {
+export default function BookmarksPage() {
   const [bookmarks, setBookmarks] = useState<BookmarkType[]>([]);
   const [user, setUser] = useState<User | null>(null);
 
@@ -131,6 +131,4 @@ const BookmarksPage = () => {
       })}
     </div>
   );
-};
-
-export default BookmarksPage;
+}

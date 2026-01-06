@@ -34,7 +34,7 @@ async function fetchBookmarks(limit: number) {
   return { bookmarks, count } as { bookmarks: BookmarkType[]; count: number };
 }
 
-const Bookmark = ({ limit = 3 }: { limit?: number } = {}) => {
+export default function Bookmark({ limit = 3 }: { limit?: number } = {}) {
   const { data, isLoading, error } = useQuery({
     queryKey: ['bookmarks', limit],
     queryFn: () => fetchBookmarks(limit),
@@ -84,6 +84,4 @@ const Bookmark = ({ limit = 3 }: { limit?: number } = {}) => {
       displayLimit={limit}
     />
   );
-};
-
-export default Bookmark;
+}

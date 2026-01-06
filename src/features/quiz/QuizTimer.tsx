@@ -7,7 +7,7 @@ type Props = {
   startTime: number | null;
 };
 
-const QuizTimer = ({ startTime }: Props) => {
+export default function QuizTimer({ startTime }: Props) {
   const [elapsedTime, setElapsedTime] = useState(0);
 
   useEffect(() => {
@@ -30,6 +30,4 @@ const QuizTimer = ({ startTime }: Props) => {
       {minutes}:{seconds.toString().padStart(2, '0')}
     </div>
   );
-};
-
-export default QuizTimer;
+}

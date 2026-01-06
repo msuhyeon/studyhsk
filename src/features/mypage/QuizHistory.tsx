@@ -33,7 +33,7 @@ async function fetchQuizHistorys(limit: number) {
     totalCount: number;
   };
 }
-const QuizHistory = ({ limit = 3 }: { limit?: number }) => {
+export default function QuizHistory({ limit = 3 }: { limit?: number }) {
   const { data, isLoading, error } = useQuery({
     queryKey: ['quizHistory', limit],
     queryFn: () => fetchQuizHistorys(limit),
@@ -94,6 +94,4 @@ const QuizHistory = ({ limit = 3 }: { limit?: number }) => {
       displayLimit={3}
     />
   );
-};
-
-export default QuizHistory;
+}
