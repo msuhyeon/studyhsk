@@ -13,55 +13,32 @@ import { toast } from 'sonner';
 import Bookmark from '@/components/Bookmark';
 import PlayAudioButton from './PlayAudioButton';
 import HanziWriter from './HanziWriter';
-import WordDetailSkeleton from './WordDetailSkeleton';
 
-type ExampleType = {
-  sentence: string;
-  meaning: string;
-  pinyin: string;
-  context: string;
-};
+import {
+  ExampleType,
+  RelationWordType,
+  WordData,
+  WordDetailProps,
+} from '@/types/word';
 
-type AIGeneratedType = {
+export type AIGeneratedType = {
   examples: ExampleType[];
   synonyms: RelationWordType[];
   antonyms: RelationWordType[];
 };
 
-type RelationWordType = {
-  word: string;
-  meaning: string;
-  pinyin: string;
-  relation_type?: RelationType;
-};
-
-type RelationType = 'synonym' | 'antonym';
-
-type WordData = {
-  id: string;
-  word: string;
-  pinyin: string;
-  meaning: string;
-  part_of_speech: string;
-  examples: ExampleType[];
-  word_relations: RelationWordType[];
-  is_bookmarked?: boolean;
-};
-
-type WordDetailProps = {
-  wordId: string;
-};
-
-// 클라이언트 컴포넌트: 데이터 페칭 및 UI 렌더링
-export default function ClientWordDetail({ wordId }: WordDetailProps) {
-  const [wordData, setWordData] = useState<WordData | null>(null);
+export default function ClientWordDetail({
+  wordId,
+  initialData,
+}: WordDetailProps) {
+  const [wordData, setWordData] = useState<WordData>(initialData);
   const [audioUrl, setAudioUrl] = useState<string>('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [isGeneratingExamples, setIsGeneratingExamples] = useState(() => {
+    return !initialData.examples || initialData.examples.length === 0;
+  });
   const [isGeneratingData, setIsGeneratingData] = useState(false);
-  const [isGeneratingExamples, setIsGeneratingExamples] = useState(false);
   const [hasAttemptedGeneration, setHasAttemptedGeneration] = useState(false);
-  const hasGeneratedData = useRef(false);
+  const hasGeneratedData = useRef(false); // 리렌더링 시 AI 데이터 생성을 제한
 
   const partOfSpeechMap: { [key: string]: string } = {
     명: '명사 (Noun)',
@@ -77,15 +54,90 @@ export default function ClientWordDetail({ wordId }: WordDetailProps) {
   };
 
   useEffect(() => {
-    hasGeneratedData.current = false;
-    setHasAttemptedGeneration(false);
-    setIsGeneratingExamples(false);
+    const checkAndGenerateData = async () => {
+      // 이미 데이터가 존재하거나 AI로 생성했으면 스킵
+      if (hasGeneratedData.current) return;
 
-    const getPinyinAudio = async (wordInfo: WordData) => {
+      const hasExamples =
+        initialData.examples && initialData.examples.length > 0;
+      const hasRelations =
+        initialData.word_relations && initialData.word_relations.length > 0;
+
+      if (hasExamples && hasRelations) {
+        hasGeneratedData.current = true;
+        return;
+      }
+
+      hasGeneratedData.current = true;
+      if (!hasExamples) setIsGeneratingExamples(true);
+      if (!hasRelations) setIsGeneratingData(true);
+
+      try {
+        const generatedData = await generateAIData(initialData.word);
+
+        const savePromises = [];
+        if (!hasExamples && generatedData.examples.length > 0) {
+          savePromises.push(insertExamples(generatedData.examples, wordId));
+        }
+
+        if (
+          !hasRelations &&
+          (generatedData.synonyms.length > 0 ||
+            generatedData.antonyms.length > 0)
+        ) {
+          savePromises.push(
+            insertWordRelations(
+              generatedData.synonyms,
+              generatedData.antonyms,
+              wordId
+            )
+          );
+        }
+
+        setWordData((prev) => {
+          const next = { ...prev }; // state 불변성 유지 (새 객체로 만들어 React가 변경 감지)
+
+          if (!hasExamples && generatedData.examples.length > 0) {
+            next.examples = generatedData.examples;
+          }
+
+          if (!hasRelations) {
+            next.word_relations = [
+              ...(prev.word_relations || []),
+              ...generatedData.synonyms.map((s) => ({
+                ...s,
+                relation_type: 'synonym' as const,
+              })),
+              ...generatedData.antonyms.map((a) => ({
+                ...a,
+                relation_type: 'antonym' as const,
+              })),
+            ];
+          }
+
+          return next;
+        });
+
+        // db에 AI로 생성한 데이터 저장
+        Promise.allSettled(savePromises);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsGeneratingExamples(false);
+        setIsGeneratingData(false);
+        setHasAttemptedGeneration(true);
+      }
+    };
+
+    const getPinyinAudio = async () => {
       try {
         const response = await fetch(
-          `https://pinyin-word-api.vercel.app/api/${wordInfo.word}`
+          `https://pinyin-word-api.vercel.app/api/${initialData.word}`
         );
+
+        if (response.status === 404) {
+          return;
+        }
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -94,120 +146,18 @@ export default function ClientWordDetail({ wordId }: WordDetailProps) {
         const audioRes = await response.json();
         setAudioUrl(audioRes.url);
       } catch (error) {
-        console.error('API 호출 에러:', error);
-        // TODO: audio file이 404 일 경우엔 openAI tts 서비스를 이용해서 생성 할 수 있도록 수정 예정.(pinyin을 넘겨줘야함)
-        // toast.info('현재 발음을 들을 수 없어요. 잠시 후 다시 시도해주세요.🙇');
+        console.error('[PinyinAudio] fetch failed:', error);
       }
     };
 
-    const fetchWordData = async () => {
-      try {
-        // 1. 기본 단어 데이터 가져오기 (북마크 정보 포함)
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
-        console.log('user: ', user);
-
-        const { data: wordInfo, error } = await supabase
-          .from('words')
-          .select(
-            `
-            *,
-            examples!word_id (
-              sentence,
-              meaning,
-              pinyin,
-              context
-            ),
-            word_relations!word_id (
-              word,
-              meaning,
-              pinyin,
-              relation_type
-            ),
-            bookmarks!word_id (
-              id,
-              user_id
-            )
-          `
-          )
-          .eq('id', wordId)
-          .single();
-
-        if (error || !wordInfo) {
-          throw new Error('단어를 찾을 수 없습니다.');
-        }
-
-        const isBookmarked = !!(user && wordInfo.bookmarks);
-
-        // 2. 오디오 URL 가져오기
-        getPinyinAudio(wordInfo);
-
-        let examples = wordInfo.examples || [];
-        let synonyms =
-          wordInfo.word_relations?.filter(
-            (rel: RelationWordType) => rel.relation_type === 'synonym'
-          ) || [];
-        let antonyms =
-          wordInfo.word_relations?.filter(
-            (rel: RelationWordType) => rel.relation_type === 'antonym'
-          ) || [];
-
-        // 3. DB에 없을 경우 AI로 데이터 생성
-        if (
-          !hasGeneratedData.current &&
-          (examples.length === 0 ||
-            synonyms.length === 0 ||
-            antonyms.length === 0)
-        ) {
-          hasGeneratedData.current = true;
-          setIsGeneratingData(true);
-          const generatedData = await generateAIData(wordInfo.word);
-
-          if (examples.length === 0) {
-            setIsGeneratingExamples(true);
-            await insertExamples(generatedData.examples, wordId);
-            examples = generatedData.examples;
-            setIsGeneratingExamples(false);
-          }
-
-          if (synonyms.length === 0 && antonyms.length === 0) {
-            await insertWordRelations(
-              generatedData.synonyms,
-              generatedData.antonyms,
-              wordId
-            );
-            synonyms = generatedData.synonyms.map((s) => ({
-              ...s,
-              relation_type: 'synonym' as const,
-            }));
-            antonyms = generatedData.antonyms.map((a) => ({
-              ...a,
-              relation_type: 'antonym' as const,
-            }));
-          }
-          setIsGeneratingData(false);
-          setHasAttemptedGeneration(true);
-        }
-
-        setWordData({
-          ...wordInfo,
-          examples,
-          word_relations: [...synonyms, ...antonyms],
-          is_bookmarked: isBookmarked,
-        });
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : '데이터를 불러올 수 없습니다.'
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchWordData();
-  }, [wordId]);
+    getPinyinAudio();
+    checkAndGenerateData();
+  }, [
+    initialData.word,
+    wordId,
+    initialData.examples,
+    initialData.word_relations,
+  ]);
 
   const generateAIData = async (word: string): Promise<AIGeneratedType> => {
     const res = await fetch(`/api/v2/word/${word}`);
@@ -260,18 +210,6 @@ export default function ClientWordDetail({ wordId }: WordDetailProps) {
     }
   };
 
-  if (loading) {
-    return <WordDetailSkeleton />;
-  }
-
-  if (error) {
-    return <div className="text-center text-red-500">{error}</div>;
-  }
-
-  if (!wordData) {
-    return <div className="text-center">데이터를 찾을 수 없습니다.</div>;
-  }
-
   const synonyms =
     wordData.word_relations?.filter((rel) => rel.relation_type === 'synonym') ||
     [];
@@ -320,11 +258,11 @@ export default function ClientWordDetail({ wordId }: WordDetailProps) {
       </div>
       <Tabs defaultValue="examples" className="w-full">
         <TabsList className="w-full h-15">
-          <TabsTrigger value="examples">
+          <TabsTrigger value="examples" className="cursor-pointer">
             <BookOpen className="w-4 h-3 md:h-4 inline mr-2" />
             예문 활용
           </TabsTrigger>
-          <TabsTrigger value="related">
+          <TabsTrigger value="related" className="cursor-pointer">
             <Link className="w-4 h-3 md:h-4 inline mr-2" />
             연관 단어
           </TabsTrigger>
@@ -407,6 +345,7 @@ export default function ClientWordDetail({ wordId }: WordDetailProps) {
               </div>
             ) : (
               <>
+                {/* TODO: 해당 단어들을 북마크 외에 단어장 같은거에 저장하는 등 개선해볼 수 있지 않을까 고민 */}
                 {/* 동의어/유의어 */}
                 <div className="mb-8">
                   <h3 className="text-lg md:text-xl font-semibold text-gray-800 mb-4">
@@ -417,7 +356,7 @@ export default function ClientWordDetail({ wordId }: WordDetailProps) {
                       {synonyms.map((word, index) => (
                         <div
                           key={index}
-                          className="bg-sky-50 rounded-lg p-4 hover:bg-sky-100 transition-colors cursor-pointer"
+                          className="bg-sky-50 rounded-lg p-4 hover:bg-sky-100 transition-colors"
                         >
                           <div className="flex items-baseline gap-2">
                             <span className="text-xl font-bold text-gray-800">
@@ -465,7 +404,7 @@ export default function ClientWordDetail({ wordId }: WordDetailProps) {
                       {antonyms.map((word, index) => (
                         <div
                           key={index}
-                          className="bg-amber-50 rounded-lg p-4 hover:bg-amber-100 transition-colors cursor-pointer"
+                          className="bg-amber-50 rounded-lg p-4 hover:bg-amber-100 transition-colors"
                         >
                           <div className="flex items-center justify-between">
                             <div>
