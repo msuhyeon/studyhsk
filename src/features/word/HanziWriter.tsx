@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import HanziWriterLib from 'hanzi-writer';
 
-const HanziWriter = ({ characters }: { characters: string[] }) => {
+export default function HanziWriter({ characters }: { characters: string[] }) {
   useEffect(() => {
     const run = async () => {
       // 모든 한자 writer를 생성하는데
@@ -48,6 +48,4 @@ const HanziWriter = ({ characters }: { characters: string[] }) => {
       ))}
     </div>
   );
-};
-
-export default HanziWriter;
+}

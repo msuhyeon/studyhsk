@@ -1,7 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BookOpen, Link } from 'lucide-react';
 
-const WordDetailSkeleton = () => {
+export default function WordDetailSkeleton() {
   return (
     <>
       <div className="text-center mb-8">
@@ -81,6 +81,4 @@ const WordDetailSkeleton = () => {
       </Tabs>
     </>
   );
-};
-
-export default WordDetailSkeleton;
+}

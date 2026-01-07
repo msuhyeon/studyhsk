@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/navigation-menu';
 
 import Login from './Login';
-const Header = () => {
+export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
 
@@ -179,6 +179,4 @@ const Header = () => {
       )}
     </div>
   );
-};
-
-export default Header;
+}

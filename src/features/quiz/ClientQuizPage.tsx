@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';
 import { QuizData, UserAnswer, ClientUserAnswer } from '@/types/quiz';
 import { WordText } from '@/types/word';
-import RequireLogin from '../RequireLogin';
+import RequireLogin from '@/components/RequireLogin';
 
 // import QuizTimer from './QuizTimer';
 
@@ -28,7 +28,7 @@ type Props = {
   level: string;
 };
 
-const ClientQuizPage = ({ level }: Props) => {
+export default function ClientQuizPage({ level }: Props) {
   const router = useRouter();
   const [quizData, setQuizData] = useState<QuizData[]>();
   const [loading, setLoading] = useState(true);
@@ -43,6 +43,11 @@ const ClientQuizPage = ({ level }: Props) => {
   const { data: user, error: getUserError } = useUser();
 
   useEffect(() => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
     const fetchQuizData = async () => {
       try {
         const response = await fetch(`/api/v2/quiz/${level}`);
@@ -56,6 +61,7 @@ const ClientQuizPage = ({ level }: Props) => {
         setStartTime(Date.now());
       } catch (error) {
         console.error('[ERROR] Quiz fetch:', error);
+
         toast.error(
           error instanceof Error
             ? error.message
@@ -65,8 +71,6 @@ const ClientQuizPage = ({ level }: Props) => {
         setLoading(false);
       }
     };
-
-    if (!user) return;
 
     fetchQuizData();
   }, [level, user]);
@@ -330,10 +334,10 @@ const ClientQuizPage = ({ level }: Props) => {
               <div className="flex items-center justify-between">
                 <span className="font-medium">{option}</span>
                 {showResult && isCorrect && (
-                  <CheckCircle className="text-emerald-600" size={18} />
+                  <CheckCircle className="text-emerald-600 ml-1" size={18} />
                 )}
                 {showResult && isWrong && (
-                  <XCircle className="text-rose-600" size={18} />
+                  <XCircle className="text-rose-600 ml-1" size={18} />
                 )}
               </div>
             </Button>
@@ -573,10 +577,6 @@ const ClientQuizPage = ({ level }: Props) => {
     );
   }
 
-  if (!user) {
-    return <RequireLogin />;
-  }
-
   const isLast = currentQuestionIndex === totalQuestions - 1;
   const isOrdering = currentData?.question_type === 'ordering';
 
@@ -610,6 +610,10 @@ const ClientQuizPage = ({ level }: Props) => {
         {isSubmitting ? '제출 중…' : '퀴즈 제출'}
       </Button>
     ) : null;
+
+  if (user === null) {
+    return <RequireLogin />;
+  }
 
   return (
     <div className="min-w-full lg:min-w-2xl max-w-3xl mx-auto p-4 sm:p-6">
@@ -655,6 +659,4 @@ const ClientQuizPage = ({ level }: Props) => {
       </div>
     </div>
   );
-};
-
-export default ClientQuizPage;
+}

@@ -1,9 +1,8 @@
 import { supabase } from '@/lib/supabase/client';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
-const RequireLogin = () => {
+export default function RequireLogin() {
   const handleLogin = () => {
     try {
       supabase.auth.signInWithOAuth({
@@ -12,8 +11,6 @@ const RequireLogin = () => {
           redirectTo: process.env.NEXT_PUBLIC_BASE_URL,
         },
       });
-
-      // 로그인 완료 후 home으로 이동함
     } catch (error) {
       console.error(`[ERROR] Failed login: ${error}`);
       toast.error('로그인 실패. 다시 시도해주세요.');
@@ -22,25 +19,16 @@ const RequireLogin = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] text-center space-y-6">
-      <Card className="p-10 max-w-sm border-none">
-        <div className="flex flex-col items-center space-y-3">
-          <div className="text-3xl">🚨</div>
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-            로그인해주세요.
-          </h2>
-          <p className="text-gray-600 dark:text-gray-300 text-sm mb-10">
-            계정이 없다면 회원가입 후 이용 가능합니다.
-          </p>
-          <Button
-            onClick={handleLogin}
-            className="w-full font-semibold py-5 mt-2"
-          >
-            로그인하기
-          </Button>
-        </div>
-      </Card>
+      <div className="text-4xl">🔒</div>
+      <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+        로그인 후 이용할 수 있어요
+      </h2>
+      <p className="text-gray-600 dark:text-gray-300 text-sm">
+        북마크, 학습 기록 등 모든 기능을 사용하려면 로그인해주세요.
+      </p>
+      <Button onClick={handleLogin} className="px-8 py-5 font-semibold">
+        로그인하기
+      </Button>
     </div>
   );
-};
-
-export default RequireLogin;
+}

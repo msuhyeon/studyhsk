@@ -5,7 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { useLearningProgress } from '@/hooks/useLearningProgress';
 import Link from 'next/link';
 
-const LearningProgress = () => {
+export default function LearningProgress() {
   const { data, error, isLoading } = useLearningProgress();
 
   if (error) <div>잠시 후 다시 시도해주세요</div>;
@@ -54,6 +54,4 @@ const LearningProgress = () => {
       )}
     </Card>
   );
-};
-
-export default LearningProgress;
+}

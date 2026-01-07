@@ -3,9 +3,9 @@
 import { toast } from 'sonner';
 import { useUser } from '@/hooks/useUser';
 import RequireLogin from '@/components/RequireLogin';
-import Bookmark from '@/components/mypage/Bookmark';
-import LearningProgress from '@/components/mypage/LearningProgress';
-import QuizHistory from '@/components/mypage/QuizHistory';
+import Bookmark from './Bookmark';
+import LearningProgress from './LearningProgress';
+import QuizHistory from './QuizHistory';
 // import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -21,7 +21,7 @@ import {
   TrendingUp,
   Star,
 } from 'lucide-react';
-const ClientMyPage = () => {
+export default function ClientMyPage() {
   const { data: user, error: getUserError } = useUser();
 
   if (!user) {
@@ -88,6 +88,4 @@ const ClientMyPage = () => {
       </div>
     </>
   );
-};
-
-export default ClientMyPage;
+}

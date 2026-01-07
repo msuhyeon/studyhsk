@@ -171,7 +171,7 @@ export async function GET(request: NextRequest, { params }: Props) {
     { level, count: 10 }
   );
   if (wordsError) {
-    console.error(`[ERROR] SELECT Quiz: ${wordsError}`);
+    console.error('[ERROR] SELECT Quiz:', wordsError);
     throw wordsError;
   }
 

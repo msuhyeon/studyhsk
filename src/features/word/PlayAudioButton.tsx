@@ -2,7 +2,7 @@
 import { useRef, useState } from 'react';
 import { Volume2 } from 'lucide-react';
 
-const PlayAudioButton = ({ audioUrl }: { audioUrl: string }) => {
+export default function PlayAudioButton({ audioUrl }: { audioUrl: string }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
 
@@ -26,6 +26,4 @@ const PlayAudioButton = ({ audioUrl }: { audioUrl: string }) => {
       />
     </button>
   );
-};
-
-export default PlayAudioButton;
+}

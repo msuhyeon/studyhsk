@@ -1,4 +1,4 @@
-import ClientQuizResult from '@/components/quiz/ClientQuizResult';
+import ClientQuizResult from '@/features/quiz/ClientQuizResult';
 
 type Props = {
   params: Promise<{
@@ -6,7 +6,7 @@ type Props = {
   }>;
 };
 
-const QuizResultPage = async ({ params }: Props) => {
+export default async function QuizResultPage({ params }: Props) {
   const { id } = await params;
 
   return (
@@ -14,6 +14,4 @@ const QuizResultPage = async ({ params }: Props) => {
       <ClientQuizResult quizId={id} />
     </div>
   );
-};
-
-export default QuizResultPage;
+}

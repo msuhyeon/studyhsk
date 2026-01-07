@@ -39,7 +39,7 @@ export interface DashboardCardProps<T extends DashboardCardItem> {
   displayLimit?: number;
 }
 
-function DashboardCard<T extends DashboardCardItem>({
+export default function DashboardCard<T extends DashboardCardItem>({
   title,
   description,
   titleIcon,
@@ -149,5 +149,3 @@ function DashboardCard<T extends DashboardCardItem>({
     </Card>
   );
 }
-
-export default DashboardCard;

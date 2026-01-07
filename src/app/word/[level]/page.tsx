@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
-import ChallengeButton from '@/components/word/ChallengeButton';
+import ChallengeButton from '@/features/word/ChallengeButton';
 import ErrorFallback from '@/components/ErrorFallback';
-import ClientWordList from '@/components/word/ClientWordList';
+import ClientWordList from '@/features/word/ClientWordList';
 
 type Props = {
   params: Promise<{
@@ -10,7 +10,7 @@ type Props = {
   }>;
 };
 
-const WordPage = async ({ params }: Props) => {
+export default async function WordPage({ params }: Props) {
   const { level } = await params;
   const supabase = await createClient();
   // 렌더링 속도가 느려 SSR 렌더링 시 28글자만 가져옴, 나머진 CSR로 가져옴
@@ -43,7 +43,7 @@ const WordPage = async ({ params }: Props) => {
   }
 
   return (
-    <div>
+    <div className="w-full max-w-5xl px-4 sm:px-6 lg:px-8 mx-auto py-10 lg:py-15">
       <h1 className="title">{level}급 단어</h1>
       <div className="flex justify-end mb-10 animate-wiggle">
         {/* 학습중 으로 상태 변경하려면... usestate 필요. */}
@@ -52,6 +52,4 @@ const WordPage = async ({ params }: Props) => {
       <ClientWordList wordList={words} level={Number(level)} />
     </div>
   );
-};
-
-export default WordPage;
+}
