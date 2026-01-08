@@ -24,3 +24,17 @@ export const logout = async () => {
     throw error;
   }
 };
+
+export const loginWithGoogle = async () => {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: process.env.NEXT_PUBLIC_BASE_URL,
+    },
+  });
+
+  if (error) {
+    console.error(`[ERROR] Failed login: ${error}`);
+    throw error;
+  }
+};
