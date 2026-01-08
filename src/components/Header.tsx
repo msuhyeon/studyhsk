@@ -55,9 +55,10 @@ export default function Header() {
   ];
 
   return (
-    <div className="px-4 md:px-10 py-5 bg-stone-700">
+    // <div className="px-4 md:px-10 py-5 bg-white/80 backdrop-blur-md border-b border-white/50">
+    <div className="px-4 md:px-10 py-5 bg-white border-b border-slate-200">
       <div className="flex items-center justify-between">
-        <h1 className="font-bold text-2xl md:text-3xl text-white">
+        <h1 className="font-bold text-2xl md:text-3xl text-slate-800">
           <Link href="/">HSKPass</Link>
         </h1>
         {/* desktop layout */}
