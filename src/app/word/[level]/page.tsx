@@ -1,8 +1,8 @@
-import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import ChallengeButton from '@/features/word/ChallengeButton';
 import ErrorFallback from '@/components/ErrorFallback';
 import ClientWordList from '@/features/word/ClientWordList';
+import EmptyContent from '@/features/empty/EmptyContent';
 
 type Props = {
   params: Promise<{
@@ -28,17 +28,10 @@ export default async function WordPage({ params }: Props) {
 
   if (words.length < 1) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-screen gap-4">
-        <div className="text-xl">
-          {level}급 단어를 준비 중 이에요. 조금만 기다려주세요😅
-        </div>
-        <Link
-          href="/"
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-        >
-          홈으로 돌아가기
-        </Link>
-      </div>
+      <EmptyContent
+        title="단어가 준비되지 않았어요."
+        content={`${level}급 단어를 준비 중이에요. 조금만 기다려주세요😅`}
+      />
     );
   }
 
