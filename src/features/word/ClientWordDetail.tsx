@@ -433,7 +433,6 @@ export default function ClientWordDetail({
                     </div>
                   ) : (
                     <div className="bg-gray-50 rounded-lg p-6 text-center">
-                      <div className="text-gray-400 mb-2">🔄</div>
                       <p className="text-gray-600">
                         반의어가 준비되지 않았어요
                       </p>
