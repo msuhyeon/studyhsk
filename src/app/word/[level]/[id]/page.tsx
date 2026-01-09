@@ -58,7 +58,7 @@ export default async function WordDetailPage({ params }: Props) {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto py-10 lg:py-15">
+    <div className="w-full max-w-[1400px] mx-auto py-10 lg:py-15">
       <ClientWordDetail wordId={id} initialData={initialData} />
     </div>
   );

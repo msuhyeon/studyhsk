@@ -1,9 +1,23 @@
 'use client';
 
-import { ArrowRight, BookOpen, Sparkles, Trophy } from 'lucide-react';
 import Link from 'next/link';
+import { GoogleIcon } from '@/components/icons/GoogleIcon';
+import { loginWithGoogle } from '@/lib/supabase/userApi';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { useModal } from '@/hooks/useMoal';
+import { toast } from 'sonner';
+import { ArrowRight, BookOpen, Sparkles, Trophy } from 'lucide-react';
 
 export function HeroSection() {
+  const { loginOpen, openLoginModal, closeLoginModal } = useModal();
+
   const hskLevels = [
     { level: 1, words: 150, color: 'from-green-400 to-emerald-500' },
     { level: 2, words: 300, color: 'from-blue-400 to-cyan-500' },
@@ -28,8 +42,18 @@ export function HeroSection() {
     { char: '文', left: '65%', top: '80%' },
   ];
 
+  const handleLogin = async () => {
+    try {
+      // 브라우저에서 팝업 또는 리다이렉트를 통해 동작하므로 client component
+      await loginWithGoogle();
+    } catch (error) {
+      console.error(`[ERROR] Failed login: ${error}`);
+      toast.error('로그인 실패. 다시 시도해주세요.');
+    }
+  };
+
   return (
-    <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+    <section className="relative h-[850px] overflow-hidden bg-gradient-to-br from-slate-50 via-indigo-50 to-sky-50">
       {/* 백그라운드에 한자 플로팅 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-5">
         {floatingChars.map((item, i) => (
@@ -53,7 +77,7 @@ export function HeroSection() {
       <div className="absolute top-0 right-0 w-96 h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
       <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
 
-      <div className="relative container mx-auto px-4 py-20 lg:py-32">
+      <div className="relative container max-w-[1400px] mx-auto px-4 py-20 lg:py-32">
         <div className="grid lg:grid-cols-5 gap-12 items-center">
           <div className="lg:col-span-3 space-y-8">
             <div className="space-y-4 text-left">
@@ -65,9 +89,9 @@ export function HeroSection() {
                 <span className="text-gray-900">똑똑한 HSK 학습</span>
               </h1>
               <p className="text-xl lg:text-2xl text-gray-600 max-w-2xl">
-                10,000개 이상의 단어, AI 생성 예문, 실시간 퀴즈로
+                10,000개 이상의 HSK 단어를
                 <br />
-                획순 애니메이션과 함께 정확하게 배우세요
+                AI가 생성한 예문과 퀴즈로 학습하세요
               </p>
             </div>
 
@@ -88,7 +112,10 @@ export function HeroSection() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <button className="group bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2">
+              <button
+                className="group bg-indigo-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+                onClick={openLoginModal}
+              >
                 시작하기
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
@@ -144,7 +171,33 @@ export function HeroSection() {
           </div>
         </div>
       </div>
+
+      {/* 로그인 모달 */}
+      <Dialog
+        open={loginOpen}
+        onOpenChange={(open) => {
+          if (!open) closeLoginModal();
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>로그인</DialogTitle>
+
+            <DialogDescription className="py-10 flex justify-center">
+              <Button
+                onClick={handleLogin}
+                variant="outline"
+                className="w-full p-6 gap-3 flex items-center justify-center"
+              >
+                <GoogleIcon />
+                <span className="text-sm text-gray-700">
+                  구글 계정으로 로그인
+                </span>
+              </Button>
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </section>
-    // </section>
   );
 }

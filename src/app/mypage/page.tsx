@@ -6,7 +6,7 @@ import ClientMyPage from '@/features/mypage/ClientMyPage';
 export default function MyPage() {
   return (
     <div className="min-h-screen to-blue-50 md:p-6">
-      <div className="max-w-6xl mx-auto space-y-4 md:space-y-6">
+      <div className="max-w-[1400px] mx-auto space-y-4 md:space-y-6">
         <div className="flex justify-between items-end">
           <h1 className="title mb-3">마이페이지</h1>
           {/* TODO: 계정 정보 뭘 수정할지 확인 */}
