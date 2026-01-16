@@ -2,49 +2,20 @@
 
 import { Trophy, Award, Star } from 'lucide-react';
 import { formatDuration, formatDate } from '@/lib/utils';
-import DashboardCard, { DashboardCardItem } from './DashboardCard';
-import { useQuery } from '@tanstack/react-query';
+import { QuizType } from '@/types/quiz';
+import DashboardCard from './DashboardCard';
 
-interface QuizType extends DashboardCardItem {
-  id: string;
-  level: number;
-  total_questions: number;
-  correct_count: number;
-  duration: number;
-  created_at: string;
-}
-
-async function fetchQuizHistorys(limit: number) {
-  const response = await fetch(`/api/v2/quiz/history?limit=${limit}`, {
-    method: 'GET',
-  });
-
-  if (!response.ok) {
-    const errorResponse = await response.json();
-    throw new Error(
-      errorResponse?.error || '퀴즈 내역을 불러오는데 실패했습니다.'
-    );
-  }
-
-  const { quizHistory, totalCount } = await response.json();
-
-  return { quizHistory, totalCount } as {
-    quizHistory: QuizType[];
-    totalCount: number;
-  };
-}
-export default function QuizHistory({ limit = 3 }: { limit?: number }) {
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['quizHistory', limit],
-    queryFn: () => fetchQuizHistorys(limit),
-    staleTime: 1000 * 60,
-    gcTime: 1000 * 60 * 5,
-    retry: 2,
-    refetchInterval: 1000 * 60,
-  });
-
-  const { quizHistory = [], totalCount = 0 } = data || {};
-
+export default function QuizHistory({
+  quizHistory,
+  totalCount,
+  isLoading,
+  error,
+}: {
+  quizHistory: QuizType[];
+  totalCount: number;
+  isLoading: boolean;
+  error: Error | null;
+}) {
   const renderQuizItem = (quiz: QuizType, index: number) => (
     <div
       className="flex items-center justify-between p-3 bg-gray-50 rounded-lg h-[72px]"

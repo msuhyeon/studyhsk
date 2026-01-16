@@ -1,28 +1,51 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useUser } from '@/hooks/useUser';
+
 import RequireLogin from '@/components/RequireLogin';
 import Bookmark from './Bookmark';
 import LearningProgress from './LearningProgress';
 import QuizHistory from './QuizHistory';
-// import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  // CardDescription,
-  //   CardHeader,
-  //   CardTitle,
-} from '@/components/ui/card';
-import {
-  // Settings,
-  Trophy,
-  BookOpen,
-  TrendingUp,
-  Star,
-} from 'lucide-react';
+import { QuizType } from '@/types/quiz';
+
+import { Card, CardContent } from '@/components/ui/card';
+import { Trophy, BookOpen, TrendingUp, Star } from 'lucide-react';
+import QuizScoreChart from './QuizScoreChart';
+
+async function fetchQuizHistorys() {
+  const response = await fetch(`/api/v2/quiz/history`, {
+    method: 'GET',
+  });
+
+  if (!response.ok) {
+    const errorResponse = await response.json();
+    throw new Error(
+      errorResponse?.error || '퀴즈 내역을 불러오는데 실패했습니다.'
+    );
+  }
+
+  const { quizHistory, totalCount } = await response.json();
+
+  return { quizHistory, totalCount } as {
+    quizHistory: QuizType[];
+    totalCount: number;
+  };
+}
+
 export default function ClientMyPage() {
   const { data: user, error: getUserError } = useUser();
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['quizHistory'],
+    queryFn: () => fetchQuizHistorys(),
+    staleTime: 1000 * 60,
+    gcTime: 1000 * 60 * 5,
+    retry: 2,
+    refetchInterval: 1000 * 60,
+  });
+
+  const { quizHistory = [], totalCount = 0 } = data || {};
 
   if (!user) {
     toast.error('로그인이 필요합니다');
@@ -36,7 +59,15 @@ export default function ClientMyPage() {
       <LearningProgress />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Bookmark />
-        <QuizHistory />
+        <QuizHistory
+          quizHistory={quizHistory}
+          totalCount={totalCount}
+          isLoading={isLoading}
+          error={error}
+        />
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <QuizScoreChart quizHistory={quizHistory} />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="text-center">
