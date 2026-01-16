@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
     const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get('limit') || '3');
+    const limitParam = searchParams.get('limit');
+    const limit = limitParam ? parseInt(limitParam) : null;
     const {
       data: { user },
       error: userError,
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { data: quizHistoryData, error: quizHistoryError } = await supabase
+    let query = supabase
       .from('user_quiz_sessions')
       .select(
         `
@@ -50,8 +51,13 @@ export async function GET(request: NextRequest) {
             )
         `
       )
-      .eq('user_id', user.id)
-      .limit(limit);
+      .eq('user_id', user.id);
+
+    if (limit) {
+      query = query.limit(limit);
+    }
+
+    const { data: quizHistoryData, error: quizHistoryError } = await query;
 
     if (quizHistoryError) {
       throw quizHistoryError;
