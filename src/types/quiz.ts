@@ -48,3 +48,13 @@ export interface QuestionData extends QuizData {
   question_text: QuizData['question'];
   meaning: QuizData['translation'];
 }
+
+export interface QuizType {
+  id: string;
+  level: number;
+  total_questions: number;
+  correct_count: number;
+  duration: number;
+  created_at: string;
+  [key: string]: unknown;
+}
